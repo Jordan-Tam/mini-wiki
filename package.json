@@ -1,0 +1,36 @@
+{
+  "name": "trendwise",
+  "version": "0.0.0-0",
+  "description": "trend analyzer",
+  "homepage": "https://github.com/Jordan-Tam/trendwise#readme",
+  "bugs": {
+    "url": "https://github.com/Jordan-Tam/trendwise/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jordan-Tam/trendwise.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "npm run test",
+    "dev": "npx ts-node-dev --rs --pretty src/main.ts",
+    "build": "npx tsc",
+    "start": "node ./dist/main.js"
+  },
+  "dependencies": {
+    "cli-color": "^2.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mongodb": "^6.20.0",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/cli-color": "^2.0.6",
+    "@types/express": "^5.0.3",
+    "@types/mongodb": "^4.0.6",
+    "@types/node": "^24.7.2",
+    "ts-node-dev": "^2.0.0"
+  }
+}
