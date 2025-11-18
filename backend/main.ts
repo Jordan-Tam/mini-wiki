@@ -1,5 +1,6 @@
 import express from "express";
 import { Log } from "./log.ts";
+import cookieParser from "cookie-parser";
 import { ServerConfig } from "./config/config.ts";
 
 async function Main(): Promise<any> {
@@ -8,7 +9,9 @@ async function Main(): Promise<any> {
     /**
      * Middleware
      */
-    
+    APP.use(express.json());
+	APP.use(express.urlencoded({ extended: true }));
+	APP.use(cookieParser());
 
     /**
      * Routes
