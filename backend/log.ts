@@ -18,5 +18,7 @@ export function Log(type:LogClass, message:any, debug?:boolean): void {
         return;
     }
 
-    console.log(`${chalk.gray(`[${date}]`)} [${type_string}]${debug ? `(${chalk.yellow("DEBUG")})` : ``}:`, message);
+    let log_backend = type === `E` ? console.error : console.log
+
+    log_backend(`${chalk.gray(`[${date}]`)} [${type_string}]${debug ? `(${chalk.yellow("DEBUG")})` : ``}:`, message);
 }
