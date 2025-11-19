@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^9.2.0",
+    "@uiw/react-markdown-preview": "^5.1.5",
     "bcryptjs": "^3.0.3",
     "bootstrap": "^5.3.8",
     "express": "^5.1.0",
@@ -19,7 +20,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6",
-    "redis": "^5.9.0"
+    "redis": "^5.9.0",
+    "rehype-sanitize": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
