@@ -2,24 +2,35 @@ import { ObjectId } from "mongodb";
 import { wikis } from "../config/mongoCollections.js";
 import {
     checkString,
-    checkId
+    checkId,
+    checkAccess
 } from "../helpers.js";
 
 const wiki_data_functions = {
 
+    async getWikiById(
+        id: string
+    ) {
+        
+    },
+
     async createWiki(
         name: string,
-        owner: string
+        owner: string,
+        access: string
     ) {
 
         // Input validation.
         name = checkString(name, "Wiki Name", "createWiki");
         owner = checkId(owner, "Wiki Owner", "createWiki");
+        access = checkAccess(access, "createWiki");
 
         // Create the new wiki object.
         let newWiki = {
             name,
             owner,
+            access,
+            categories: ["UNCATEGORIZED"],
             collaborators: [],
             pages: []
         };
@@ -29,15 +40,15 @@ const wiki_data_functions = {
         const insertInfo = await wikisCollection.insertOne(newWiki);
 
         if (!insertInfo.acknowledged || !insertInfo.insertedId) {
-            throw "";
+            throw "Wiki could not be created.";
         }
 
         return insertInfo;
 
     },
 
-    async deleteWiki() {
-
+    async deleteWiki(id: string) {
+        
     }
 
 };
