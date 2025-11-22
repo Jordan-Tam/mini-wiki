@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-import App from "./components/App.tsx";
+import App from "./App.tsx";
 
 import fbconfig from "./firebase/FirebaseConfig.ts";
 import { initializeApp } from "firebase/app";
