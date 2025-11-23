@@ -7,6 +7,7 @@ import {
   updatePassword,
   signInWithPopup,
   GoogleAuthProvider,
+  GithubAuthProvider,
   sendPasswordResetEmail,
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -48,10 +49,17 @@ async function doSignInWithEmailAndPassword(email: string, password: string) {
   await signInWithEmailAndPassword(auth, email, password);
 }
 
-async function doSocialSignIn() {
+async function doSocialSignIn(app: string) {
   let auth = getAuth();
-  let socialProvider = new GoogleAuthProvider();
-  await signInWithPopup(auth, socialProvider);
+  let socialProvider;
+  if (app === "google") {
+    socialProvider = new GoogleAuthProvider();
+  } else if (app === "github") {
+    socialProvider = new GithubAuthProvider();
+  }
+  if (socialProvider) {
+    await signInWithPopup(auth, socialProvider);
+  }
 }
 
 async function doPasswordReset(email: string) {

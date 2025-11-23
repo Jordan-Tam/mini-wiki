@@ -1,7 +1,8 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import SocialSignIn from "./SocialSignIn";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import {
   doSignInWithEmailAndPassword,
   doPasswordReset,
@@ -20,35 +21,39 @@ function SignIn() {
     }
   };
 
-  const passwordReset = (event) => {
-    event.preventDefault();
-    let email = document.getElementById("email").value;
-    if (email) {
-      doPasswordReset(email);
-      alert("Password reset email was sent");
-    } else {
-      alert(
-        "Please enter an email address below before you click the forgot password link"
-      );
+    if (currentUser) {
+      return <Navigate to="/home" />;
     }
-  };
+
+  // const passwordReset = (event) => {
+  //   event.preventDefault();
+  //   let email = document.getElementById("email").value;
+  //   if (email) {
+  //     doPasswordReset(email);
+  //     alert("Password reset email was sent");
+  //   } else {
+  //     alert(
+  //       "Please enter an email address below before you click the forgot password link"
+  //     );
+  //   }
+  // };
   if (currentUser) {
     return <Navigate to="/home" />;
   }
   return (
     <div>
-      <div className="card">
-        <h1>Log-In</h1>
-        <form className="form" onSubmit={handleLogin}>
+      <div>
+        <h1>Sign In</h1>
+        <form onSubmit={handleLogin}>
           <div className="form-group">
             <label>
-              Email Address:
-              <br />
+              Email address
               <input
-                name="email"
-                id="email"
                 type="email"
-                placeholder="Email"
+                name="email"
+                className="form-control"
+                id="email"
+                placeholder="Enter email"
                 required
                 autoFocus={true}
               />
@@ -57,29 +62,30 @@ function SignIn() {
           <br />
           <div className="form-group">
             <label>
-              Password:
-              <br />
+              Password
               <input
-                name="password"
                 type="password"
+                name="password"
+                className="form-control"
+                id="password"
                 placeholder="Password"
                 autoComplete="off"
                 required
               />
             </label>
           </div>
-
-          <button className="button" type="submit">
-            Log in
-          </button>
-
-          <button className="forgotPassword" onClick={passwordReset}>
-            Forgot Password
+          <br />
+          <button type="submit" className="btn btn-primary">
+            Submit
           </button>
         </form>
 
         <br />
         <SocialSignIn />
+      </div>
+      <br />
+      <div>
+        <Link to="/signup">New to Mini Wiki? Sign up here!</Link>
       </div>
     </div>
   );

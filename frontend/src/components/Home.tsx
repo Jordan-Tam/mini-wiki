@@ -1,9 +1,13 @@
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+
 function Home() {
-    return (
-        <>
-            <p>Home</p>
-        </>
-    )
+  const { currentUser } = useContext(AuthContext);
+  return (
+    <>
+      <p>Welcome {currentUser.displayName}!</p>
+    </>
+  );
 }
 
 export default Home;
