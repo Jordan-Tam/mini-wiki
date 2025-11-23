@@ -3,6 +3,8 @@ import { Log } from "./log.ts";
 import cookieParser from "cookie-parser";
 import { ServerConfig } from "./config/config.ts";
 import { router as WikiRouter } from "./routes/wiki.ts";
+import { Routes, SocketServer } from "./lib/ws/socket_server.ts";
+import { ChatSocketRouter } from "./routes/socket/chat_router.ts";
 
 async function Main(): Promise<any> {
     const APP = express();
@@ -20,7 +22,7 @@ async function Main(): Promise<any> {
     APP.use("/wiki", WikiRouter);
 
     // Log if server boot worked
-    APP.listen((e) => {
+    const server = APP.listen(ServerConfig.port, (e) => {
         if(typeof e === "undefined") {
             Log(`I`, `Server started on port ${ServerConfig.port}`);
         } else {
@@ -29,6 +31,14 @@ async function Main(): Promise<any> {
             process.exit(1);
         }
     });
+
+    /**
+     * Setup socket server
+     */
+    const socket_routes:Routes = {
+        "/wiki/:id/chat": ChatSocketRouter
+    }
+    await SocketServer(server, socket_routes);
 }
 
 Main();
