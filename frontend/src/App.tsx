@@ -5,7 +5,6 @@ import Home from "./components/Home.tsx";
 import SignIn from "./components/SignIn.jsx";
 import SignUp from "./components/SignUp.jsx";
 import Profile from "./components/Profile.jsx";
-import Register from "./components/Register.tsx";
 
 //import Home from "./lecture_components/Home";
 //import Landing from "./lecture_components/Landing";
@@ -53,7 +52,6 @@ function App() {
           </Route>
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/register" element={<Register />} />
           <Route path="/wiki/:wikiId">
             <Route path=":category" />
             <Route path="chat" />
