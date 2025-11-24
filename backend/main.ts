@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { ServerConfig } from "./config/config.ts";
 import { router as WikiRouter } from "./routes/wiki.ts";
 import { Routes, SocketServer } from "./lib/ws/socket_server.ts";
-import { ChatSocketRouter } from "./routes/socket/chat_router.ts";
+import { ChatSocket } from "./routes/socket/chat_router.ts";
 
 async function Main(): Promise<any> {
     const APP = express();
@@ -36,7 +36,7 @@ async function Main(): Promise<any> {
      * Setup socket server
      */
     const socket_routes:Routes = {
-        "/wiki/:id/chat": ChatSocketRouter
+        "/wiki/:id/chat/:usr": ChatSocket
     }
     await SocketServer(server, socket_routes);
 }
