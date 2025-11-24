@@ -50,6 +50,7 @@ export async function SocketServer(server:Server, routes:{[key:string]: SocketRo
                 continue;
             } else {
                 await routes[schema](socket, req, params);
+                return;
             }
         }
 
@@ -86,6 +87,8 @@ export function path_match_params(schema:string, url:string): Params | null {
     for(const index in schema_sections) {
         if(url_sections[index] && schema_sections[index].startsWith(':')) {
             params[schema_sections[index]] = url_sections[index];
+        } else if (schema_sections[index] && !url_sections[index]) {
+            return null;
         }
     }
 
