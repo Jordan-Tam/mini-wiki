@@ -84,11 +84,81 @@ const checkAccess = (
 
     return access;
 
-}
+};
 
+const checkPassword = (
+    password: string, 
+    funcName: string
+    ): string => {
+
+    // Basic string validation.
+    // Password cannot have spaces, so we do not accept the trimmed string.
+    checkString(password, "Password", funcName);
+  
+    // Check that password is at least 8 characters long.
+    if (password.length < 8) {
+      throw {
+        status: 400,
+        function: funcName,
+        error: "Password must be at least 8 characters long."
+      };
+    }
+  
+    const characters = {
+      upper: 0,
+      lower: 0,
+      number: 0,
+      special: 0
+    };
+  
+    for (let char of password) {
+      if (UPPERCASE_LETTERS.indexOf(char) > -1) {
+        characters.upper++;
+      } else if (LOWERCASE_LETTERS.indexOf(char) > -1) {
+        characters.lower++;
+      } else if (NUMBERS.indexOf(char) > -1) {
+        characters.number++;
+      } else {
+        if (" ".indexOf(char) > -1) {
+          throw "Password cannot have spaces."
+        }
+        characters.special++;
+      }
+    }
+  
+    if (characters['lower'] === 0 || characters['upper'] === 0 || characters['special'] === 0 || characters['number'] === 0) {
+      throw "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character."      
+    }
+
+    return password;
+  
+  }
+
+  const checkEmail = (
+    email: string,
+    funcName: string
+    ): string => {
+    
+        //basic string validation
+        email = checkString(email, "email", funcName) 
+    
+        if (email === ""){
+            throw "email cannot be empty spaces"
+        }
+  
+        const emailREGEX = /^[a-zA-z0-9._-]+@[a-zA-z0-9]+\.[a-zA-z0-9]+$/;
+  
+        if (!emailREGEX.test(email)){
+            throw 'Please provide a valid email.'
+        }
+  
+        return email;
+  }
 export {
     checkString,
     checkId,
     checkUsername,
-    checkAccess
+    checkAccess,
+    checkPassword,
+    checkEmail
 };
