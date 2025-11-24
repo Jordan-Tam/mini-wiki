@@ -13,7 +13,7 @@ type User = {
     email: string;
     firebaseUID: string;
     wikis: string[];
-    wikis_given_access: string[];
+    wikis_given_access: string[]; //not a string, needs to be updated
 }
 const user_data_functions = {
 
@@ -122,6 +122,26 @@ const user_data_functions = {
 
 
 
+    },
+    
+    //do we delete wikis or make the author [deleted] and keep wikis up?
+    async deleteUser(
+        firebaseUID: string
+    ){
+        firebaseUID = checkString(firebaseUID, "firebaseUID", "deleteUser");
+
+        const user_to_delete = await this.getUserById(firebaseUID);
+        if (!user_to_delete){
+            throw 'user with this ID does not exist'
+        }
+        const userCollection = await users();
+
+        const deleteUser = await userCollection.deleteOne({firebaseUID});
+        if (!deleteUser){
+            throw 'user not deleted'
+        }
+
+        return { userDeleted: true }
     }
 
 
