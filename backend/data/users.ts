@@ -8,12 +8,18 @@ import {
     checkEmail
 } from "../helpers.js";
 
+/**
+ * unsure if this is the final user schema
+ * thinking pending invites can be deleted
+ * but left it for now just incase 
+ */
 type User = {
     username: string;
     email: string;
     firebaseUID: string;
     wikis: string[];
     wikis_given_access: string[]; //not a string, needs to be updated
+    pending_invites: string[]; //also not a string
 }
 const user_data_functions = {
 
@@ -31,7 +37,8 @@ const user_data_functions = {
             email,
             firebaseUID,
             wikis: [],
-            wikis_given_access: [] //array of {wiki_id: string, permission: bool}
+            wikis_given_access: [], //array of {wiki_id: string, permission: bool}
+            pending_invites: [] //array of wiki ids that user has been invited to
         }
 
         const userCollection = await users();
@@ -44,6 +51,7 @@ const user_data_functions = {
 
         return insertInfo;
     },
+
 
     async getUserById(
         firebaseUID: string
