@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { doCreateUserWithEmailAndPassword } from "../firebase/FirebaseFunctions";
 import { AuthContext } from "../context/AuthContext";
 import SocialSignIn from "./SocialSignIn";
+import { Link } from "react-router-dom";
 
 function SignUp() {
   const { currentUser } = useContext(AuthContext);
@@ -32,7 +33,7 @@ function SignUp() {
 
   return (
     <div>
-      <h1>Sign up</h1>
+      <h1>Sign Up</h1>
       {pwMatch && <h4 className="error">{pwMatch}</h4>}
       <form onSubmit={handleSignUp}>
         <div className="form-group">
@@ -107,6 +108,10 @@ function SignUp() {
       </form>
       <br />
       <SocialSignIn />
+      <br />
+      <div>
+        <Link to="/signin">Already have an account? Sign in here!</Link>
+      </div>
     </div>
   );
 }

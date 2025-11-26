@@ -11,6 +11,8 @@ import {
   sendPasswordResetEmail,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  deleteUser,
+  reauthenticateWithPopup,
 } from "firebase/auth";
 
 async function doCreateUserWithEmailAndPassword(
@@ -72,6 +74,34 @@ async function doSignOut() {
   await signOut(auth);
 }
 
+async function doDeleteUserEmailAndPassword(email: string, password: string) {
+  let auth = getAuth();
+  let credential = EmailAuthProvider.credential(email, password);
+  let currentUser = auth.currentUser;
+  if (currentUser && auth.currentUser) {
+    await reauthenticateWithCredential(auth.currentUser, credential);
+    await deleteUser(currentUser);
+  }
+}
+
+async function doDeleteUserSocial() {
+  let auth = getAuth();
+  let currentUser = auth.currentUser;
+  let provider;
+  if (currentUser && auth.currentUser && auth.currentUser.providerId) {
+    console.log
+    if (auth.currentUser.providerData[0].providerId === "google.com") {
+      provider = new GoogleAuthProvider();
+    } else if (auth.currentUser.providerData[0].providerId === "github.com") {
+      provider = new GithubAuthProvider();
+    }
+    if (provider) {
+      await reauthenticateWithPopup(auth.currentUser, provider);
+      await deleteUser(currentUser);
+    }
+  }
+}
+
 export {
   doCreateUserWithEmailAndPassword,
   doSocialSignIn,
@@ -79,4 +109,6 @@ export {
   doPasswordReset,
   doSignOut,
   doChangePassword,
+  doDeleteUserEmailAndPassword,
+  doDeleteUserSocial
 };
