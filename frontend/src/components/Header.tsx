@@ -43,12 +43,22 @@ function Header() {
                     {currentUser.displayName}'s Profile
                   </Link>
                 ) : (
+                  <>
                   <Link
                     className="nav-item btn-dark btn my-2 my-sm-0"
                     to="/signin"
                   >
                     Login
                   </Link>
+
+
+                  <Link
+                  className="nav-item btn-dark btn my-2 my-sm-0 ms-1"
+                  to="/signup"
+                >
+                  Sign Up
+                </Link>
+                </>
                 )}
               </li>
             </ul>
