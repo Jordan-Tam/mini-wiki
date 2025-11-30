@@ -5,41 +5,12 @@ import Home from "./components/Home.tsx";
 import SignIn from "./components/SignIn.jsx";
 import SignUp from "./components/SignUp.jsx";
 import Profile from "./components/Profile.jsx";
-
-//import Home from "./lecture_components/Home";
-//import Landing from "./lecture_components/Landing";
-//import Account from "./lecture_components/Account";
-//import SignIn from "./lecture_components/SignIn";
-//import Navigation from "./lecture_components/Navigation";
-//import SignUp from "./lecture_components/SignUp";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
-//import "./App.css";
-// Zak testing
-//import TextEditor from "./lecture_components/TextEditor";
 
 function App() {
   return (
     <>
-      {/* <AuthProvider>
-                <div>
-                    <header>
-                        <Navigation />
-                    </header>
-                    <Routes>
-                        <Route path="/" element={<Landing />} />
-                        <Route path="/home" element={<PrivateRoute />}>
-                            <Route path="/home" element={<Home />} />
-                        </Route>
-                        <Route path="/account" element={<PrivateRoute />}>
-                            <Route path="/account" element={<Account />} />
-                        </Route>
-                        <Route path="/signin" element={<SignIn />} />
-                        <Route path="/signup" element={<SignUp />} />
-                        <Route path="/testText" element={<TextEditor />} />
-                    </Routes>
-                </div>
-            </AuthProvider> */}
       <AuthProvider>
         <Header />
         <Routes>

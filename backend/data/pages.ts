@@ -8,6 +8,12 @@ import {
 
 const page_data_functions = {
 
+    async getPageById(
+
+    ) {
+
+    },
+
     async createPage(
         wikiId: string,
         name: string,
@@ -46,7 +52,19 @@ const page_data_functions = {
 
     async deletePage() {
         
-    }
+    },
+
+    async changePageName() {
+
+    },
+
+    async changePageContent() {
+
+    },
+
+    async changePageCategory() {
+
+    },
 
 };
 

@@ -6,8 +6,10 @@ import SocialSignIn from "./SocialSignIn";
 import { Link } from "react-router-dom";
 
 function SignUp() {
+
   const { currentUser } = useContext(AuthContext);
   const [pwMatch, setPwMatch] = useState("");
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     const { displayName, email, passwordOne, passwordTwo } = e.target.elements;
@@ -32,85 +34,63 @@ function SignUp() {
   }
 
   return (
-    <div>
-      <h1>Sign Up</h1>
+    <div className="container-fluid">
+      <h1 className="mb-3" style={{fontWeight: "bold"}}>Register</h1>
       {pwMatch && <h4 className="error">{pwMatch}</h4>}
       <form onSubmit={handleSignUp}>
-        <div className="form-group">
-          <label>
-            Name:
-            <br />
-            <input
-              className="form-control"
-              required
-              name="displayName"
-              type="text"
-              placeholder="Name"
-              autoFocus={true}
-            />
-          </label>
+        <div class="form-floating mb-3" style={{"width": "500px"}}>
+          <input
+            className="form-control"
+            placeholder="Name goes here"
+            id="displayName"
+            name="displayName"
+            type="text"
+            autoFocus={true}
+            required
+          />
+          <label htmlFor="displayName">Username</label>
         </div>
-        <br />
-        <div className="form-group">
-          <label>
-            Email address
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              id="email"
-              placeholder="Enter email"
-              required
-              autoFocus={true}
-            />
-          </label>
+        <div class="form-floating mb-3" style={{"width": "500px"}}>
+          <input
+            className="form-control"
+            placeholder="Email goes here"
+            id="email"
+            name="email"
+            type="email"
+            required
+          />
+          <label htmlFor="email">Email</label>
         </div>
-        <br />
-        <div className="form-group">
-          <label>
-            Password:
-            <br />
-            <input
-              className="form-control"
-              id="passwordOne"
-              name="passwordOne"
-              type="password"
-              placeholder="Password"
-              autoComplete="off"
-              required
-            />
-          </label>
+        <div class="form-floating mb-3" style={{"width": "500px"}}>
+          <input
+            className="form-control"
+            placeholder="Password goes here"
+            id="passwordOne"
+            name="passwordOne"
+            type="password"
+            required
+          />
+          <label htmlFor="passwordOne">Password</label>
         </div>
-        <br />
-        <div className="form-group">
-          <label>
-            Confirm Password:
-            <br />
-            <input
-              className="form-control"
-              name="passwordTwo"
-              type="password"
-              placeholder="Confirm Password"
-              autoComplete="off"
-              required
-            />
-          </label>
+        <div class="form-floating mb-3" style={{"width": "500px"}}>
+          <input
+            className="form-control"
+            placeholder="Confirm Password goes here"
+            id="passwordTwo"
+            name="passwordTwo"
+            type="password"
+            required
+          />
+          <label htmlFor="passwordTwo">Confirm Password</label>
         </div>
-        <br />
-        <button
-          className="button"
-          id="submitButton"
-          name="submitButton"
-          type="submit"
-        >
-          Sign Up
-        </button>
+        <button type="submit" className="btn btn-primary">Register</button>
       </form>
       <br />
+      <h5>Or sign up with an external account:</h5>
       <SocialSignIn />
       <br />
       <div>
-        <Link to="/signin">Already have an account? Sign in here!</Link>
+        Already have an account? <Link to="/signin">Log in here!</Link>
       </div>
     </div>
   );

@@ -41,51 +41,39 @@ function SignIn() {
     return <Navigate to="/home" />;
   }
   return (
-    <div>
-      <div>
-        <h1>Sign In</h1>
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label>
-              Email address
-              <input
-                type="email"
-                name="email"
-                className="form-control"
-                id="email"
-                placeholder="Enter email"
-                required
-                autoFocus={true}
-              />
-            </label>
-          </div>
-          <br />
-          <div className="form-group">
-            <label>
-              Password
-              <input
-                type="password"
-                name="password"
-                className="form-control"
-                id="password"
-                placeholder="Password"
-                autoComplete="off"
-                required
-              />
-            </label>
-          </div>
-          <br />
-          <button type="submit" className="btn btn-primary">
-            Submit
-          </button>
-        </form>
-
-        <br />
-        <SocialSignIn />
-      </div>
+    <div className="container-fluid">
+      <h1 className="mb-3" style={{fontWeight: "bold"}}>Login</h1>
+      <form onSubmit={handleLogin}>
+        <div class="form-floating mb-3" style={{"width": "500px"}}>
+          <input
+            className="form-control"
+            placeholder="Email goes here"
+            id="email"
+            name="email"
+            type="email"
+            required
+          />
+          <label htmlFor="email">Email</label>
+        </div>
+        <div class="form-floating mb-3" style={{"width": "500px"}}>
+          <input
+            className="form-control"
+            placeholder="Password goes here"
+            id="password"
+            name="password"
+            type="password"
+            required
+          />
+          <label htmlFor="password">Password</label>
+        </div>
+        <button type="submit" className="btn btn-primary">Login</button>
+      </form>
+      <br />
+      <h5>Or log in with an external account:</h5>
+      <SocialSignIn />
       <br />
       <div>
-        <Link to="/signup">New to Mini Wiki? Sign up here!</Link>
+        New to Mini Wiki? <Link to="/signup">Sign up here!</Link>
       </div>
     </div>
   );

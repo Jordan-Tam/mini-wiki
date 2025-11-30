@@ -1,8 +1,8 @@
 import { useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 
 function Home() {
-  const { currentUser } = useContext(AuthContext);
+  const {currentUser} = useContext(AuthContext);
 
   if (!currentUser) {
     return <p>Loading...</p>;

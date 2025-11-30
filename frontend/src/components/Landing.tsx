@@ -1,4 +1,4 @@
-import TableEditor from "../lecture_components/TableEditor";
+import TableEditor from "./TableEditor";
 import PingServer from "./PingServer";
 
 function Landing() {
@@ -10,14 +10,6 @@ function Landing() {
       <TableEditor></TableEditor>
     </>
   );
-
-/*function Landing() {
-	return (
-		<>
-			<p>Landing</p>
-			<TableEditor></TableEditor>
-		</>
-	);
-}*/
+}
 
 export default Landing;
