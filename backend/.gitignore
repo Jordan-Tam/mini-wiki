@@ -3,3 +3,4 @@ node_modules/
 .paths
 dist/
 dump.rdb
+lib/firebase/firebase.ts
