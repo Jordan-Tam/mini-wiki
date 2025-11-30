@@ -10,6 +10,14 @@ function Landing() {
       <TableEditor></TableEditor>
     </>
   );
-}
+
+/*function Landing() {
+	return (
+		<>
+			<p>Landing</p>
+			<TableEditor></TableEditor>
+		</>
+	);
+}*/
 
 export default Landing;
