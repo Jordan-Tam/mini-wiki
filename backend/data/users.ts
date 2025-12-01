@@ -37,7 +37,6 @@ const user_data_functions = {
         }
         let newUser: User;
         if (!firebaseUID && username){
-
             newUser = {
                 username, 
                 email,
