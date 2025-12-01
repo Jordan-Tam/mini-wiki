@@ -11,6 +11,21 @@ router.route("/")
 
     })
 
+/**
+ * Register account using firebase
+ */
+router.route("/registerFB")
+   .post(async(req,res) => {
+
+   })
+
+/**
+ * Register account through website
+ */
+router.route("/register")
+   .post(async(req,res) => {
+      
+   })
 
 /**
  * Users (by ID)

@@ -7,38 +7,54 @@ import {
     checkPassword,
     checkEmail
 } from "../helpers.js";
+import bcrypt from 'bcryptjs' 
+let saltRounds = 10;
 
-/**
- * unsure if this is the final user schema
- * thinking pending invites can be deleted
- * but left it for now just incase 
- */
 type User = {
     username: string;
     email: string;
-    firebaseUID: string;
+    firebaseUID?: string;
+    password?: string;
     wikis: string[];
     wikis_given_access: string[]; //not a string, needs to be updated
-    pending_invites: string[]; //also not a string
 }
 const user_data_functions = {
 
     async createUser(
-        username: string,
-        email: string, 
-        firebaseUID: string) {
+        email: string,
+        username?: string, 
+        password?: string,
+        firebaseUID?: string) {
 
-        username = checkUsername(username, "createUser");
+        if(username){
+            username = checkUsername(username, "createUser");
+        }
         email = checkEmail(email, "createUser")
-        firebaseUID = checkString(firebaseUID, "firebaseUID", "createUser")
+        let hashedPassword;
+        if(password){
+            password = checkPassword(password, "createUser");
+            hashedPassword = await bcrypt.hash(password, saltRounds);
+        }
+        let newUser: User;
+        if (!firebaseUID && username){
 
-        let newUser = {
-            username, 
-            email,
-            firebaseUID,
-            wikis: [],
-            wikis_given_access: [], //array of {wiki_id: string, permission: bool}
-            pending_invites: [] //array of wiki ids that user has been invited to
+            newUser = {
+                username, 
+                email,
+                password: hashedPassword,
+                wikis: [],
+                wikis_given_access: [], //array of {wiki_id: string, permission: bool}
+            }
+        } else if (firebaseUID && !username) {
+            newUser = {
+                username: firebaseUID,
+                email: email,
+                firebaseUID,
+                wikis: [],
+                wikis_given_access: []
+            }
+        } else {
+            throw 'unexpected input'
         }
 
         const userCollection = await users();
@@ -54,16 +70,16 @@ const user_data_functions = {
 
 
     async getUserById(
-        firebaseUID: string
+        id: string
     ){
-        firebaseUID = checkString(firebaseUID, "firebaseUID", "updateUser");
+        id = checkId(id, "user", "getUserById");
         
         const userCollection = await users();
         
-        const user = await userCollection.findOne({firebaseUID: firebaseUID});
+        const user = await userCollection.findOne({_id: new ObjectId(id)});
 
         if (!user){
-            throw `No user with the id ${firebaseUID}`
+            throw `User Not Found.`
         }
 
         return user;
@@ -91,25 +107,23 @@ const user_data_functions = {
     },
 
     async changeUsername(
-        firebaseUID: string,
+        id: string,
         newUsername: string
     ){  
+
         //both will throw on error
-        firebaseUID = checkString(firebaseUID, "firebaseUID", "changeUsername");
+        id = checkId(id, "User ID", "changeUsername");
         newUsername = checkUsername(newUsername, "changeUsername");
 
 
-        //const userCollection = await users();
-        
         let takenUsernames = await this.getTakenUsernames();
 
-        for (let username in takenUsernames){
-            if (username === newUsername){
-                throw 'username already exists'
-            }
+        if (takenUsernames.includes(newUsername.toLowerCase())) {
+            throw 'username already exists';
         }
+        
 
-        const user = await this.getUserById(firebaseUID);
+        const user = await this.getUserById(id);
 
         const updatedUser = {
             username: newUsername
@@ -117,7 +131,7 @@ const user_data_functions = {
 
         const usersCollection = await users();
         const updateInfo = await usersCollection.findOneAndUpdate(
-            {firebaseUID: new ObjectId(firebaseUID)},
+            {_id: new ObjectId(id)},
             {$set: updatedUser},
             {returnDocument: 'after'}
         );
@@ -134,26 +148,23 @@ const user_data_functions = {
     
     //do we delete wikis or make the author [deleted] and keep wikis up?
     async deleteUser(
-        firebaseUID: string
+        id: string
     ){
-        firebaseUID = checkString(firebaseUID, "firebaseUID", "deleteUser");
+        id = checkId(id, "userID", "deleteUser");
 
-        const user_to_delete = await this.getUserById(firebaseUID);
+        const user_to_delete = await this.getUserById(id);
         if (!user_to_delete){
             throw 'user with this ID does not exist'
         }
         const userCollection = await users();
 
-        const deleteUser = await userCollection.deleteOne({firebaseUID});
+        const deleteUser = await userCollection.deleteOne({_id: new ObjectId(id)});
         if (!deleteUser){
             throw 'user not deleted'
         }
 
         return { userDeleted: true }
     }
-
-
-
 
 };
 
