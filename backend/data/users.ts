@@ -4,17 +4,14 @@ import {
     checkString,
     checkId,
     checkUsername,
-    checkPassword,
     checkEmail
 } from "../helpers.js";
-import bcrypt from 'bcryptjs' 
-let saltRounds = 10;
 
 type User = {
     username: string;
     email: string;
     firebaseUID?: string;
-    password?: string;
+    displayName: string,
     wikis: string[];
     wikis_given_access: string[]; //not a string, needs to be updated
 }
@@ -23,25 +20,21 @@ const user_data_functions = {
     async createUser(
         email: string,
         username?: string, 
-        password?: string,
-        firebaseUID?: string) {
+        firebaseUID?: string,
+        displayName: string) {
 
         if(username){
             username = checkUsername(username, "createUser");
         }
         email = checkEmail(email, "createUser")
-        let hashedPassword;
-        if(password){
-            password = checkPassword(password, "createUser");
-            hashedPassword = await bcrypt.hash(password, saltRounds);
-        }
+        displayName = checkString(displayName, "displayName", "createUser");
         let newUser: User;
         if (!firebaseUID && username){
 
             newUser = {
                 username, 
                 email,
-                password: hashedPassword,
+                displayName,
                 wikis: [],
                 wikis_given_access: [], //array of {wiki_id: string, permission: bool}
             }
@@ -49,6 +42,7 @@ const user_data_functions = {
             newUser = {
                 username: firebaseUID,
                 email: email,
+                displayName,
                 firebaseUID,
                 wikis: [],
                 wikis_given_access: []
