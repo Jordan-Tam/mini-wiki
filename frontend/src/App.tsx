@@ -7,7 +7,7 @@ import SignUp from "./components/SignUp.jsx";
 import Profile from "./components/Profile.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
-
+import TestingPage from "./components/TestingPage.jsx"
 function App() {
   return (
     <>
@@ -23,6 +23,7 @@ function App() {
           </Route>
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/testing" element={<TestingPage />} />
           <Route path="/wiki/:wikiId">
             <Route path=":category" />
             <Route path="chat" />

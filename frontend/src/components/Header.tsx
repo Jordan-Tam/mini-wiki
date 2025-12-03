@@ -9,9 +9,10 @@ function Header() {
     <>
       <nav className="navbar navbar-expand-sm navbar-dark bg-success mb-3">
         <div className="container-fluid">
-          <Link className="navbar-brand me-5" to="/">
-            Mini Wiki
-          </Link>
+        <Link className="navbar-brand me-5" to={currentUser ? "/home" : "/"} >
+        Mini Wiki
+        </Link>
+
           <button
             className="navbar-toggler"
             type="button"
@@ -23,8 +24,8 @@ function Header() {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav">
               <li className="nav-item px-2">
-                <Link className="nav-link" to="/">
-                  Wikis
+                <Link className="nav-link" to="/testing">
+                  Wikis (temporary testing page)
                 </Link>
               </li>
               {/* <li className="nav-item px-2">

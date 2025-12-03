@@ -10,7 +10,7 @@ function Home() {
 
   return (
     <>
-      <p>Welcome {currentUser.displayName}!</p>
+      <p>Welcome to Mini Wiki, {currentUser.displayName}!</p>
       <p>
         ik theres a bug with the display name not loading when you first sign up
         with email... working on it - Owen
