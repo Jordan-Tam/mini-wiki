@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-export const router = Router();
+const router = Router();
 
 
 /**
@@ -25,6 +25,12 @@ router.route("/registerFB")
 router.route("/register")
    .post(async(req,res) => {
       
+      if (!req.user) {
+         return res.status(401).json({error: "error"});
+      }
+
+      console.log(req.user);
+
    })
 
 /**
@@ -71,3 +77,4 @@ router.route("/:id/wikis")
 
    })
 
+export default router;
