@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkEmail, checkString } from "../helpers.ts";
+import { checkEmail, checkId, checkString } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 
 export const router = Router();
@@ -13,9 +13,10 @@ router.route("/").get(async (req, res) => {});
  * Register account using firebase
  */
 router.route("/registerFB").post(async (req, res) => {
-  let firebaseUID = req.body.firebaseUID;
-  let email = req.body.email;
-  let displayName = req.body.displayName;
+  let user = (req as any).user;
+  let firebaseUID = user.user_id;
+  let email = user.email;
+  // let displayName = user.displayName;
   try {
     firebaseUID = checkString(firebaseUID, "firebaseUID");
     email = checkEmail(email, firebaseUID);
@@ -26,6 +27,7 @@ router.route("/registerFB").post(async (req, res) => {
     const newUser = await user_data_functions.createUser(
       (email = email),
       (firebaseUID = firebaseUID)
+      // (displayName = displayName)
     );
     return newUser;
   } catch (e) {
@@ -49,7 +51,21 @@ router
   /**
    * Delete user (self)
    */
-  .delete(async (req, res) => {});
+  .delete(async (req, res) => {
+    let firebaseUID = req.params.id;
+    let tokenId = (req as any).user.user_id;
+    if (firebaseUID !== tokenId) {
+      return res
+        .status(403)
+        .json({ error: "Cannot delete a user that isn't you" });
+    }
+    const deleted = await user_data_functions.deleteUser(firebaseUID);
+    if (deleted.userDeleted) {
+      return res.json(deleted);
+    } else {
+      return res.status(404).json({ error: "User not deleted" });
+    }
+  });
 
 /**
  * Pending invites
