@@ -1,7 +1,7 @@
 import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 
-const router = Router();
+export const router = Router();
 
 /**
  * Wikis (general)
@@ -9,11 +9,11 @@ const router = Router();
 router.route("/")
     .get(async(req, res) => {
 
-        if (!req.user) {
-            return res.status(401).json({error: "You must be logged in to perform this action."});
-        }
+        // if (!(req as any).user) {
+        //     return res.status(401).json({error: "You must be logged in to perform this action."});
+        // }
 
-        console.log(req.user);        
+        // console.log((req as any).user);        
 
     });
 
@@ -82,4 +82,4 @@ router.route("/:id/collaborators")
         
     })
 
-export default router;
+// export default router;

@@ -81,3 +81,5 @@ router
  * Wikis of user[id]
  */
 router.route("/:id/wikis").get(async (req, res) => {});
+
+// export default router;
