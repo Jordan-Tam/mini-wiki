@@ -52,8 +52,34 @@ function DeleteUserModal(props) {
                   currentUser.email,
                   password.value
                 );
+                const token = currentUser.accessToken;
+                const response = await fetch(
+                  `http://localhost:3000/users/${currentUser.uid}`,
+                  {
+                    method: "DELETE",
+                    headers: {
+                      Authorization: "Bearer " + token,
+                    },
+                  }
+                );
+                if (!response.ok) {
+                  console.log("Error adding account to database");
+                }
               } else {
                 await doDeleteUserSocial();
+                const token = currentUser.accessToken;
+                const response = await fetch(
+                  `http://localhost:3000/users/${currentUser.uid}`,
+                  {
+                    method: "DELETE",
+                    headers: {
+                      Authorization: "Bearer " + token,
+                    },
+                  }
+                );
+                if (!response.ok) {
+                  console.log("Error adding account to database");
+                }
               }
               alert("Account Deleted");
               setShowDeleteModal(false);
