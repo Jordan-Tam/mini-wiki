@@ -44,7 +44,7 @@ function SignIn() {
     <div className="container-fluid">
       <h1 className="mb-3" style={{fontWeight: "bold"}}>Login</h1>
       <form onSubmit={handleLogin}>
-        <div class="form-floating mb-3" style={{"width": "500px"}}>
+        <div className="form-floating mb-3" style={{"width": "500px"}}>
           <input
             className="form-control"
             placeholder="Email goes here"
@@ -55,7 +55,7 @@ function SignIn() {
           />
           <label htmlFor="email">Email</label>
         </div>
-        <div class="form-floating mb-3" style={{"width": "500px"}}>
+        <div className="form-floating mb-3" style={{"width": "500px"}}>
           <input
             className="form-control"
             placeholder="Password goes here"

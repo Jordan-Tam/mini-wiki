@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
-import { wikis } from "../config/mongoCollections.js";
+import { wikis } from "../config/mongoCollections.ts";
 import wikiDataFunctions from "./wikis.ts";
 import {
     checkString,
     checkId,
     checkUsername
-} from "../helpers.js";
+} from "../helpers.ts";
 
 const page_data_functions = {
 

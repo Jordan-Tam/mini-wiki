@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-const router = Router();
+export const router = Router();
 
 
 /**
@@ -76,5 +76,3 @@ router.route("/:id/wikis")
    .get(async (req,res) =>{
 
    })
-
-export default router;

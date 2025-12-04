@@ -20,11 +20,6 @@ async function Main(): Promise<any> {
   APP.use(cors());
 
   /**
-   * Routes
-   */
-  APP.use("/wiki", WikiRouter);
-
-  /**
    * Authentication Middleware
    * Every request needs a token, which is parsed and decoded to create the user object
    */
@@ -63,6 +58,11 @@ async function Main(): Promise<any> {
     }
     return res.json(response);
   });
+
+  /**
+   * Routes
+   */
+  APP.use("/wiki", WikiRouter);
 
   // Log if server boot worked
   const server = APP.listen(ServerConfig.port, (e) => {

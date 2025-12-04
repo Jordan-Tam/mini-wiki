@@ -1,12 +1,12 @@
 import { ObjectId } from "mongodb";
-import { users } from "../config/mongoCollections.js";
+import { users } from "../config/mongoCollections.ts";
 import {
     checkString,
     checkId,
     checkUsername,
     checkPassword,
     checkEmail
-} from "../helpers.js";
+} from "../helpers.ts";
 import bcrypt from 'bcryptjs' 
 let saltRounds = 10;
 

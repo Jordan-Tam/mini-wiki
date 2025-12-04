@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
-import { wikis } from "../config/mongoCollections.js";
+import { wikis } from "../config/mongoCollections.ts";
 import userDataFunctions from "./users.ts";
 import {
     checkString,
     checkId,
     checkAccess
-} from "../helpers.js";
+} from "../helpers.ts";
 
 const wiki_data_functions = {
 
@@ -32,20 +32,32 @@ const wiki_data_functions = {
 
     },
 
+    async getWikisByUser(
+        userId: string,
+        
+    ) {
+
+        return;
+
+    },
+
     async createWiki(
         name: string,
+        description: string,
         owner: string,
         access: string
     ) {
 
         // Input validation.
         name = checkString(name, "Wiki Name", "createWiki");
+        description = checkString(description, "Wiki Description", "createWiki");
         owner = checkId(owner, "Wiki Owner", "createWiki");
         access = checkAccess(access, "createWiki");
 
         // Create the new wiki object.
         let newWiki = {
             name,
+            description,
             owner,
             access,
             categories: ["UNCATEGORIZED"],
@@ -113,6 +125,12 @@ const wiki_data_functions = {
         updateInfo._id = updateInfo._id.toString();
 
         return updateInfo;
+
+    },
+
+    async changeWikiDescription(
+
+    ) {
 
     },
 

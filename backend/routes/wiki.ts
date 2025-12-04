@@ -1,39 +1,76 @@
 import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 
-const router = Router();
+export const router = Router();
 
-/**
- * Wikis (general)
- */
 router.route("/")
-    .get(async(req, res) => {
+
+    /**
+     * Returns every wiki where the user is an owner or collaborator.
+     */
+    .get(async (req: any, res: any) => {
+
+        if (!(req as any).user) {
+            return res.status(401).json({error: "/wiki: You must be logged in to perform this action."});
+        }
+
+        return res.json({wikis: await (wikiDataFunctions.getWikisByUser(req.user))});
+
+    })
+
+    /**
+     * Creates a wiki.
+     */
+    .post(async (req, res) => {
+
+        return;
+
+    })
+
+
+router.route("/:id")
+
+    /**
+     * Returns the wiki specified by "req.params.id".
+     */
+    .get(async(req: any, res) => {
 
         if (!req.user) {
             return res.status(401).json({error: "You must be logged in to perform this action."});
         }
 
-        console.log(req.user);        
+        let id = req.params.id;
 
-    });
+        let wiki: any = wikiDataFunctions.getWikiById(id);
 
-/**
- * Spesific wiki (by id)
- */
-router.route("/:id")
-    /**
-     * Get wiki by id
-     */
-    .get(async(req,res) => {
+        if (!(wiki.collaborators.includes(req.user))) {
+            return res.status(403).json({error: "You do not permission to access this resource."});
+        }
+
+        return;
 
     })
 
     /**
-     * Delete a wiki by id
+     * Edits the wiki specified by "req.params.id".
+     */
+    .patch(async (req, res) => {
+
+        return;
+
+    })
+
+    /**
+     * Deletes the wiki specified by "req.params.id".
      */
     .delete(async(req,res) => {
 
-    })
+        return;
+
+    });
+
+    
+//! IGNORE EVERYTHING BELOW THIS LINE
 
 /**
  * Spesific wiki (actions) By id
@@ -45,6 +82,8 @@ router.route("/:id/save")
      */
     .post(async(req,res) => {
 
+        return;
+
     })
 
 router.route("/:id/publish")
@@ -52,6 +91,8 @@ router.route("/:id/publish")
      * Publish changes publicly
      */
     .post(async(req,res) => {
+
+        return;
 
     })
 
@@ -64,6 +105,8 @@ router.route("/:id/collaborators")
      */
     .get(async (req,res) => {
 
+        return;
+
     })
 
     /**
@@ -72,6 +115,8 @@ router.route("/:id/collaborators")
      */
     .post(async(req,res) => {
 
+        return;
+
     })
 
     /**
@@ -79,7 +124,7 @@ router.route("/:id/collaborators")
      * (specify collaborator in body)
      */
     .delete(async(req,res) => {
+
+        return;
         
     })
-
-export default router;
