@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { wikis } from "../config/mongoCollections.js";
+import userDataFunctions from "./users.ts";
 import {
     checkString,
     checkId,
@@ -255,12 +256,35 @@ const wiki_data_functions = {
 
     },
 
+    async doesCategoryExist(
+        wikiId: string,
+        category: string
+    ) {
+
+        // Input validation.
+        wikiId = checkId(wikiId, "Wiki", "doesCategoryExist");
+        category = checkString(category, "Wiki Category", "doesCategoryExist");
+
+        let wiki = await this.getWikiById(wikiId);
+
+        return wiki.categories.includes(category);
+
+    },
+
     async addCollaborator(
         wikiId: string,
         userId: string
     ) {
 
-        // 
+        // Input validation.
+        wikiId = checkId(wikiId, "Wiki", "addCollaborator");
+        userId = checkId(userId, "User", "addCollaborator");
+
+        // Check if wiki exists.
+        await this.getWikiById(wikiId);
+
+        // Check if user exists.
+        await userDataFunctions.getUserById(userId);
 
     },
 

@@ -1,14 +1,21 @@
 import { Router } from "express";
+import wikiDataFunctions from "../data/wikis.ts";
 
-export const router = Router();
+const router = Router();
 
 /**
  * Wikis (general)
  */
 router.route("/")
-    .get(async(req,res) => {
+    .get(async(req, res) => {
 
-    })
+        if (!req.user) {
+            return res.status(401).json({error: "You must be logged in to perform this action."});
+        }
+
+        console.log(req.user);        
+
+    });
 
 /**
  * Spesific wiki (by id)
@@ -74,3 +81,5 @@ router.route("/:id/collaborators")
     .delete(async(req,res) => {
         
     })
+
+export default router;

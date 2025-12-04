@@ -1,13 +1,55 @@
-import TableEditor from "./TableEditor";
-import PingServer from "./PingServer";
+import { Link } from "react-router-dom";
+
+
 
 function Landing() {
   return (
     <>
-      <p>Landing</p>
-      <PingServer />
-	  <br/>
-      <TableEditor></TableEditor>
+      <h1 className=
+      "d-flex justify-content-center text-success fw-bold display-3 mt-5">
+      MINI WIKI
+      </h1>
+
+      <p className="d-flex justify-content-center text-center fst-italic">
+      Create personalized wikis about things that you are passionate about.
+      </p>
+
+      
+      <p className="d-flex justify-content-center ">Get Started Today!</p>
+      <br/>
+      <Link
+      className="btn btn-success d-block text-center mb-3"
+      to="/signin">
+      Login
+      </Link>
+
+      <Link
+        className="btn btn-success d-block text-center"
+        to="/signup">
+      Sign Up
+      </Link>
+
+      <br/>
+      <br/>
+      <br/>
+
+      <h3 className="d-flex justify-content-center text-center">How to use Mini Wiki?</h3>
+      
+      <ul className="text-center list-unstyled">
+        <li>Create your own wikis</li>
+        <li>Share wikis with your friends</li>
+        <li>Keep wikis private if you prefer</li>
+        <li>Chat about interesting wikis</li>
+        <li>Favorite the best wikis to access at any time</li>
+        <li>Filter wikis to find what you are looking for</li>
+        <li>View all wikis you created or have access to</li>
+      </ul>
+
+      <br/>
+      <p> When we finish up features we can possibly add demo pictures at the bottom of the landing page</p>
+
+
+
     </>
   );
 }

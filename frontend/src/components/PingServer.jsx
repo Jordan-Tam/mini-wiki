@@ -13,7 +13,7 @@ function PingServer() {
   const submit = async (event) => {
     setRes(null);
     try {
-      const response = await fetch("http://localhost:3000/api/ping", {
+      const response = await fetch("/api/api/ping", {
         method: "GET",
         headers: {
           Authorization: "Bearer " + token,
