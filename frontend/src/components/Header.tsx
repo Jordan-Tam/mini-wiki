@@ -5,6 +5,7 @@ import { useContext } from "react";
 
 function Header() {
   const { currentUser } = useContext(AuthContext);
+  console.log(currentUser);
   return (
     <>
       <nav className="navbar navbar-expand-sm navbar-dark bg-success mb-3">

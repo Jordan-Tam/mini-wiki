@@ -2,7 +2,6 @@ import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 
 export const router = Router();
-export const router = Router();
 
 router.route("/")
 
@@ -23,6 +22,21 @@ router.route("/")
      * Creates a wiki.
      */
     .post(async (req, res) => {
+
+        if (!(req as any).user) {
+            return res.status(401).json({error: "/wiki: You must be logged in to perform this action."});
+        }
+
+        console.log(req.body);
+        let {name, description, access} = req.body;
+
+        try {
+            await wikiDataFunctions.createWiki(
+                name, description, access, (req as any).user.uid
+            );
+        } catch (e) {
+            return res.status(500).json({error: e});
+        }
 
         return;
 

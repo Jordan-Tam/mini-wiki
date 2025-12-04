@@ -1,4 +1,4 @@
-import TableEditor from "./TableEditor";
+import TableEditor from "./editors/TableEditor";
 import PingServer from "./PingServer";
 import Article from "./Article";
 

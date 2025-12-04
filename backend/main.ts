@@ -2,7 +2,7 @@ import express from "express";
 import { Log } from "./log.ts";
 import cookieParser from "cookie-parser";
 import { ServerConfig } from "./config/config.ts";
-import { router as WikiRouter } from "./routes/wiki.ts";
+import { router as WikiRouter } from "./routes/wikis.ts";
 import { router as UserRouter } from "./routes/users.ts";
 import { Routes, SocketServer } from "./lib/ws/socket_server.ts";
 import { ChatSocket } from "./routes/socket/chat_router.ts";

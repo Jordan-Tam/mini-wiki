@@ -6,26 +6,48 @@ import SocialSignIn from "./SocialSignIn";
 import { Link } from "react-router-dom";
 
 function SignUp() {
+
   const { currentUser } = useContext(AuthContext);
-  const [pwMatch, setPwMatch] = useState("");
+
+  // Stateful form
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSignUp = async (e) => {
+
     e.preventDefault();
-    const { displayName, email, passwordOne, passwordTwo } = e.target.elements;
-    if (passwordOne.value !== passwordTwo.value) {
-      setPwMatch("Passwords do not match");
-      return false;
+    
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
     }
 
     try {
       await doCreateUserWithEmailAndPassword(
-        email.value,
-        passwordOne.value,
-        displayName.value
+        email,
+        password,
+        username
       );
-
-    } catch (error) {
-      alert(error);
+    
+    } catch (e) {
+      switch (e.code) {
+        case "auth/invalid-email":
+          setError("Invalid email.");
+          break;
+        case "auth/weak-password":
+          setError("Weak password.");
+          break;
+        case "auth/email-already-in-use":
+          setError("Email already in use.");
+          break;
+        default:
+          setError(`${e}`);
+      }
     }
   };
 
@@ -38,24 +60,28 @@ function SignUp() {
       <h1 className="mb-3" style={{ fontWeight: "bold" }}>
         Register
       </h1>
-      {pwMatch && <h4 className="error">{pwMatch}</h4>}
+      {error && <h4 className="error">{error}</h4>}
       <form onSubmit={handleSignUp}>
         <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"
-            placeholder="Name goes here"
-            id="displayName"
-            name="displayName"
+            placeholder="Username goes here"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            id="username"
+            name="username"
             type="text"
             autoFocus={true}
             required
           />
-          <label htmlFor="displayName">Username</label>
+          <label htmlFor="username">Username</label>
         </div>
         <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"
             placeholder="Email goes here"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             id="email"
             name="email"
             type="email"
@@ -67,6 +93,8 @@ function SignUp() {
           <input
             className="form-control"
             placeholder="Password goes here"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             id="passwordOne"
             name="passwordOne"
             type="password"
@@ -78,6 +106,8 @@ function SignUp() {
           <input
             className="form-control"
             placeholder="Confirm Password goes here"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             id="passwordTwo"
             name="passwordTwo"
             type="password"

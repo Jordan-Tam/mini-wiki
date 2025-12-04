@@ -2,7 +2,7 @@ import SignOutButton from "./SignOut";
 import ChangePassword from "./ChangePassword";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import DeleteUserModal from "./DeleteUserModal";
+import DeleteUserModal from "./modals/DeleteUserModal";
 
 function Profile() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);

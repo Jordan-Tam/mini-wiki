@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { wikis } from "../config/mongoCollections.ts";
+import { users, wikis } from "../config/mongoCollections.ts";
 import userDataFunctions from "./users.ts";
 import {
     checkString,
@@ -44,15 +44,19 @@ const wiki_data_functions = {
     async createWiki(
         name: string,
         description: string,
-        owner: string,
-        access: string
+        access: string,
+        owner: string
     ) {
 
         // Input validation.
         name = checkString(name, "Wiki Name", "createWiki");
         description = checkString(description, "Wiki Description", "createWiki");
-        owner = checkId(owner, "Wiki Owner", "createWiki");
         access = checkAccess(access, "createWiki");
+
+        // Check if user exists.
+        console.log("OWNER:");
+        console.log(owner);
+        await userDataFunctions.getUserByFirebaseUID(owner);
 
         // Create the new wiki object.
         let newWiki = {
@@ -73,6 +77,7 @@ const wiki_data_functions = {
             throw "Wiki could not be created.";
         }
 
+        console.log("WE DID IT!");
         return (await this.getWikiById(insertInfo.insertedId));
 
     },
@@ -291,24 +296,23 @@ const wiki_data_functions = {
 
     async addCollaborator(
         wikiId: string,
-        userId: string
+        userFirebaseUID: string
     ) {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "addCollaborator");
-        userId = checkId(userId, "User", "addCollaborator");
 
         // Check if wiki exists.
         await this.getWikiById(wikiId);
 
         // Check if user exists.
-        await userDataFunctions.getUserById(userId);
+        await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
 
     },
 
     async removeCollaborator(
         wikiId: string,
-        userId: string
+        userFirebaseUID: string
     ) {
 
     },

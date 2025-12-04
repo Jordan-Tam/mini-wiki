@@ -13,6 +13,7 @@ router.route("/").get(async (req, res) => {});
  * Register account using firebase
  */
 router.route("/registerFB").post(async (req, res) => {
+  console.log("Here!");
   let user = (req as any).user;
   let firebaseUID = user.user_id;
   let email = user.email;
