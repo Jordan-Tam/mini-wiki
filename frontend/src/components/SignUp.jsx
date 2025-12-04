@@ -6,7 +6,6 @@ import SocialSignIn from "./SocialSignIn";
 import { Link } from "react-router-dom";
 
 function SignUp() {
-
   const { currentUser } = useContext(AuthContext);
   const [pwMatch, setPwMatch] = useState("");
 
@@ -24,6 +23,7 @@ function SignUp() {
         passwordOne.value,
         displayName.value
       );
+
     } catch (error) {
       alert(error);
     }
@@ -35,10 +35,12 @@ function SignUp() {
 
   return (
     <div className="container-fluid">
-      <h1 className="mb-3" style={{fontWeight: "bold"}}>Register</h1>
+      <h1 className="mb-3" style={{ fontWeight: "bold" }}>
+        Register
+      </h1>
       {pwMatch && <h4 className="error">{pwMatch}</h4>}
       <form onSubmit={handleSignUp}>
-        <div class="form-floating mb-3" style={{"width": "500px"}}>
+        <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"
             placeholder="Name goes here"
@@ -50,7 +52,7 @@ function SignUp() {
           />
           <label htmlFor="displayName">Username</label>
         </div>
-        <div class="form-floating mb-3" style={{"width": "500px"}}>
+        <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"
             placeholder="Email goes here"
@@ -61,7 +63,7 @@ function SignUp() {
           />
           <label htmlFor="email">Email</label>
         </div>
-        <div class="form-floating mb-3" style={{"width": "500px"}}>
+        <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"
             placeholder="Password goes here"
@@ -72,7 +74,7 @@ function SignUp() {
           />
           <label htmlFor="passwordOne">Password</label>
         </div>
-        <div class="form-floating mb-3" style={{"width": "500px"}}>
+        <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"
             placeholder="Confirm Password goes here"
@@ -83,7 +85,9 @@ function SignUp() {
           />
           <label htmlFor="passwordTwo">Confirm Password</label>
         </div>
-        <button type="submit" className="btn btn-primary">Register</button>
+        <button type="submit" className="btn btn-primary">
+          Register
+        </button>
       </form>
       <br />
       <h5>Or sign up with an external account:</h5>

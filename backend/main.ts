@@ -3,6 +3,7 @@ import { Log } from "./log.ts";
 import cookieParser from "cookie-parser";
 import { ServerConfig } from "./config/config.ts";
 import { router as WikiRouter } from "./routes/wiki.ts";
+import { router as UserRouter } from "./routes/users.ts";
 import { Routes, SocketServer } from "./lib/ws/socket_server.ts";
 import { ChatSocket } from "./routes/socket/chat_router.ts";
 import cors from "cors";
@@ -18,11 +19,6 @@ async function Main(): Promise<any> {
   APP.use(express.urlencoded({ extended: true }));
   APP.use(cookieParser());
   APP.use(cors());
-
-  /**
-   * Routes
-   */
-  APP.use("/wiki", WikiRouter);
 
   /**
    * Authentication Middleware
@@ -42,13 +38,19 @@ async function Main(): Promise<any> {
       const decodeValue = await admin.auth().verifyIdToken(token);
       console.log(decodeValue);
       if (decodeValue) {
-        (req as any).user = decodeValue;  //This is essentially req.session.user from 546
+        (req as any).user = decodeValue; //This is essentially req.session.user from 546
       }
       return next();
     } catch (e) {
       return res.status(500).json({ message: "Internal Error" });
     }
   });
+
+  /**
+   * Routes
+   */
+  APP.use("/wiki", WikiRouter);
+  APP.use("/users", UserRouter);
 
   APP.get("/api/ping", (req, res) => {
     let response;
@@ -83,5 +85,8 @@ async function Main(): Promise<any> {
   };
   await SocketServer(server, socket_routes);
 }
+
+
+
 
 Main();
