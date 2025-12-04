@@ -20,7 +20,7 @@ function PingServer() {
         },
       });
       if (!response.ok) {
-        console.log(response.status + "Error");
+        console.log(response.status + " Error");
         return
       }
       const result = await response.json();

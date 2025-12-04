@@ -2,6 +2,7 @@ import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 
 export const router = Router();
+export const router = Router();
 
 router.route("/")
 
