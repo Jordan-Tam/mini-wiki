@@ -29,16 +29,35 @@ function Header() {
 
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav">
-              <li className="nav-item px-2">
-                <Link className="nav-link" to="/profile">
-                  Profile
-                </Link>
-              </li>
-              <li className="nav-item px-2">
-                <Link className="nav-link" to="/">
-                  Browse
-                </Link>
-              </li>
+              {currentUser && <>
+                <li className="nav-item px-2">
+                  <Link className="nav-link" to="/profile">
+                    Profile
+                  </Link>
+                </li>
+                <li className="nav-item px-2">
+                  <Link className="nav-link" to="/">
+                    Browse
+                  </Link>
+                </li>
+                <li className="nav-item px-2">
+                  <Link className="nav-link" to="/">
+                    Create
+                  </Link>
+                </li>
+              </>}
+              {!currentUser && <>
+                <li className="nav-item px-2">
+                  <Link className="nav-link" to="/signup">
+                    Register
+                  </Link>
+                </li>
+                <li className="nav-item px-2">
+                  <Link className="nav-link" to="/signin">
+                    Login
+                  </Link>
+                </li>
+              </>}
               <li className="nav-item px-2">
                 <Link className="nav-link" to="/testing">
                   Testing

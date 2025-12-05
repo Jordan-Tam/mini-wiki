@@ -1,12 +1,12 @@
 import { useState, useContext, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import CreateWikiModal from "./modals/CreateWikiModal.jsx";
 
 function Home() {
 
-	const {currentUser} = useContext(AuthContext);
-
 	// Auth
+	const {currentUser} = useContext(AuthContext);
 	const [token, setToken] = useState(
 		currentUser ? currentUser.accessToken : ""
 	);
@@ -30,9 +30,7 @@ function Home() {
 				const result = await response.json();
 				setWikisData(result.wikis);
 				setLoading(false);
-				console.log(result);
 			} catch (e) {
-				console.log(e);
 				setLoading(false);
 				return;
 			}
@@ -66,20 +64,53 @@ function Home() {
 		);
 	} else {
 		return (
+			<>
+			<div class="row">
+				<div class="ms-3 col-2">
+					<div id="list-example" class="list-group">
+					<a class="list-group-item list-group-item-action" href="#list-item-1">Item 1</a>
+					<a class="list-group-item list-group-item-action" href="#list-item-2">Item 2</a>
+					<a class="list-group-item list-group-item-action" href="#list-item-3">Item 3</a>
+					<a class="list-group-item list-group-item-action" href="#list-item-4">Item 4</a>
+					</div>
+				</div>
+				<div class="col-8">
+					<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+						{wikisData && wikisData.map((wiki) => {
+							return (
+								<Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
+									<div className="card mb-3">
+										<div className="card-body">
+											<h3 className="card-title">
+												{wiki.name}
+											</h3>
+											<p className="card-text">
+												{wiki.description}
+											</p>
+										</div>
+									</div>
+								</Link>
+							);
+						})}
+					</div>
+				</div>
+			</div>
 			<div className="container-fluid">
 				<button className="btn btn-secondary mb-3" onClick={handleOpenCreateWikiModal}>Create Wiki</button>
 				{wikisData && wikisData.map((wiki) => {
 					return (
-					<div className="card mb-3">
-						<div className="card-body">
-							<h3 className="card-title">
-								{wiki.name}
-							</h3>
-							<p className="card-text">
-								{wiki.description}
-							</p>
-						</div>
-					</div>
+						<Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
+							<div className="card mb-3">
+								<div className="card-body">
+									<h3 className="card-title">
+										{wiki.name}
+									</h3>
+									<p className="card-text">
+										{wiki.description}
+									</p>
+								</div>
+							</div>
+						</Link>
 					);
 				})}
                 {showCreateWikiModal && (
@@ -90,6 +121,7 @@ function Home() {
                     />
                 )}
 			</div>
+			</>
 		)
 	}
 }

@@ -61,7 +61,7 @@ router.route("/:id")
             return res.status(403).json({error: "You do not permission to access this resource."});
         }
 
-        return;
+        return wiki;
 
     })
 
