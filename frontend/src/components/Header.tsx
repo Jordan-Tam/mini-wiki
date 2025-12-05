@@ -36,7 +36,7 @@ function Header() {
                   </Link>
                 </li>
                 <li className="nav-item px-2">
-                  <Link className="nav-link" to="/">
+                  <Link className="nav-link" to="/browse">
                     Browse
                   </Link>
                 </li>

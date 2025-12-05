@@ -15,8 +15,9 @@ type User = {
     firebaseUID?: string;
     displayName?: string,
     wikis: string[];
-    wikis_given_access: string[]; //not a string, needs to be updated
-}
+    wikis_given_access: string[]; 
+    favorites: string[];
+  }
 const user_data_functions = {
   async createUser(
     email: string,
@@ -35,6 +36,7 @@ const user_data_functions = {
         email,
         wikis: [],
         wikis_given_access: [], //array of {wiki_id: string, permission: bool}
+        favorites: []
       };
     } else if (firebaseUID && !username) {
       newUser = {
@@ -43,6 +45,7 @@ const user_data_functions = {
         firebaseUID,
         wikis: [],
         wikis_given_access: [],
+        favorites: []
       };
     } else {
       throw "unexpected input";
