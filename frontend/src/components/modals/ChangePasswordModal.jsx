@@ -110,6 +110,12 @@ function ChangePasswordModal(props) {
           </button>
         </form>
         <br />
+        <button
+          className="button cancel-button"
+          onClick={handleCloseChangePasswordModal}
+        >
+          Cancel
+        </button>
       </ReactModal>
     </div>
   );
