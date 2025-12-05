@@ -31,6 +31,7 @@ function CreateWikiModal(props) {
     const [description, setDescription] = useState("");
     const [access, setAccess] = useState(true);
     const [error, setError] = useState("");
+    const [disableSubmit, setDisableSubmit] = useState(false);
     
     // Submit form function
     const submitForm = async (e) => {
@@ -44,13 +45,8 @@ function CreateWikiModal(props) {
 
         }
 
-        // Make the POST request.
-        console.log({
-                    name,
-                    description,
-                    access: access ? "public" : "private"
-                });
         try {
+            setDisableSubmit(true);
             let response = await fetch("/api/wiki", {
                 method: "POST",
                 headers: {
@@ -64,9 +60,13 @@ function CreateWikiModal(props) {
                 })
             });
             if (!response.ok) {
+                setDisableSubmit(false);
                 throw response.statusText;
             }
+            const result = await response.json();
+            props.setWikisData(prev => [...prev, result])
         } catch (e) {
+            setDisableSubmit(false);
             setError(`${e}`);
             return;
         }
@@ -116,6 +116,7 @@ function CreateWikiModal(props) {
                             name="name"
                             value={name}
                             onChange={e => setName(e.target.value)}
+                            disabled={disableSubmit}
                             required
                         />
                         <label htmlFor="name">Name</label>
@@ -130,6 +131,7 @@ function CreateWikiModal(props) {
                             name="description"
                             value={description}
                             onChange={e => setDescription(e.target.value)}
+                            disabled={disableSubmit}
                             required
                         />
                         <label htmlFor="description">Description</label>
@@ -143,6 +145,7 @@ function CreateWikiModal(props) {
                             name="public"
                             checked={access}
                             onChange={() => setAccess(true)}
+                            disabled={disableSubmit}
                         />
                         <label className="form-check-label" htmlFor="public">
                             Public
@@ -156,12 +159,13 @@ function CreateWikiModal(props) {
                             name="public"
                             checked={!access}
                             onChange={() => setAccess(false)}
+                            disabled={disableSubmit}
                         />
                         <label className="form-check-label" htmlFor="public">
                             Private
                         </label>
                     </div>
-                    <button className="btn btn-primary mt-3" type="submit">
+                    <button className="btn btn-primary mt-3" type="submit" disabled={disableSubmit}>
                         Create Wiki
                     </button>
                 </form>
@@ -172,15 +176,3 @@ function CreateWikiModal(props) {
 }
 
 export default CreateWikiModal;
-
-/**
- * 
-            name,
-            description,
-            owner,
-            access,
-            categories: ["UNCATEGORIZED"],
-            collaborators: [],
-            pages: []
- * 
- */

@@ -5,6 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
 
 function Profile() {
+
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 
   const { currentUser } = useContext(AuthContext);
@@ -18,7 +19,7 @@ function Profile() {
   };
 
   return (
-    <div>
+    <div className="container-fluid">
       <h2>{currentUser.displayName}'s Account Page</h2>
       {currentUser && currentUser.providerData[0].providerId === "password" && (
         <ChangePassword />

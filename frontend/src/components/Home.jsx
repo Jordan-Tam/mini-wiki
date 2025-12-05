@@ -13,7 +13,7 @@ function Home() {
 
 	// Fetch
 	const [loading, setLoading] = useState(true);
-	const [data, setData] = useState(true);
+	const [wikisData, setWikisData] = useState(undefined);
 
 	// Modal
 	const [showCreateWikiModal, setShowCreateWikiModal] = useState(false);
@@ -28,8 +28,9 @@ function Home() {
 					}
 				});
 				const result = await response.json();
-				setData(result);
+				setWikisData(result.wikis);
 				setLoading(false);
+				console.log(result);
 			} catch (e) {
 				console.log(e);
 				setLoading(false);
@@ -53,26 +54,30 @@ function Home() {
 
 	if (loading) {
 		return (
-			<h1>Loading...</h1>
+			<div className="container-fluid">
+				<h1>Loading...</h1>
+			</div>
 		);
-	} else if (!data) {
+	} else if (!wikisData) {
 		return (
-			<h1>Error</h1>
+			<div className="container-fluid">
+				<h1>Error</h1>
+			</div>
 		);
 	} else {
 		return (
 			<div className="container-fluid">
-				<button onClick={handleOpenCreateWikiModal}>Create Wiki</button>
-				{data.wikis && data.wikis.map((wiki) => {
+				<button className="btn btn-secondary mb-3" onClick={handleOpenCreateWikiModal}>Create Wiki</button>
+				{wikisData && wikisData.map((wiki) => {
 					return (
-					<div className="col">
-						<div className="card">
-						<p className="card-title">
-							{wiki.name}
-						</p>
-						<p className="card-text">
-							{wiki.description}
-						</p>
+					<div className="card mb-3">
+						<div className="card-body">
+							<h3 className="card-title">
+								{wiki.name}
+							</h3>
+							<p className="card-text">
+								{wiki.description}
+							</p>
 						</div>
 					</div>
 					);
@@ -81,21 +86,12 @@ function Home() {
                     <CreateWikiModal
                         isOpen={showCreateWikiModal}
                         handleClose={handleCloseModals}
+						setWikisData={setWikisData}
                     />
                 )}
 			</div>
 		)
 	}
-
-  /* return (
-    <>
-      <p>Welcome to Mini Wiki, {currentUser.displayName}!</p>
-      <p>
-        ik theres a bug with the display name not loading when you first sign up
-        with email... working on it - Owen
-      </p>
-    </>
-  ); */
 }
 
 export default Home;

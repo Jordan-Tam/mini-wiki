@@ -9,6 +9,16 @@ import {
 
 const wiki_data_functions = {
 
+    async getAllWikis() {
+        
+        const wikisCollection = await wikis();
+
+        const wikisList = await wikisCollection.find({}).toArray();
+
+        return wikisList;
+
+    },
+
     async getWikiById(
         id: string
     ) {
@@ -33,11 +43,12 @@ const wiki_data_functions = {
     },
 
     async getWikisByUser(
-        userId: string,
-        
+        userFirebaseUID: string,
     ) {
 
-        return;
+        let wikisList = await this.getAllWikis();
+
+        return wikisList.filter((wiki: any) => wiki.owner === userFirebaseUID || wiki.collaborators.includes(userFirebaseUID));
 
     },
 
@@ -54,8 +65,6 @@ const wiki_data_functions = {
         access = checkAccess(access, "createWiki");
 
         // Check if user exists.
-        console.log("OWNER:");
-        console.log(owner);
         await userDataFunctions.getUserByFirebaseUID(owner);
 
         // Create the new wiki object.
@@ -77,8 +86,7 @@ const wiki_data_functions = {
             throw "Wiki could not be created.";
         }
 
-        console.log("WE DID IT!");
-        return (await this.getWikiById(insertInfo.insertedId));
+        return (await this.getWikiById(insertInfo.insertedId.toString()));
 
     },
 
