@@ -147,6 +147,53 @@ router
 		}
 	});
 
+router
+	.route("/:id/pages/:pageId")
+	/**
+	 * Gets a specific page by ID
+	 */
+	.get(async (req: any, res) => {
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		try {
+			const page = await pageDataFunctions.getPageById(
+				req.params.id,
+				req.params.pageId
+			);
+			return res.json(page);
+		} catch (e) {
+			return res.status(500).json({ error: e });
+		}
+	});
+
+router
+	.route("/:id/pages/:pageId/content")
+	/**
+	 * Updates page content
+	 */
+	.post(async (req: any, res) => {
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		try {
+			const updatedPage = await pageDataFunctions.changePageContent(
+				req.params.id,
+				req.params.pageId,
+				req.body.content
+			);
+			return res.json(updatedPage);
+		} catch (e) {
+			return res.status(500).json({ error: e });
+		}
+	});
+
 //! IGNORE EVERYTHING BELOW THIS LINE
 
 /**

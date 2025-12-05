@@ -1,16 +1,18 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext.jsx";
 
 type ArticleProps = {
-	markdown: string[];
+	markdown?: string[];
 	title?: string;
 	onEdit?: () => void;
 	editHref?: string; // path to append to current URL (e.g., "/edit")
 	className?: string;
+	fetchFromUrl?: boolean; // if true, fetch page from URL params
 };
 
 // Memoize plugin arrays and component config to prevent re-creation on each render
@@ -18,23 +20,64 @@ type ArticleProps = {
 const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeRaw, rehypeSanitize];
 const MARKDOWN_COMPONENTS = {
-	a: (props: React.ComponentPropsWithoutRef<"a">) => (
-		<a {...props} target="_blank" rel="noopener noreferrer" />
-	),
+	a: (props: React.ComponentPropsWithoutRef<"a">) => {
+		const { href, children, ...rest } = props;
+		// Use Link for relative URLs, regular <a> for absolute URLs
+		if (href?.startsWith("/")) {
+			return (
+				<Link to={href} {...rest}>
+					{children}
+				</Link>
+			);
+		}
+		return <a {...props} target="_blank" rel="noopener noreferrer" />;
+	},
 	img: (props: React.ComponentPropsWithoutRef<"img">) => (
 		<img {...props} alt={props.alt ?? ""} />
 	),
 	pre: (props: React.ComponentPropsWithoutRef<"pre">) => <pre {...props} />,
 	code: (props: React.ComponentPropsWithoutRef<"code">) => <code {...props} />
 };
+
 const Article: React.FC<ArticleProps> = ({
 	markdown,
 	title,
 	onEdit,
 	editHref,
-	className
+	className,
+	fetchFromUrl = false
 }) => {
 	const location = useLocation();
+	const { wikiId, pageId } = useParams();
+	const { currentUser } = useContext(AuthContext);
+	const [fetchedPage, setFetchedPage] = useState(null);
+	const [loading, setLoading] = useState(fetchFromUrl);
+	const [error, setError] = useState(null);
+
+	useEffect(() => {
+		if (!fetchFromUrl) return;
+
+		const fetchPage = async () => {
+			try {
+				const response = await fetch(`/api/wiki/${wikiId}/pages/${pageId}`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+
+				if (!response.ok) throw new Error("Failed to fetch page");
+				const data = await response.json();
+				setFetchedPage(data);
+			} catch (err) {
+				setError((err as Error).message);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		if (wikiId && pageId && currentUser) fetchPage();
+	}, [wikiId, pageId, currentUser, fetchFromUrl]);
 
 	// Memoize the edit button to prevent re-rendering if dependencies don't change
 	const editButton = useMemo(() => {
@@ -56,20 +99,28 @@ const Article: React.FC<ArticleProps> = ({
 		);
 	}, [onEdit, editHref, location.pathname]);
 
+	if (fetchFromUrl && loading) return <p>Loading...</p>;
+	if (fetchFromUrl && error) return <p>Error: {error}</p>;
+
+	const displayMarkdown = fetchFromUrl
+		? fetchedPage?.content || []
+		: markdown || [];
+	const displayTitle = fetchFromUrl ? fetchedPage?.name : title;
+
 	return (
 		<article className={className}>
 			<div>
-				<h1>{title ?? "Article"}</h1>
+				<h1>{displayTitle ?? "Article"}</h1>
 				{editButton}
 			</div>
 
 			<div>
-				{markdown.length === 0 ? (
+				{displayMarkdown.length === 0 ? (
 					<p>
 						<em>No content</em>
 					</p>
 				) : (
-					markdown.map((content, index) => (
+					displayMarkdown.map((content, index) => (
 						<ReactMarkdown
 							key={index}
 							remarkPlugins={REMARK_PLUGINS}

@@ -1,150 +1,136 @@
 import { ObjectId } from "mongodb";
 import { wikis } from "../config/mongoCollections.ts";
 import wikiDataFunctions from "./wikis.ts";
-import {
-    checkString,
-    checkId,
-    checkUsername
-} from "../helpers.ts";
+import { checkString, checkId, checkUsername } from "../helpers.ts";
 
 const page_data_functions = {
+	async getPageById(wikiId: string, pageId: string) {
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki", "getPageById");
+		pageId = checkId(pageId, "Page", "getPageById");
 
-    async getPageById(
-        wikiId: string,
-        pageId: string
-    ) {
+		let wiki = await wikiDataFunctions.getWikiById(wikiId);
 
-        // Input validation.
-        wikiId = checkId(wikiId, "Wiki", "getPageById");
-        pageId = checkId(pageId, "Page", "getPageById");
+		for (let page of wiki.pages) {
+			if (page._id.toString() === pageId.toString()) {
+				return page;
+			}
+		}
 
-        let wiki = await wikiDataFunctions.getWikiById(wikiId);
+		throw "Page not found.";
+	},
 
-        for (let page of wiki.pages) {
-            if (page._id.toString() === pageId.toString()) {
-                return page;
-            }
-        }
+	async getPageByUrl() {},
 
-        throw "Page not found.";
+	async getPagesByCategory(wikiId: string, category: string) {
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki", "createPage");
+		category = checkString(category, "Wiki Category", "getPagesByCategory");
 
-    },
+		await wikiDataFunctions.doesCategoryExist(wikiId, category);
 
-    async getPageByUrl(
+		let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
-    ) {
+		let returnedPages = [];
 
-    },
+		for (let page of wiki.pages) {
+			if (page.category === category) {
+				returnedPages.push(page);
+			}
+		}
 
-    async getPagesByCategory(
-        wikiId: string,
-        category: string
-    ) {
+		return returnedPages;
+	},
 
-        // Input validation.
-        wikiId = checkId(wikiId, "Wiki", "createPage");
-        category = checkString(category, "Wiki Category", "getPagesByCategory");
+	async createPage(wikiId: string, name: string, category: string) {
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki", "createPage");
+		name = checkString(name, "Page Name", "createPage");
+		category = checkString(category, "Wiki Category", "createPage");
 
-        await wikiDataFunctions.doesCategoryExist(wikiId, category);
+		// Create the new page object.
+		const newPage = {
+			_id: new ObjectId(),
+			name,
+			url: name, //TODO: Remove all forbidden characters and turn spaces into underscores
+			category,
+			content: []
+		};
 
-        let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
+		const wikisCollection = await wikis();
 
-        let returnedPages = [];
+		let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
-        for (let page of wiki.pages) {
-            if (page.category === category) {
-                returnedPages.push(page);
-            }
-        }
+		// Make sure the page name is unique within its category.
+		for (let page of wiki.pages) {
+			if (page.name === name) {
+				throw "Page name must be unique within its category.";
+			}
+		}
 
-        return returnedPages;
+		const insertPageToWikiInfo = await wikisCollection.findOneAndUpdate(
+			{ _id: new ObjectId(wikiId) },
+			{ $push: { pages: newPage } },
+			{ returnDocument: "after" }
+		);
 
-    },
+		if (!insertPageToWikiInfo) {
+			throw "Page could not be created.";
+		}
 
-    async createPage(
-        wikiId: string,
-        name: string,
-        category: string
-    ) {
+		return newPage;
+	},
 
-        // Input validation.
-        wikiId = checkId(wikiId, "Wiki", "createPage");
-        name = checkString(name, "Page Name", "createPage");
-        category = checkString(category, "Wiki Category", "createPage");
+	async deletePage(wikiId: string, pageId: string) {},
 
-        // Create the new page object.
-        const newPage = {
-            _id: new ObjectId(),
-            name,
-            url: name, //TODO: Remove all forbidden characters and turn spaces into underscores
-            category,
-            content: []
-        };
+	async changePageName(wikiId: string, pageId: string, newName: string) {},
 
-        const wikisCollection = await wikis();
+	async changePageContent(
+		wikiId: string,
+		pageId: string,
+		newContent: string[]
+	) {
+		/**
+		 * Creates the contnet of a given page in a wiki. NOTE: IS USED IN INITIAL PAGE CREATION
+		 */
 
-        let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki", "changePageContent");
+		pageId = checkId(pageId, "Page", "changePageContent");
 
-        // Make sure the page name is unique within its category.
-        for (let page of wiki.pages) {
-            if (page.name === name) {
-                throw "Page name must be unique within its category.";
-            }
-        }
+		const wikisCollection = await wikis();
 
-        const insertPageToWikiInfo = await wikisCollection.findOneAndUpdate(
-            {_id: new ObjectId(wikiId)},
-            {$push: {pages: newPage}},
-            {returnDocument: "after"}
-        );
+		const updateInfo = await wikisCollection.findOneAndUpdate(
+			{
+				_id: new ObjectId(wikiId),
+				"pages._id": new ObjectId(pageId)
+			},
+			{
+				$set: {
+					"pages.$.content": newContent
+				}
+			},
+			{ returnDocument: "after" }
+		);
 
-        if (!insertPageToWikiInfo) {
-            throw "Page could not be created.";
-        }
+		if (!updateInfo) {
+			throw "Page could not be updated.";
+		}
 
-        return newPage;
+		return await this.getPageById(wikiId, pageId);
+	},
 
-    },
-
-    async deletePage(
-        wikiId: string,
-        pageId: string
-    ) {
-        
-    },
-
-    async changePageName(
-        wikiId: string,
-        pageId: string,
-        newName: string
-    ) {
-
-    },
-
-    async changePageContent(
-        wikiId: string,
-        pageId: string,
-        newContent: string[]
-    ) {
-        
-    },
-
-    async changePageCategory(
-        wikiId: string,
-        pageId: string,
-        newCategory: string
-    ) {
-
-        // Input validation.
-        wikiId = checkId(wikiId, "Wiki", "changePageCategory");
-        pageId = checkId(pageId, "Page", "changePageCategory");
-        newCategory = checkString(newCategory, "Category", "changePageCategory");
-        await wikiDataFunctions.doesCategoryExist(wikiId, newCategory);
-
-
-
-    },
-
+	async changePageCategory(
+		wikiId: string,
+		pageId: string,
+		newCategory: string
+	) {
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki", "changePageCategory");
+		pageId = checkId(pageId, "Page", "changePageCategory");
+		newCategory = checkString(newCategory, "Category", "changePageCategory");
+		await wikiDataFunctions.doesCategoryExist(wikiId, newCategory);
+	}
 };
 
 export default page_data_functions;
