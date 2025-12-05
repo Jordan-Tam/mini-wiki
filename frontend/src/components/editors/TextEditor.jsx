@@ -59,9 +59,11 @@ function TextEditor({ onChange, defaultValue = "Text", showPreview = true }) {
 					}}
 				></textarea>
 			</div>
-			<div className="previewArea">
-				<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
-			</div>
+			{showPreview && (
+				<div className="previewArea">
+					<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
+				</div>
+			)}
 		</div>
 	);
 }
