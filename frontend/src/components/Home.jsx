@@ -66,16 +66,20 @@ function Home() {
 		return (
 			<>
 			<div class="row">
-				<div class="ms-3 col-2">
+				<div class="ms-3 col-3">
 					<div id="list-example" class="list-group">
-					<a class="list-group-item list-group-item-action" href="#list-item-1">Item 1</a>
-					<a class="list-group-item list-group-item-action" href="#list-item-2">Item 2</a>
-					<a class="list-group-item list-group-item-action" href="#list-item-3">Item 3</a>
-					<a class="list-group-item list-group-item-action" href="#list-item-4">Item 4</a>
+					<a class="list-group-item list-group-item-action" href="#favorited">Favorited</a>
+					<a class="list-group-item list-group-item-action" href="#owned">Owned</a>
+					<a class="list-group-item list-group-item-action" href="#collaborator">Collaborator</a>
+					<a class="list-group-item list-group-item-action" href="#viewer">Viewer</a>
+					<a class="list-group-item list-group-item-action" href="#following">Following</a>
 					</div>
 				</div>
 				<div class="col-8">
-					<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabindex="0">
+					<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabIndex="0" sdsd="s">
+						<h4 id="favorited">FAVORITED</h4>
+						<p>...</p>
+						<h4 id="owner">OWNER</h4>
 						{wikisData && wikisData.map((wiki) => {
 							return (
 								<Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
@@ -92,6 +96,12 @@ function Home() {
 								</Link>
 							);
 						})}
+						<h4 id="collaborator">COLLABORATOR</h4>
+						<p>...</p>
+						<h4 id="viewer">PRIVATE VIEWER</h4>
+						<p>...</p>
+						<h4 id="following">FOLLOWING</h4>
+						<p>...</p>
 					</div>
 				</div>
 			</div>
