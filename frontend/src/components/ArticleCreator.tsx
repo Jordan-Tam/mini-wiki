@@ -11,6 +11,7 @@ interface EditorItem {
 }
 
 function ArticleCreator() {
+	const [articleName, setArticleName] = useState<string>("");
 	const [editors, setEditors] = useState<EditorItem[]>([]);
 	const [nextId, setNextId] = useState(0);
 
@@ -69,17 +70,31 @@ function ArticleCreator() {
 		const markdownArray: string[] = editors.map((editor) => editor.content);
 		// This is where we gonna pass it to backend or something
 		// Right now just alerting/logging to be able to see the result and return it
+		console.log("Article Name:", articleName);
 		console.log("Markdown content from all editors:", markdownArray);
 		const tempString: string =
-			"Markdown content from all editors:" + markdownArray;
+			"Article Name: " +
+			articleName +
+			"\nMarkdown content from all editors: " +
+			markdownArray;
 		alert(tempString);
-		return markdownArray;
+		return { name: articleName, content: markdownArray };
 	};
 
 	return (
 		<div className="article-creator">
 			<div className="article-creator-header">
 				<h2>Create New Article</h2>
+				<div className="article-name-input">
+					<input
+						type="text"
+						placeholder="Article Name"
+						value={articleName}
+						onChange={(e) => setArticleName(e.target.value)}
+						className="article-name-field"
+						required
+					/>
+				</div>
 				<div className="add-editor-buttons">
 					<button onClick={addTextEditor} className="btn-add-text">
 						+ Add Text Editor
