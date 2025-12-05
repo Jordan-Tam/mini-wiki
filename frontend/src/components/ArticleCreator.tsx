@@ -138,7 +138,7 @@ function ArticleCreator() {
 										onChange={(content: string) =>
 											updateEditorContent(editor.id, content)
 										}
-										showPreview={false}
+										showPreview={true}
 									/>
 								) : (
 									<TableEditor
@@ -146,7 +146,7 @@ function ArticleCreator() {
 										onChange={(content: string) =>
 											updateEditorContent(editor.id, content)
 										}
-										showPreview={false}
+										showPreview={true}
 									/>
 								)}
 							</div>
