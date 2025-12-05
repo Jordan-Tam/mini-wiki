@@ -1,9 +1,15 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import rehypeSanitize from "rehype-sanitize";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
-function TextEditor() {
-	const [text, setText] = useState("Text");
+function TextEditor({
+	onChange,
+	defaultValue = "Text",
+	showPreview = true,
+	inputId
+}) {
+	const textareaId = inputId;
+	const [text, setText] = useState(defaultValue);
 	// https://react.dev/learn/manipulating-the-dom-with-refs
 	const textareaRef = useRef(null);
 	// Add for security per the github
@@ -23,6 +29,7 @@ function TextEditor() {
 			text.substring(end);
 		// Set the text of the text area to updated
 		setText(newText);
+		if (onChange) onChange(newText);
 		// Reset cursor position
 		setTimeout(() => {
 			textarea.focus();
@@ -48,16 +55,21 @@ function TextEditor() {
 				<textarea
 					ref={textareaRef}
 					name="userTextArea"
-					id="userInputArea"
+					id={textareaId}
 					value={text}
 					rows="10"
 					cols="20"
-					onChange={(e) => setText(e.target.value)}
+					onChange={(e) => {
+						setText(e.target.value);
+						if (onChange) onChange(e.target.value);
+					}}
 				></textarea>
 			</div>
-			<div className="previewArea">
-				<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
-			</div>
+			{showPreview && (
+				<div className="previewArea">
+					<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
+				</div>
+			)}
 		</div>
 	);
 }

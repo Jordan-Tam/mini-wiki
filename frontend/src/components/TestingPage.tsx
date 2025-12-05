@@ -1,4 +1,6 @@
 import TableEditor from "./editors/TableEditor";
+import TextEditor from "./editors/TextEditor";
+import ArticleCreator from "./ArticleCreator";
 import PingServer from "./PingServer";
 import Article from "./Article";
 
@@ -8,6 +10,7 @@ function TestingPage() {
 			<p>TESTING PAGE FOR COMPONENTS</p>
 			<PingServer />
 			<br />
+			<TextEditor></TextEditor>
 			<TableEditor></TableEditor>
 			<br />
 			<hr />
@@ -25,6 +28,12 @@ function TestingPage() {
 				editHref="/edit"
 				className="article-test-container"
 			/>
+			<br />
+			<br />
+			<br />
+			<br />
+			<br />
+			<ArticleCreator></ArticleCreator>
 		</>
 	);
 }

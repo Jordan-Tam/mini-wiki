@@ -7,13 +7,27 @@ interface CellPosition {
 	colIndex: number;
 	offsetInCell: number;
 }
+interface TableEditorProps {
+	onChange?: (value: string) => void;
+	defaultValue?: string;
+	showPreview?: boolean;
+	inputId?: string;
+}
 
-function TableEditor() {
-	const initialTable = `| Header 1 | Header 2 | Header 3 |
+function TableEditor({
+	onChange,
+	defaultValue,
+	showPreview = true,
+	inputId
+}: TableEditorProps) {
+	const initialTable =
+		defaultValue ||
+		`| Header 1 | Header 2 | Header 3 |
 |----------|----------|----------|
 | Cell 1   | Cell 2   | Cell 3   |
 | Cell 4   | Cell 5   | Cell 6   |`;
 
+	const textareaId = inputId;
 	const [text, setText] = useState<string>(initialTable);
 	const [currentCell, setCurrentCell] = useState<CellPosition>({
 		rowIndex: 0,
@@ -126,6 +140,7 @@ function TableEditor() {
 		const newText = tableToMarkdown(rows);
 		// Cursor moves to same cell in the new row below (which is now rowIndex + 1)
 		setText(newText);
+		if (onChange) onChange(newText);
 		setCellPosition(newText, {
 			rowIndex: currentCell.rowIndex + 1,
 			colIndex: currentCell.colIndex,
@@ -145,6 +160,7 @@ function TableEditor() {
 		const newText = tableToMarkdown(rows);
 		// Keep cursor at the same cell (row and column don't change)
 		setText(newText);
+		if (onChange) onChange(newText);
 		setCellPosition(newText, currentCell);
 	};
 
@@ -161,6 +177,7 @@ function TableEditor() {
 		const newText = tableToMarkdown(rows);
 		// Cursor moves to same cell which is now at colIndex + 1
 		setText(newText);
+		if (onChange) onChange(newText);
 		setCellPosition(newText, {
 			rowIndex: currentCell.rowIndex,
 			colIndex: currentCell.colIndex + 1,
@@ -181,6 +198,7 @@ function TableEditor() {
 		const newText = tableToMarkdown(rows);
 		// Cursor stays in same cell (row and column indices don't change)
 		setText(newText);
+		if (onChange) onChange(newText);
 		setCellPosition(newText, currentCell);
 	};
 
@@ -211,6 +229,7 @@ function TableEditor() {
 		const newText = tableToMarkdown(rows);
 		// Keep cursor at same cell position
 		setText(newText);
+		if (onChange) onChange(newText);
 		setCellPosition(newText, currentCell);
 	};
 
@@ -243,6 +262,7 @@ function TableEditor() {
 		const newText = tableToMarkdown(rows);
 		// Keep cursor at same cell position
 		setText(newText);
+		if (onChange) onChange(newText);
 		setCellPosition(newText, currentCell);
 	};
 
@@ -260,20 +280,24 @@ function TableEditor() {
 				<textarea
 					ref={textareaRef}
 					name="userTextArea"
-					id="userInputArea"
+					id={textareaId}
 					value={text}
 					rows={10}
 					cols={20}
-					onChange={(e) => setText(e.target.value)}
+					onChange={(e) => {
+						setText(e.target.value);
+						if (onChange) onChange(e.target.value);
+					}}
 					onClick={updateCurrentCellFromCursor}
 					onKeyUp={updateCurrentCellFromCursor}
 				></textarea>
 			</div>
-			<div className="previewArea">
-				<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
-			</div>
+			{showPreview && (
+				<div className="previewArea">
+					<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
+				</div>
+			)}
 		</div>
 	);
 }
-
 export default TableEditor;
