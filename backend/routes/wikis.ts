@@ -10,11 +10,11 @@ router.route("/")
      */
     .get(async (req: any, res: any) => {
 
-        if (!(req as any).user) {
+        if (!req.user) {
             return res.status(401).json({error: "/wiki: You must be logged in to perform this action."});
         }
 
-        return res.json({wikis: await (wikiDataFunctions.getWikisByUser(req.user))});
+        return res.json({wikis: await (wikiDataFunctions.getWikisByUser(req.user.uid))});
 
     })
 
@@ -31,14 +31,13 @@ router.route("/")
         let {name, description, access} = req.body;
 
         try {
-            await wikiDataFunctions.createWiki(
+            return res.json(await (wikiDataFunctions.createWiki(
                 name, description, access, (req as any).user.uid
-            );
+            )));
         } catch (e) {
+            console.log("POST PROBLEM:" + e);
             return res.status(500).json({error: e});
         }
-
-        return;
 
     })
 
