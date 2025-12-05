@@ -139,6 +139,7 @@ function ArticleCreator() {
 											updateEditorContent(editor.id, content)
 										}
 										showPreview={true}
+										inputId={`article-text-${editor.id}`}
 									/>
 								) : (
 									<TableEditor
@@ -147,6 +148,7 @@ function ArticleCreator() {
 											updateEditorContent(editor.id, content)
 										}
 										showPreview={true}
+										inputId={`article-table-${editor.id}`}
 									/>
 								)}
 							</div>

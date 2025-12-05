@@ -2,7 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import rehypeSanitize from "rehype-sanitize";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
-function TextEditor({ onChange, defaultValue = "Text", showPreview = true }) {
+function TextEditor({
+	onChange,
+	defaultValue = "Text",
+	showPreview = true,
+	inputId
+}) {
+	const textareaId = inputId;
 	const [text, setText] = useState(defaultValue);
 	// https://react.dev/learn/manipulating-the-dom-with-refs
 	const textareaRef = useRef(null);
@@ -49,7 +55,7 @@ function TextEditor({ onChange, defaultValue = "Text", showPreview = true }) {
 				<textarea
 					ref={textareaRef}
 					name="userTextArea"
-					id="userInputArea"
+					id={textareaId}
 					value={text}
 					rows="10"
 					cols="20"

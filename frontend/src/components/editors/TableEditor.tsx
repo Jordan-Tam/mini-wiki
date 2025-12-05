@@ -11,12 +11,14 @@ interface TableEditorProps {
 	onChange?: (value: string) => void;
 	defaultValue?: string;
 	showPreview?: boolean;
+	inputId?: string;
 }
 
 function TableEditor({
 	onChange,
 	defaultValue,
-	showPreview = true
+	showPreview = true,
+	inputId
 }: TableEditorProps) {
 	const initialTable =
 		defaultValue ||
@@ -25,6 +27,7 @@ function TableEditor({
 | Cell 1   | Cell 2   | Cell 3   |
 | Cell 4   | Cell 5   | Cell 6   |`;
 
+	const textareaId = inputId;
 	const [text, setText] = useState<string>(initialTable);
 	const [currentCell, setCurrentCell] = useState<CellPosition>({
 		rowIndex: 0,
@@ -277,7 +280,7 @@ function TableEditor({
 				<textarea
 					ref={textareaRef}
 					name="userTextArea"
-					id="userInputArea"
+					id={textareaId}
 					value={text}
 					rows={10}
 					cols={20}
