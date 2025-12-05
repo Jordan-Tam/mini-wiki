@@ -1,6 +1,8 @@
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { FaHeart, FaRegHeart, FaStar, FaRegStar } from "react-icons/fa";
+
 
 function Browse(){
 
@@ -44,22 +46,23 @@ function Browse(){
             <h1>Browse Public Wikis</h1>
     
             <p> (Search will go here) </p>
-            
+
             {wikis && wikis.length > 0 ? (
                 <div>
                     {wikis.map((wiki) => (
-                        <Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
                         <div className="card mb-3">
                             <div className="card-body">
-                                <h3 className="card-title">
-                                    {wiki.name}
-                                </h3>
+                                <Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
+                                    <h3 className="card-title">
+                                        {wiki.name}
+                                    </h3>
+                                </Link>
                                 <p className="card-text">
                                     {wiki.description}
-                                </p>
+                                </p>    
+                                <FaRegHeart />
                             </div>
                         </div>
-                    </Link>
                     ))}
                 </div>
             ) : (
