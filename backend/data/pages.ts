@@ -83,7 +83,7 @@ const page_data_functions = {
 
         const wikisCollection = await wikis();
 
-        let wiki: any = wikiDataFunctions.getWikiById(wikiId);
+        let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
         // Make sure the page name is unique within its category.
         for (let page of wiki.pages) {

@@ -85,16 +85,6 @@ function ArticleCreator() {
 		<div className="article-creator">
 			<div className="article-creator-header">
 				<h2>Create New Article</h2>
-				<div className="article-name-input">
-					<input
-						type="text"
-						placeholder="Article Name"
-						value={articleName}
-						onChange={(e) => setArticleName(e.target.value)}
-						className="article-name-field"
-						required
-					/>
-				</div>
 				<div className="add-editor-buttons">
 					<button onClick={addTextEditor} className="btn-add-text">
 						+ Add Text Editor
