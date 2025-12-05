@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext.jsx";
 import TextEditor from "./editors/TextEditor";
 import TableEditor from "./editors/TableEditor";
 
@@ -11,9 +13,12 @@ interface EditorItem {
 }
 
 function ArticleCreator() {
-	const [articleName, setArticleName] = useState<string>("");
+	const { wikiId, pageId } = useParams();
+	const { currentUser } = useContext(AuthContext);
+	const navigate = useNavigate();
 	const [editors, setEditors] = useState<EditorItem[]>([]);
 	const [nextId, setNextId] = useState(0);
+	const [isSaving, setIsSaving] = useState(false);
 
 	const addTextEditor = () => {
 		const newEditor: EditorItem = { id: nextId, type: "text", content: "Text" };
@@ -66,35 +71,38 @@ function ArticleCreator() {
 		);
 	};
 
-	const createPage = () => {
+	const createPage = async () => {
 		const markdownArray: string[] = editors.map((editor) => editor.content);
-		// This is where we gonna pass it to backend or something
-		// Right now just alerting/logging to be able to see the result and return it
-		console.log("Article Name:", articleName);
-		console.log("Markdown content from all editors:", markdownArray);
-		const tempString: string =
-			"Article Name: " +
-			articleName +
-			"\nMarkdown content from all editors: " +
-			markdownArray;
-		alert(tempString);
-		return { name: articleName, content: markdownArray };
+
+		try {
+			setIsSaving(true);
+			const response = await fetch(`/api/wiki/${wikiId}/pages/${pageId}/content`, {
+				method: "POST",
+				headers: {
+					Authorization: "Bearer " + currentUser.accessToken,
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					content: markdownArray
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to save page");
+			}
+
+			// Success - navigate to the page view
+			navigate(`/wiki/${wikiId}/${pageId}`);
+		} catch (error) {
+			alert(`Error saving page: ${error}`);
+			setIsSaving(false);
+		}
 	};
 
 	return (
 		<div className="article-creator">
 			<div className="article-creator-header">
 				<h2>Create New Article</h2>
-				<div className="article-name-input">
-					<input
-						type="text"
-						placeholder="Article Name"
-						value={articleName}
-						onChange={(e) => setArticleName(e.target.value)}
-						className="article-name-field"
-						required
-					/>
-				</div>
 				<div className="add-editor-buttons">
 					<button onClick={addTextEditor} className="btn-add-text">
 						+ Add Text Editor
@@ -173,8 +181,8 @@ function ArticleCreator() {
 			</div>
 			{editors.length > 0 && (
 				<div className="create-page-section">
-					<button onClick={createPage} className="btn-create-page">
-						Create Page
+					<button onClick={createPage} className="btn-create-page" disabled={isSaving}>
+						{isSaving ? "Saving..." : "Create Page"}
 					</button>
 				</div>
 			)}

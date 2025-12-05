@@ -225,14 +225,10 @@ const wiki_data_functions = {
             throw "Duplicate categories are not allowed.";
         }
 
-        let updatedWiki = {
-            categories: [...wiki.categories, category]
-        };
-
         const wikisCollection = await wikis();
-        const updateInfo = await wikisCollection.findOneAndReplace(
+        const updateInfo = await wikisCollection.findOneAndUpdate(
             { _id: new ObjectId(wikiId) },
-            updatedWiki,
+            { $push: { categories: category } },
             { returnDocument: "after" }
         );
 
