@@ -10,7 +10,6 @@ function SignUp() {
   const { currentUser } = useContext(AuthContext);
 
   // Stateful form
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,7 +30,6 @@ function SignUp() {
       await doCreateUserWithEmailAndPassword(
         email,
         password,
-        username
       );
     
     } catch (e) {
@@ -62,20 +60,6 @@ function SignUp() {
       </h1>
       {error && <h4 className="error">{error}</h4>}
       <form onSubmit={handleSignUp}>
-        <div className="form-floating mb-3" style={{ width: "500px" }}>
-          <input
-            className="form-control"
-            placeholder="Username goes here"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            id="username"
-            name="username"
-            type="text"
-            autoFocus={true}
-            required
-          />
-          <label htmlFor="username">Username</label>
-        </div>
         <div className="form-floating mb-3" style={{ width: "500px" }}>
           <input
             className="form-control"

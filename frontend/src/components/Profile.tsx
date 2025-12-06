@@ -3,12 +3,20 @@ import ChangePasswordModal from "./modals/ChangePasswordModal";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
+import UsernameInputCheck from "./UsernameInputCheck";
 
 function Profile() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [username, setUsername] = useState(null);
+  const [changeUsernameOK, setChangeUsernameOK] = useState(null);
 
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
+
+  let token: any;
+  if (currentUser) {
+    token = currentUser.accessToken;
+  }
 
   const handleOpenDeleteUserModal = () => {
     setShowDeleteUserModal(true);
@@ -26,9 +34,65 @@ function Profile() {
     setShowChangePasswordModal(false);
   };
 
+  const handleUsernameChange = (usernameInput: any) => {
+    setUsername(usernameInput);
+  };
+
+  const handleChangeUsername = async (usernameInput: any) => {
+    const obj = { username: usernameInput };
+    const response = await fetch(
+      `http://localhost:3000/users/${currentUser.uid}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      }
+    );
+    if (!response.ok) {
+      console.log("Server Error");
+      return;
+    }
+    const result = await response.json();
+    if (result.message === "Username changed") {
+      alert("Username Changed");
+      setCurrentUser({ ...currentUser, username: usernameInput });
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="container-fluid">
-      <h2>{currentUser.displayName}'s Account Page</h2>
+      <h2>{currentUser.username}'s Account Page</h2>
+        <div className="form-floating mb-3" style={{ width: "500px" }}>
+          <input
+            className="form-control"
+            name="usernameInput"
+            id="usernameInput"
+            placeholder="username"
+            onChange={(event) => handleUsernameChange(event.target.value)}
+          />
+          <label htmlFor="usernameInput">Change Username</label>
+        </div>
+      {currentUser && (
+        <UsernameInputCheck
+          username={username}
+          setChangeUsernameOK={setChangeUsernameOK}
+        />
+      )}
+
+      {currentUser && changeUsernameOK && (
+        <div>
+          <button onClick={() => handleChangeUsername(username)}>
+            Change Username
+          </button>
+          <br />
+          <br />
+        </div>
+      )}
+
       {currentUser &&
         currentUser.providerData[0].providerId === "password" &&
         showChangePasswordModal && (
@@ -49,8 +113,8 @@ function Profile() {
       >
         Change Password
       </button>
-      <br/>
-      <br/>
+      <br />
+      <br />
 
       <button
         className="button"
