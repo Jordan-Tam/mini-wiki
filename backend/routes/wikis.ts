@@ -37,7 +37,7 @@ router
 				});
 		}
 
-		console.log(req.body);
+		//console.log(req.body);
 		let { name, description, access } = req.body;
 
 		try {
@@ -50,7 +50,7 @@ router
 				)
 			);
 		} catch (e) {
-			console.log("POST PROBLEM:" + e);
+			//console.log("POST PROBLEM:" + e);
 			return res.status(500).json({ error: e });
 		}
 	});
@@ -58,7 +58,7 @@ router
 	router 
 	.route("/wikis")
 	.get(async (req: any, res) => {
-		console.log('omh')
+		//console.log('omh')
 		if (!req.user) {
 			return res
 				.status(401)
@@ -96,7 +96,8 @@ router
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		const userId = req.params.userId;
+
+		const userId = req.user.uid;
 		const wikiId = req.params.wikiId;
 
 		try {
@@ -112,7 +113,7 @@ router
 
 		try {
 
-			wikiDataFunctions.favorite(userId, wikiId)
+			await wikiDataFunctions.favorite(wikiId, userId)
 			return res.json(true);
 			
 		} catch (e) {
@@ -134,7 +135,7 @@ router
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		const userId = req.params.userId;
+		const userId = req.user.uid;
 		const wikiId = req.params.wikiId;
 
 		try {
@@ -150,8 +151,7 @@ router
 
 		try {
 
-			wikiDataFunctions.unfavorite(userId, wikiId)
-
+			await wikiDataFunctions.unfavorite(wikiId, userId)
 			return res.json(true);
 
 		} catch (e) {

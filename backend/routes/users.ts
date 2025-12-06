@@ -113,12 +113,23 @@ router
 		}
 
 		try {
+
 			const user = await user_data_functions.getUserByFirebaseUID(req.params.id);
 			
-			const favorites = [];
+  
+			const favoriteIds = [];
 
-			for (let wiki of user.favorites){
-        favorites.push(wiki)
+      if (user.favorites.length > 0)
+      {
+        for (let wiki of user.favorites){
+          favoriteIds.push(wiki)
+        }
+      }
+
+      const favorites = [];
+      for (let favorite of favoriteIds){
+        let favorited_wiki = await wiki_data_functions.getWikiById(favorite);
+        favorites.push(favorited_wiki)
       }
 			return res.json(favorites)
 		} catch (e) {
