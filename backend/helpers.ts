@@ -53,7 +53,7 @@ const checkUsername = (
     username = checkString(username, "Username", funcName);
 
     // Length restrictions.
-    if (username.length < 2 && username.length > 20) {
+    if (username.length < 2 || username.length > 20) {
         throw "Username must be between 2-20 characters long.";
     }
 

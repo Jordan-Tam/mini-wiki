@@ -34,7 +34,6 @@ async function Main(): Promise<any> {
       return next(); //This can be changed to take the user to a 401 page.
     }
     try {
-      console.log("inside try block");
       const decodeValue = await admin.auth().verifyIdToken(token);
       console.log(decodeValue);
       if (decodeValue) {
