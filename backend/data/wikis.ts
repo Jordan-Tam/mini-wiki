@@ -320,6 +320,89 @@ const wiki_data_functions = {
     ) {
 
     },
+    
+    async favorite(
+        wikiId: string,
+        userId: string
+    ) {
+
+        //Input validation
+        wikiId = checkId(wikiId, "Wiki", "addCollaborator");
+
+        //throws if wiki doesnt exist
+        const wiki = await this.getWikiById(wikiId);
+
+        //throws if user doesnt exist
+        const user = await userDataFunctions.getUserByFirebaseUID(userId);
+    
+        const favorites = user.favorites;
+
+        for (let fav_wiki of favorites){
+            if(fav_wiki === wikiId){
+                throw 'wiki is already favorited'
+            }
+        }
+
+        favorites.push(wikiId);
+
+        const updatedUser = {
+            favorites: favorites,
+        };
+
+        const usersCollection = await users();
+
+        const updateInfo = await usersCollection.findOneAndUpdate(
+            { firebaseUID: userId },
+            { $set: updatedUser },
+            { returnDocument: "after" }
+        );
+        
+        if (!updateInfo) {
+            throw "unable to favorite wiki";
+          }
+        
+        return updateInfo;
+    },
+
+    async unfavorite(wikiId: string, userId: string) {
+        // Input validation
+        wikiId = checkId(wikiId, "Wiki", "unfavorite");
+    
+        // throws if wiki doesn't exist
+        const wiki = await this.getWikiById(wikiId);
+    
+        // throws if user doesn't exist
+        const user = await userDataFunctions.getUserByFirebaseUID(userId);
+    
+        const favorites = user.favorites;
+    
+        const index = favorites.indexOf(wikiId);
+        if (index === -1) {
+            throw "wiki is not currently favorited";
+        }
+    
+        //remove wiki from favs
+        favorites.splice(index, 1);  
+    
+        const updatedUser = {
+            favorites: favorites,
+        };
+    
+        const usersCollection = await users();
+    
+        const updateInfo = await usersCollection.findOneAndUpdate(
+            { firebaseUID: userId },
+            { $set: updatedUser },
+            { returnDocument: "after" }
+        );
+    
+        if (!updateInfo) {
+            throw "unable to unfavorite wiki";
+        }
+    
+        return updateInfo;
+    }
+    
 
 };
 

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { checkEmail, checkId, checkString, checkUsername } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
+import wiki_data_functions from "../data/wikis.ts";
 
 export const router = Router();
 
@@ -134,6 +135,62 @@ router
 /**
  * Wikis of user[id]
  */
-router.route("/:id/wikis").get(async (req, res) => {});
+router
+  .route("/:id/wikis")
+  .get(async (req: any, res) => {
+    if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
 
-// export default router;
+		try {
+			const wikis = await wiki_data_functions.getWikisByUser(req.params.id)
+			
+			return res.json(wikis)
+		} catch (e) {
+			
+      return res.status(500).json({ error: e });
+		
+    }
+  });
+
+router
+	.route("/:id/favorites")
+	.get(async (req: any, res) => {
+
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		try {
+
+			const user = await user_data_functions.getUserByFirebaseUID(req.params.id);
+			
+  
+			const favoriteIds = [];
+
+      if (user.favorites.length > 0)
+      {
+        for (let wiki of user.favorites){
+          favoriteIds.push(wiki)
+        }
+      }
+
+      const favorites = [];
+      for (let favorite of favoriteIds){
+        let favorited_wiki = await wiki_data_functions.getWikiById(favorite);
+        favorites.push(favorited_wiki)
+      }
+			return res.json(favorites)
+		} catch (e) {
+			
+      return res.status(500).json({ error: e });
+		
+    }
+
+	});
+
+export default router;

@@ -9,7 +9,8 @@ type User = {
   email: string;
   firebaseUID: string;
   wikis: string[];
-  wikis_given_access: string[]; //not a string, needs to be updated
+  wikis_given_access: string[];
+  favorites: string[];
 };
 const user_data_functions = {
   async createUser(email: string, firebaseUID: string) {
@@ -23,6 +24,7 @@ const user_data_functions = {
       firebaseUID,
       wikis: [],
       wikis_given_access: [],
+      favorites: []
     };
 
     const userCollection = await users();

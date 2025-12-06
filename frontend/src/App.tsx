@@ -11,6 +11,7 @@ import TestingPage from "./components/TestingPage.jsx";
 import WikiHome from "./components/WikiHome.tsx";
 import ArticleCreator from "./components/ArticleCreator.tsx";
 import Article from "./components/Article.tsx";
+import Browse from "./components/Browse.jsx"
 
 function App() {
 	return (
@@ -19,6 +20,7 @@ function App() {
 				<Header />
 				<Routes>
 					<Route path="/" element={<Landing />} />
+					<Route path="/browse" element={<Browse />} />
 					<Route path="/home" element={<PrivateRoute />}>
 						<Route path="/home" element={<Home />} />
 					</Route>

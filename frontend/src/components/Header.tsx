@@ -6,7 +6,7 @@ import { useContext } from "react";
 function Header() {
 
   const { currentUser } = useContext(AuthContext);
-  console.log(currentUser);
+  //console.log(currentUser);
 
   return (
     <>
@@ -36,7 +36,7 @@ function Header() {
                   </Link>
                 </li>
                 <li className="nav-item px-2">
-                  <Link className="nav-link" to="/">
+                  <Link className="nav-link" to="/browse">
                     Browse
                   </Link>
                 </li>

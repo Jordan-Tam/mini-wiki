@@ -1,6 +1,7 @@
 import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
+import user_data_functions from "../data/users.ts";
 
 export const router = Router();
 
@@ -36,7 +37,7 @@ router
 				});
 		}
 
-		console.log(req.body);
+		//console.log(req.body);
 		let { name, description, access } = req.body;
 
 		try {
@@ -49,10 +50,118 @@ router
 				)
 			);
 		} catch (e) {
-			console.log("POST PROBLEM:" + e);
+			//console.log("POST PROBLEM:" + e);
 			return res.status(500).json({ error: e });
 		}
 	});
+
+	router 
+	.route("/wikis")
+	.get(async (req: any, res) => {
+		//console.log('omh')
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		try {
+
+			const wikis = await wikiDataFunctions.getAllWikis();
+
+			const public_wikis = [];
+			for (let wiki of wikis){
+				if (wiki.access === "public"){
+					public_wikis.push(wiki);
+				}
+			}
+
+			return res.json(public_wikis);
+		
+		} catch (e) {
+
+			return res.status(500).json({error: e})
+
+		}
+
+	})
+
+	router
+	.route("/favorite/:wikiId")
+	.post(async (req: any, res) => {
+    
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+
+		const userId = req.user.uid;
+		const wikiId = req.params.wikiId;
+
+		try {
+
+			await user_data_functions.getUserByFirebaseUID(userId);
+			await wikiDataFunctions.getWikiById(wikiId);
+
+		} catch (e) {
+
+			return res.status(404).json({error: e})
+
+		}
+
+		try {
+
+			await wikiDataFunctions.favorite(wikiId, userId)
+			return res.json(true);
+			
+		} catch (e) {
+
+			return res.status(500).json({error: e});
+
+		}
+
+
+	})
+
+router
+	.route("/unfavorite/:wikiId")
+	.delete(async (req: any, res) => {
+    
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		const userId = req.user.uid;
+		const wikiId = req.params.wikiId;
+
+		try {
+
+			await user_data_functions.getUserByFirebaseUID(userId);
+			await wikiDataFunctions.getWikiById(wikiId);
+
+		} catch (e) {
+
+			return res.status(404).json({error: e})
+
+		}
+
+		try {
+
+			await wikiDataFunctions.unfavorite(wikiId, userId)
+			return res.json(true);
+
+		} catch (e) {
+
+			return res.status(500).json({error: e});
+
+		}
+
+
+	})
 
 router
 	.route("/:id")
@@ -71,7 +180,7 @@ router
 
 		let wiki: any = await wikiDataFunctions.getWikiById(id);
 
-		if (wiki.owner !== req.user.uid && !wiki.collaborators.includes(req.user.uid)) {
+		if (wiki.owner !== req.user.uid && !wiki.collaborators.includes(req.user.uid) && wiki.access !== "public") {
 			return res
 				.status(403)
 				.json({ error: "You do not permission to access this resource." });
@@ -245,3 +354,5 @@ router
 	.delete(async (req, res) => {
 		return;
 	});
+
+export default router;
