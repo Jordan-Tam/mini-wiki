@@ -4,7 +4,7 @@ import Landing from "./components/Landing.tsx";
 import Home from "./components/Home.jsx";
 import SignIn from "./components/SignIn.jsx";
 import SignUp from "./components/SignUp.jsx";
-import Profile from "./components/Profile.jsx";
+import Profile from "./components/Profile.js";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import TestingPage from "./components/TestingPage.jsx";
