@@ -18,17 +18,16 @@ function Browse(){
     const [favorites, setFavorites] = useState([]);
 
     const favorite_or_unfavorite = async (wikiId) => {
-        //console.log(wikiId)
+
         const isFavorite = favorites.some(fav => fav._id === wikiId);
     
         try {
 
-            const routePath = `/api/wiki/${isFavorite ? "unfavorite":"favorite"}/${wikiId}`
-            //console.log(routePath)
+            const routePath = `/api/users/favorites`;
             const response = await fetch(
                 routePath,
                 {
-                method: isFavorite ? "DELETE":"POST",
+                method: isFavorite ? "DELETE" : "POST",
                 headers: {
                     Authorization: "Bearer " + currentUser.accessToken,
                 },
@@ -63,21 +62,22 @@ function Browse(){
 						Authorization: "Bearer " + currentUser?.accessToken
 					}
 				});
-                //console.log(response)
+
 				if (!response.ok){ 
                     throw new Error("Failed to fetch wiki");
                 }
-				const data = await response.json();
-				setWikis(data)
 
-                const favoriteResponse = await fetch(`/api/users/${currentUser.uid}/favorites`, {
+				const data = await response.json();
+				setWikis(data);
+
+                const favoriteResponse = await fetch(`/api/users/favorites`, {
 					method: "GET",
 					headers: { Authorization: "Bearer " + token }
 				});
 	
 				const favoriteResult = await favoriteResponse.json();
 
-                console.log(favoriteResult)
+                console.log(favoriteResult);
 				
                 setFavorites(favoriteResult);
 
@@ -112,7 +112,7 @@ function Browse(){
                     {wikis.map((wiki) => (
                         <div className="card mb-3" key={wiki._id}>
                             <div className="card-body">
-                                <Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
+                                <Link to={`/wiki/${wiki.urlName}`} style={{textDecoration: "none"}}>
                                     <h3 className="card-title">
                                         {wiki.name}
                                     </h3>
@@ -129,6 +129,7 @@ function Browse(){
                                         cursor: "pointer"
                                     }}
                                 >
+                                    {console.log(typeof favorites)}
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
                                         <FaHeart color="red" />
                                     ) : (

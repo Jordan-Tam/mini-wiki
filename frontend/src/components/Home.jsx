@@ -32,7 +32,7 @@ function Home() {
 
 				setWikisData(result.wikis);
 
-				const favoriteResponse = await fetch(`/api/users/${currentUser.uid}/favorites`, {
+				const favoriteResponse = await fetch(`/api/users/favorites`, {
 					method: "GET",
 					headers: { Authorization: "Bearer " + token }
 				});
@@ -94,7 +94,7 @@ function Home() {
 						<h4 id="favorited">FAVORITES</h4>
 						{favorites && favorites.length > 0 ? (
 							favorites.map((wiki) => (
-								<Link to={`/wiki/${wiki._id}`} style={{ textDecoration: "none" }} key={wiki._id}>
+								<Link to={`/wiki/${wiki.urlName}`} style={{ textDecoration: "none" }} key={wiki._id}>
 									<div className="card mb-3">
 										<div className="card-body">
 											<h3 className="card-title">{wiki.name}</h3>
@@ -117,7 +117,7 @@ function Home() {
 						<h4 id="owner">OWNER</h4>
 						{wikisData && wikisData.map((wiki) => {
 							return (
-								<Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
+								<Link to={`/wiki/${wiki.urlName}`} style={{textDecoration: "none"}}>
 									<div className="card mb-3">
 										<div className="card-body">
 											<h3 className="card-title">

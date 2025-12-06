@@ -52,7 +52,7 @@ function WikiHome() {
 	if (error) return <p>Error: {error}</p>;
 
 	return (
-		<div>
+		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
 
