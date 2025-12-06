@@ -6,7 +6,7 @@ import { useContext } from "react";
 function Header() {
 
   const { currentUser } = useContext(AuthContext);
-  console.log(currentUser);
+  //console.log(currentUser);
 
   return (
     <>
