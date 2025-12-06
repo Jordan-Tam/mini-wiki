@@ -24,15 +24,16 @@ function Browse(){
         try {
 
             const routePath = `/api/users/favorites`;
-            const response = await fetch(
-                routePath,
-                {
+            const response = await fetch(routePath, {
                 method: isFavorite ? "DELETE" : "POST",
                 headers: {
                     Authorization: "Bearer " + currentUser.accessToken,
+                    "Content-Type": "application/json",
                 },
-                }
-            );
+                body: JSON.stringify({
+                    wikiId
+                })
+            });
 
             //console.log(response)
 
