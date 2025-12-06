@@ -5,6 +5,7 @@ const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 const NUMBERS = "0123456789";
 const LETTERS_AND_NUMBERS = UPPERCASE_LETTERS + LOWERCASE_LETTERS + NUMBERS;
 const LETTERS_AND_NUMBERS_PLUS = LETTERS_AND_NUMBERS + "._-";
+const URL_NAME_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 
 const checkString = (
     str: string,
@@ -44,6 +45,31 @@ const checkId = (
 
 };
 
+const checkUrlName = (
+  urlName: string,
+  varName: string,
+  funcName?: string
+): string => {
+
+    // Basic string validation.
+    urlName = checkString(urlName, varName, funcName);
+
+    // Length restrictions.
+    if (urlName.length < 4 && urlName.length > 30) {
+        throw "Username must be between 4-30 characters long.";
+    }
+
+    // Character restrictions.
+    for (let char of urlName) {
+        if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1) {
+            throw "Wiki URL Name must contain only letters, numbers, hyphens, and underscores.";
+        }
+    }
+
+    return urlName;
+
+}
+
 const checkUsername = (
     username: string,
     funcName?: string
@@ -77,13 +103,13 @@ const checkAccess = (
     access = checkString(access, "Access", funcName);
 
     if (
-        (access !== "public")
+        (access !== "public-view")
         &&
-        (access !== "permissioned")
+        (access !== "public-edit")
         &&
         (access !== "private")
     ) {
-        throw "Access type must be 'public', 'permissioned', or 'private'."
+        throw "Access type must be 'public-view', 'public-edit', or 'private'.";
     }
 
     return access;
@@ -161,6 +187,7 @@ const checkPassword = (
 export {
     checkString,
     checkId,
+    checkUrlName,
     checkUsername,
     checkAccess,
     checkPassword,

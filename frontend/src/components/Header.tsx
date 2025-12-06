@@ -10,7 +10,7 @@ function Header() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-sm navbar-dark bg-primary mb-3">
+      <nav className="navbar navbar-expand-sm navbar-dark bg-primary mb-3 sticky-top">
         <div className="container-fluid">
           <Link className="navbar-brand d-flex align-items-center justify-content-center" to="/home">
             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" className="bi bi-book-half" viewBox="0 0 16 16">

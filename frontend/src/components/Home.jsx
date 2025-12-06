@@ -65,18 +65,18 @@ function Home() {
 	} else {
 		return (
 			<>
-			<div class="row">
-				<div class="ms-3 col-3">
-					<div id="list-example" class="list-group">
-					<a class="list-group-item list-group-item-action" href="#favorited">Favorited</a>
-					<a class="list-group-item list-group-item-action" href="#owned">Owned</a>
-					<a class="list-group-item list-group-item-action" href="#collaborator">Collaborator</a>
-					<a class="list-group-item list-group-item-action" href="#viewer">Viewer</a>
-					<a class="list-group-item list-group-item-action" href="#following">Following</a>
+			<div className="row">
+				<div className="ms-3 col-3">
+					<div id="wiki-list" className="list-group sticky-top" style={{top: "77px", zIndex: 99}}>
+						<a className="list-group-item list-group-item-action" href="#favorited">Favorited</a>
+						<a className="list-group-item list-group-item-action" href="#owned">Owned</a>
+						<a className="list-group-item list-group-item-action" href="#collaborator">Collaborator</a>
+						<a className="list-group-item list-group-item-action" href="#viewer">Viewer</a>
+						<a className="list-group-item list-group-item-action" href="#following">Following</a>
 					</div>
 				</div>
-				<div class="col-8">
-					<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" class="scrollspy-example" tabIndex="0" sdsd="s">
+				<div className="col-8">
+					<div data-bs-spy="scroll" data-bs-target="#wiki-list" data-bs-smooth-scroll="true" className="scrollspy-example" tabIndex="0" style={{overflowY: "auto"}}>
 						<h4 id="favorited">FAVORITED</h4>
 						<p>...</p>
 						<h4 id="owner">OWNER</h4>
@@ -105,7 +105,7 @@ function Home() {
 					</div>
 				</div>
 			</div>
-			<div className="container-fluid">
+			{/* <div className="container-fluid">
 				<button className="btn btn-secondary mb-3" onClick={handleOpenCreateWikiModal}>Create Wiki</button>
 				{wikisData && wikisData.map((wiki) => {
 					return (
@@ -130,7 +130,7 @@ function Home() {
 						setWikisData={setWikisData}
                     />
                 )}
-			</div>
+			</div> */}
 			</>
 		)
 	}
