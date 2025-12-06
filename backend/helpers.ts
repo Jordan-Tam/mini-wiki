@@ -47,12 +47,11 @@ const checkId = (
 
 const checkUrlName = (
   urlName: string,
-  varName: string,
   funcName?: string
 ): string => {
 
     // Basic string validation.
-    urlName = checkString(urlName, varName, funcName);
+    urlName = checkString(urlName, "Wiki URL", funcName);
 
     // Length restrictions.
     if (urlName.length < 4 && urlName.length > 30) {

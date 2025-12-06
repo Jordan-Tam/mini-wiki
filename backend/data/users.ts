@@ -1,19 +1,28 @@
 import { ObjectId } from "mongodb";
 import { users } from "../config/mongoCollections.ts";
-import { checkString, checkId, checkUsername, checkEmail } from "../helpers.ts";
-import bcrypt from "bcryptjs";
-let saltRounds = 10;
+import wikiDataFunctions from "./wikis.ts";
+import {
+    checkString,
+    checkId,
+    checkUsername,
+    checkEmail
+} from "../helpers.ts";
 
 type User = {
   username: string;
   email: string;
   firebaseUID: string;
-  wikis: string[];
-  wikis_given_access: string[];
+  //wikis: string[];
+  //wikis_given_access: string[];
   favorites: string[];
+  following: string[]
 };
+
 const user_data_functions = {
+
   async createUser(email: string, firebaseUID: string) {
+
+    // Input validation.
     email = checkEmail(email, "createUser");
 
     let newUser: User;
@@ -22,9 +31,8 @@ const user_data_functions = {
       username: firebaseUID,
       email: email,
       firebaseUID,
-      wikis: [],
-      wikis_given_access: [],
-      favorites: []
+      favorites: [],
+      following: []
     };
 
     const userCollection = await users();
@@ -36,9 +44,11 @@ const user_data_functions = {
     }
 
     return insertInfo;
+
   },
 
   async getUserByFirebaseUID(firebaseUID: string) {
+
     const userCollection = await users();
 
     const user = await userCollection.findOne({ firebaseUID: firebaseUID });
@@ -48,9 +58,11 @@ const user_data_functions = {
     }
 
     return user;
+
   },
 
   async getUsers() {
+
     const userCollection = await users();
 
     const allUsers = await userCollection.find({}).toArray();
@@ -60,17 +72,22 @@ const user_data_functions = {
     }
 
     return allUsers;
+
   },
 
   async getTakenUsernames() {
+
     let userList = await this.getUsers();
 
     let usernames = userList.map((user: User) => user.username.toLowerCase());
 
     return usernames;
+
   },
 
   async changeUsername(id: string, newUsername: string) {
+
+    // Input validation
     newUsername = checkUsername(newUsername, "changeUsername");
 
     let takenUsernames = await this.getTakenUsernames();
@@ -97,25 +114,125 @@ const user_data_functions = {
     }
 
     return updateInfo;
+
+  },
+
+  async addFavorite(
+    wikiId: string,
+    userId: string) {
+
+        //Input validation
+        wikiId = checkId(wikiId, "Wiki", "addCollaborator");
+
+        //throws if wiki doesnt exist
+        const wiki = await wikiDataFunctions.getWikiById(wikiId);
+
+        //throws if user doesnt exist
+        const user = await this.getUserByFirebaseUID(userId);
+    
+        const favorites = user.favorites;
+
+        for (let fav_wiki of favorites){
+            if(fav_wiki === wikiId){
+                throw 'wiki is already favorited'
+            }
+        }
+
+        favorites.push(wikiId);
+
+        const updatedUser = {
+            favorites: favorites,
+        };
+
+        const usersCollection = await users();
+
+        const updateInfo = await usersCollection.findOneAndUpdate(
+            { firebaseUID: userId },
+            { $set: updatedUser },
+            { returnDocument: "after" }
+        );
+        
+        if (!updateInfo) {
+            throw "unable to favorite wiki";
+          }
+        
+        return updateInfo;
+
+  },
+
+  async removeFavorite(wikiId: string, userId: string) {
+
+    // Input validation
+    wikiId = checkId(wikiId, "Wiki", "unfavorite");
+
+    // throws if wiki doesn't exist
+    const wiki = await wikiDataFunctions.getWikiById(wikiId);
+
+    // throws if user doesn't exist
+    const user = await this.getUserByFirebaseUID(userId);
+
+    const favorites = user.favorites;
+
+    const index = favorites.indexOf(wikiId);
+    if (index === -1) {
+        throw "wiki is not currently favorited";
+    }
+
+    //remove wiki from favs
+    favorites.splice(index, 1);  
+
+    const updatedUser = {
+        favorites: favorites,
+    };
+
+    const usersCollection = await users();
+
+    const updateInfo = await usersCollection.findOneAndUpdate(
+        { firebaseUID: userId },
+        { $set: updatedUser },
+        { returnDocument: "after" }
+    );
+
+    if (!updateInfo) {
+        throw "unable to unfavorite wiki";
+    }
+
+    return updateInfo;
+
+  },
+
+  async addFollowing() {
+
+  },
+
+  async removeFollowing() {
+
   },
 
   //do we delete wikis or make the author [deleted] and keep wikis up?
+  //TODO: We didn't have a delete user functionality in our project last semester, so I think we can do the same thing for this one and just not let them delete their accounts.
   async deleteUser(firebaseUID: string) {
+
     const user_to_delete = await this.getUserByFirebaseUID(firebaseUID);
+
     if (!user_to_delete) {
       throw "user with this ID does not exist";
     }
+
     const userCollection = await users();
 
     const deleteUser = await userCollection.deleteOne({
       firebaseUID: firebaseUID,
     });
+
     if (!deleteUser) {
       throw "user not deleted";
     }
 
     return { userDeleted: true };
+
   },
+
 };
 
 export default user_data_functions;

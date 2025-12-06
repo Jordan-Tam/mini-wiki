@@ -52,6 +52,123 @@ router.route("/registerFB").post(async (req, res) => {
   }
 });
 
+router
+	.route("/favorites")
+
+  /**
+   * Get the user's list of favorite wikis.
+   */
+	.get(async (req: any, res) => {
+
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		try {
+
+			const user = await user_data_functions.getUserByFirebaseUID(req.user.uid);
+		
+			const favoriteIds = [];
+
+      if (user.favorites.length > 0)
+      {
+        for (let wiki of user.favorites){
+          favoriteIds.push(wiki)
+        }
+      }
+
+      const favorites = [];
+      for (let favorite of favoriteIds){
+        let favorited_wiki = await wiki_data_functions.getWikiById(favorite);
+        favorites.push(favorited_wiki)
+      }
+      console.log(favorites);
+			return res.json(favorites)
+		} catch (e) {
+      console.log("favorites error")
+			console.log(e);
+      return res.status(500).json({ error: e });
+		
+    }
+
+	})
+
+  /**
+   * Add a wiki to the user's favorites array.
+   */
+  .post(async (req: any, res) => {
+
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		let { wikiId } = req.body;
+
+		try {
+
+			await wiki_data_functions.getWikiById(wikiId);
+
+		} catch (e) {
+
+			return res.status(404).json({error: e})
+
+		}
+
+		try {
+
+			await user_data_functions.addFavorite(wikiId, req.user.uid);
+
+			return res.json(true);
+			
+		} catch (e) {
+
+			return res.status(500).json({error: e});
+
+		}
+
+  })
+
+  /**
+   * Removes a wiki from the user's favorites array.
+   */
+  .delete(async (req: any, res) => {
+
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+    let { wikiId } = req.body;
+
+		try {
+
+			await wiki_data_functions.getWikiById(wikiId);
+
+		} catch (e) {
+
+			return res.status(404).json({error: e})
+
+		}
+
+		try {
+
+			await user_data_functions.removeFavorite(wikiId, req.user.uid);
+
+			return res.json(true);
+
+		} catch (e) {
+
+			return res.status(500).json({error: e});
+
+		}
+
+  })
+
 /**
  * Users (by ID)
  */
@@ -154,43 +271,5 @@ router
 		
     }
   });
-
-router
-	.route("/:id/favorites")
-	.get(async (req: any, res) => {
-
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
-
-		try {
-
-			const user = await user_data_functions.getUserByFirebaseUID(req.params.id);
-			
-  
-			const favoriteIds = [];
-
-      if (user.favorites.length > 0)
-      {
-        for (let wiki of user.favorites){
-          favoriteIds.push(wiki)
-        }
-      }
-
-      const favorites = [];
-      for (let favorite of favoriteIds){
-        let favorited_wiki = await wiki_data_functions.getWikiById(favorite);
-        favorites.push(favorited_wiki)
-      }
-			return res.json(favorites)
-		} catch (e) {
-			
-      return res.status(500).json({ error: e });
-		
-    }
-
-	});
 
 export default router;
