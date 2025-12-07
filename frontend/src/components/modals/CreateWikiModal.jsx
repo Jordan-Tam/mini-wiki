@@ -1,6 +1,7 @@
 import {useContext, useState} from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
+import URLInputCheck from "../URLInputCheck.jsx";
 
 Modal.setAppElement("#root");
 
@@ -34,7 +35,8 @@ function CreateWikiModal(props) {
     const [access, setAccess] = useState(2);
     const [error, setError] = useState("");
     const [disableSubmit, setDisableSubmit] = useState(false);
-    
+    const [URLOK, setURLOK] = useState(null); 
+
     // Submit form function
     const submitForm = async (e) => {
 
@@ -138,6 +140,10 @@ function CreateWikiModal(props) {
                         <label htmlFor="urlName">URL Name</label>
                         <p className="small text-muted">The URL Name is used to uniquely identify the wiki in web addresses. Please choose wisely because you will not be able to change it after the wiki has been created.</p>
                     </div>
+                        <URLInputCheck
+                        url={urlName}
+                        setURLOK={setURLOK}
+                        />
                     <div className="form-floating mb-3">
                         {/* //TODO: Change this to a textarea. */}
                         <input
@@ -197,7 +203,7 @@ function CreateWikiModal(props) {
                         </label>
                     </div>
                     <div className="d-flex align-items-baseline">
-                        <button className="btn btn-primary mt-3 me-3" type="submit" disabled={disableSubmit}>
+                        <button className="btn btn-primary mt-3 me-3" type="submit" disabled={disableSubmit && !URLOK}>
                             Create Wiki
                         </button>
                         {error && <span style={{color: "red"}}>{error}</span>}

@@ -14,7 +14,7 @@ router.route("/").get(async (req, res) => {});
  * Check if a username is taken
  */
 router.route("/usernameTaken/:username").post(async (req, res) => {
-  let username = req.params.username;
+  let username = req.params.username.trim();
   try {
     username = checkUsername(username, "usernameTaken route");
   } catch (e) {

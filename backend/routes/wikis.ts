@@ -99,6 +99,21 @@ router
 
 	});
 
+	router.route("/urlTaken/:url").post(async (req, res) => {
+		let url = req.params.url.trim();
+		console.log(url);
+		try{
+			url = checkUrlName(url, "URL Taken route")
+		}catch(e){
+			return res.json({ error: e });
+		}
+		const takenURLs = await wikiDataFunctions.getAllWikiUrlNames();
+		if(takenURLs.includes(url.toLowerCase())){
+			return res.json({error: "URL taken"})
+		}
+		return res.json({ message: "URL available" });
+	})
+
 router
 	.route("/:urlName")
 
