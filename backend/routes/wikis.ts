@@ -143,7 +143,7 @@ router
 	});
 
 router
-	.route("/:urlName/categories")
+	.route("/:id/categories")
 	/**
 	 * Creates a new category in the wiki
 	 */
@@ -154,12 +154,12 @@ router
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		let urlName = req.params.urlName;
+		let id = req.params.id;
 		let { categoryName } = req.body;
 
 		let wiki;
 		try {
-			wiki = await wikiDataFunctions.getWikiByUrlName(urlName);
+			wiki = await wikiDataFunctions.getWikiById(id);
 		} catch (e) {
 			return res.status(400).json({error: e});
 		}

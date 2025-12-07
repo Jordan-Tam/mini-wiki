@@ -113,7 +113,7 @@ function Browse(){
                     {wikis.map((wiki) => (
                         <div className="card mb-3" key={wiki._id}>
                             <div className="card-body">
-                                <Link to={`/wiki/${wiki.urlName}`} style={{textDecoration: "none"}}>
+                                <Link to={`/${wiki.urlName}`} style={{textDecoration: "none"}}>
                                     <h3 className="card-title">
                                         {wiki.name}
                                     </h3>

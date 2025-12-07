@@ -4,6 +4,7 @@
   "main": "main.ts",
   "license": "MIT",
   "scripts": {
+    "start": "ts-node --project tsconfig.json main.ts",
     "dev": "ts-node --project tsconfig.json main.ts"
   },
   "devDependencies": {

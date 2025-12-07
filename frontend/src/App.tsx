@@ -33,19 +33,19 @@ function App() {
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/testing" element={<TestingPage />} />
 					<Route
-						path="/wiki/:wikiId/:pageId/create"
+						path="/:wikiUrlName/:pageId/create"
 						element={<ArticleCreator />}
 					/>
 					{/* NOTE: THE BELOW IS TEMPORARY JUST TO GET THINGS WORKING, NEED TO SETUP A SPECIFIC ARTICLE EDITING PAGE */}
 					<Route
-						path="/wiki/:wikiId/:pageId/edit"
+						path="/:wikiUrlName/:pageId/edit"
 						element={<ArticleCreator />}
 					/>
 					<Route
-						path="/wiki/:wikiId/:pageId"
+						path="/:wikiUrlName/:pageId"
 						element={<Article fetchFromUrl={true} editHref="/edit" />}
 					/>
-					<Route path="/wiki/:wikiId" element={<WikiHome />}>
+					<Route path="/:wikiUrlName" element={<WikiHome />}>
 						<Route path=":category" />
 						<Route path="chat" />
 						<Route path="collaborators" />

@@ -94,7 +94,7 @@ function Home() {
 						<h4 id="favorited">FAVORITES</h4>
 						{favorites && favorites.length > 0 ? (
 							favorites.map((wiki) => (
-								<Link to={`/wiki/${wiki.urlName}`} style={{ textDecoration: "none" }} key={wiki._id}>
+								<Link to={`/${wiki.urlName}`} style={{ textDecoration: "none" }} key={wiki._id}>
 									<div className="card mb-3">
 										<div className="card-body">
 											<h3 className="card-title">{wiki.name}</h3>
@@ -117,7 +117,7 @@ function Home() {
 						<h4 id="owner">OWNER</h4>
 						{wikisData && wikisData.map((wiki) => {
 							return (
-								<Link to={`/wiki/${wiki.urlName}`} style={{textDecoration: "none"}}>
+								<Link to={`/${wiki.urlName}`} style={{textDecoration: "none"}}>
 									<div className="card mb-3">
 										<div className="card-body">
 											<h3 className="card-title">
@@ -140,32 +140,6 @@ function Home() {
 					</div>
 				</div>
 			</div>
-			{/* <div className="container-fluid">
-				<button className="btn btn-secondary mb-3" onClick={handleOpenCreateWikiModal}>Create Wiki</button>
-				{wikisData && wikisData.map((wiki) => {
-					return (
-						<Link to={`/wiki/${wiki._id}`} style={{textDecoration: "none"}}>
-							<div className="card mb-3">
-								<div className="card-body">
-									<h3 className="card-title">
-										{wiki.name}
-									</h3>
-									<p className="card-text">
-										{wiki.description}
-									</p>
-								</div>
-							</div>
-						</Link>
-					);
-				})}
-                {showCreateWikiModal && (
-                    <CreateWikiModal
-                        isOpen={showCreateWikiModal}
-                        handleClose={handleCloseModals}
-						setWikisData={setWikisData}
-                    />
-                )}
-			</div> */}
 			</>
 		)
 	}
