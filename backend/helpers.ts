@@ -45,6 +45,32 @@ const checkId = (
 
 };
 
+const checkWikiOrPageName = (
+  name: string,
+  funcName?: string
+): string => {
+  // Basic string validation.
+  name = checkString(name, "Wiki/Page Name", funcName);
+  // Length restrictions.
+  if (name.length < 1 || name.length > 40) {
+    throw "Wiki/Page name must be between 1-40 characters long.";
+  }
+
+  return name
+
+}
+
+const checkCategory = (category: string, funcName?: string): string => {
+  // Basic string validation.
+  category = checkString(category, "Category name", funcName);
+  // Length restrictions.
+  if (category.length < 1 || category.length > 20) {
+    throw "Category name must be between 1-20 characters long.";
+  }
+
+  return category;
+};
+
 const checkUrlName = (
   urlName: string,
   funcName?: string
@@ -54,8 +80,8 @@ const checkUrlName = (
     urlName = checkString(urlName, "Wiki URL", funcName);
 
     // Length restrictions.
-    if (urlName.length < 4 && urlName.length > 30) {
-        throw "Username must be between 4-30 characters long.";
+    if (urlName.length < 4 || urlName.length > 30) {
+        throw "Wiki URL must be between 4-30 characters long.";
     }
 
     // Character restrictions.
@@ -68,6 +94,17 @@ const checkUrlName = (
     return urlName;
 
 }
+
+const checkDescription = (description: string, funcName?: string): string => {
+  // Basic string validation.
+  description = checkString(description, "Wiki Description", funcName);
+  // Length restrictions.
+  if (description.length < 1 || description.length > 800) {
+    throw "Description must be between 1-800 characters long.";
+  }
+
+  return description;
+};
 
 const checkUsername = (
     username: string,
@@ -190,5 +227,8 @@ export {
     checkUsername,
     checkAccess,
     checkPassword,
-    checkEmail
+    checkEmail,
+    checkWikiOrPageName,
+    checkDescription,
+    checkCategory
 };

@@ -6,7 +6,10 @@ import {
     checkString,
     checkId,
     checkUrlName,
-    checkAccess
+    checkAccess,
+    checkWikiOrPageName,
+    checkDescription,
+    checkCategory
 } from "../helpers.ts";
 
 const wiki_data_functions = {
@@ -122,9 +125,9 @@ const wiki_data_functions = {
     ) {
 
         // Input validation.
-        name = checkString(name, "Wiki Name", "createWiki");
+        name = checkWikiOrPageName(name,"createWiki");
         urlName = checkUrlName(urlName, "createWiki");
-        description = checkString(description, "Wiki Description", "createWiki");
+        description = checkDescription(description, "createWiki");
         access = checkAccess(access, "createWiki");
 
         // Check if user exists.
@@ -190,7 +193,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "changeWikiName");
-        newName = checkString(newName, "Wiki Name", "changeWikiName");
+        newName = checkDescription(newName, "changeWikiName");
 
         // Create the updated wiki object.
         let updatedWiki = {
@@ -288,7 +291,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "createCategory");
-        category = checkString(category, "Wiki Category", "createCategory");
+        category = checkCategory(category, "createCategory");
 
         let wiki = await this.getWikiById(wikiId);
         if (wiki.categories.includes(category)) {
@@ -318,8 +321,8 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "editCategory");
-        oldCategoryName = checkString(oldCategoryName, "Original Wiki Category Name", "editCategory");
-        newCategoryName = checkString(newCategoryName, "Updated Wiki Category Name", "editCategory");
+        oldCategoryName = checkCategory(oldCategoryName, "editCategory");
+        newCategoryName = checkCategory(newCategoryName, "editCategory");
 
         let wiki = await this.getWikiById(wikiId);
 
@@ -358,7 +361,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "deleteCategory");
-        category = checkString(category, "Wiki Category", "deleteCategory");
+        category = checkCategory(category, "deleteCategory");
 
         let wiki = await this.getWikiById(wikiId);
 
@@ -397,7 +400,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "doesCategoryExist");
-        category = checkString(category, "Wiki Category", "doesCategoryExist");
+        category = checkCategory(category, "doesCategoryExist");
 
         let wiki = await this.getWikiById(wikiId);
 
