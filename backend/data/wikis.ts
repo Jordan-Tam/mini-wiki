@@ -546,6 +546,29 @@ const wiki_data_functions = {
 
         return (await this.getWikiById(wikiId.toString()));
 
+    },
+
+    /**
+     * Gonna be used on browsing page to search for Wikis
+     */
+    async searchWikisByName(
+      searchTerm: string 
+    ){
+        
+        searchTerm = searchTerm.trim();
+        if(searchTerm.length>30){
+            throw 'wiki names are less than 30 characters'
+        }
+
+        const wikiCollection = await wikis();
+        const wikiSearch = await wikiCollection.find({name: {$regex: searchTerm, $options: "i"}}).toArray();
+        
+        // if(wikiSearch.length === 0 ){
+        //     return [];
+        // }
+
+        return wikiSearch
+
     }
 
 };

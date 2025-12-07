@@ -271,15 +271,7 @@ const user_data_functions = {
 
     return { userDeleted: true };
 
-  },
-
-    /**
-     * Gonna be used on browsing page to search for Wikis
-     */
-    async searchWikisByName(){
-
-
-    }
+  }
 
 };
 

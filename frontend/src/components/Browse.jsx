@@ -16,6 +16,8 @@ function Browse(){
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
     const [favorites, setFavorites] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(""); 
+    const [favoritesOnly, setFavoritesOnly] = useState()
 
     const favorite_or_unfavorite = async (wikiId) => {
 
@@ -63,15 +65,26 @@ function Browse(){
     useEffect(() => {
         const fetchData = async () => {
 			try {
-				const response = await fetch(`/api/wiki/wikis/`, {
-					method: "GET",
-					headers: {
-						Authorization: "Bearer " + currentUser?.accessToken
-					}
-				});
+                setLoading(true)
+                let response;
+                if (searchTerm.trim()) {
+                    response = await fetch(`/api/wiki/search`, {   
+                        method: "POST",                          
+                        headers: {
+                          Authorization: "Bearer " + token,
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ searchTerm }),
+                    });
+                } else {
+                    response = await fetch(`/api/wiki/wikis/`, {
+                        method: "GET",
+                        headers: { Authorization: "Bearer " + token },
+                    });
+                }
 
 				if (!response.ok){ 
-                    throw new Error("Failed to fetch wiki");
+                    throw "failed to fetch wiki"
                 }
 
 				const data = await response.json();
@@ -81,10 +94,14 @@ function Browse(){
 					method: "GET",
 					headers: { Authorization: "Bearer " + token }
 				});
+
+                if (!favoriteResponse.ok){ 
+                    throw "failed to fetch favorites"
+                }
 	
 				const favoriteResult = await favoriteResponse.json();
 
-                console.log(favoriteResult);
+                //console.log(favoriteResult);
 				
                 setFavorites(favoriteResult);
 
@@ -102,7 +119,7 @@ function Browse(){
 		if (currentUser){
             fetchData();
         }
-	}, [currentUser]);
+	}, [currentUser, searchTerm, setFavoritesOnly]);
 
     if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
@@ -112,11 +129,38 @@ function Browse(){
         <>
             <h1>Browse Public Wikis</h1>
     
-            <p> (Search will go here) </p>
+            <input
+                type="text"
+                placeholder="Filter By Wiki Name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            
+            <br/>
+            <br/>
+            {!favoritesOnly &&
+                <button
+                    onClick={() => setFavoritesOnly(true)}
+                >
+                    Filter By Favorites
+                </button>
+            }
 
-            {wikis && wikis.length > 0 ? (
-                <div>
-                    {wikis.map((wiki) => (
+            {favoritesOnly &&
+                <button
+                onClick={() => setFavoritesOnly(false)}
+                >
+                Show All Wikis
+            </button>
+            
+            }
+        <br/>
+        <br/>
+            <div> 
+                {(favoritesOnly ? wikis.filter(w => favorites.some(fav => fav._id === w._id)) : wikis).length > 0 ? 
+                (
+                    (favoritesOnly ? wikis.filter(w => favorites.some(fav => fav._id === w._id)) : wikis)
+                    .map((wiki) => (
                         <div className="card mb-3" key={wiki._id}>
                             <div className="card-body">
                                 <Link to={`/${wiki.urlName}`} style={{textDecoration: "none"}}>
@@ -140,24 +184,29 @@ function Browse(){
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
                                         <>
                                             <FaHeart color="red" />
-                                            <p> {wiki.favorites}</p>
+                                            <p>
+                                                {wiki.favorites}
+                                            </p>
                                         </>
                                     ) : (
                                         <>
                                             <FaRegHeart color="red" />
-                                            <p> {wiki.favorites}</p>
+                                            <p> 
+                                                {wiki.favorites}
+                                            </p>
                                         </>
                                     )}
                                 </button>
-
-
                             </div>
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <p> No Wikis Found</p>
-            )}
+                    ))
+                ) : (
+                    <h5>
+                        {favoritesOnly ? "You do not have any wikis currently favorited." : "No Wikis Found"}
+                    </h5>  
+                )}
+            </div>
+       
         </>
     );
     
