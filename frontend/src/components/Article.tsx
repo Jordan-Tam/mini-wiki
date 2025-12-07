@@ -49,6 +49,7 @@ const Article: React.FC<ArticleProps> = ({
 }) => {
 	const location = useLocation();
 	const { wikiId, pageId } = useParams();
+	//TODO: const { wikiUrlName, pageUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
 	const [fetchedPage, setFetchedPage] = useState(null);
 	const [loading, setLoading] = useState(fetchFromUrl);

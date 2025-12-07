@@ -126,7 +126,7 @@ function Browse(){
 
     // console.log(favorites)
     return (
-        <>
+        <div className="container-fluid">
             <h1>Browse Public Wikis</h1>
     
             <input
@@ -206,7 +206,7 @@ function Browse(){
                 )}
             </div>
        
-        </>
+        </div>
     );
     
 }

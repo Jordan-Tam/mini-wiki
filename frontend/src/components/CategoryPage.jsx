@@ -46,6 +46,7 @@ function CategoryPage() {
     } else {
         return (
             <div className="container-fluid">
+                <h1>{category}</h1>
                 <ul style={{listStyleType: "none"}}>
                     {data && data.map((page) => (
                         <li>

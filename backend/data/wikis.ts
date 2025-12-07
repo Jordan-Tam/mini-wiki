@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import slugify from "slugify";
 import { users, wikis } from "../config/mongoCollections.ts";
 import userDataFunctions from "./users.ts";
 import {
