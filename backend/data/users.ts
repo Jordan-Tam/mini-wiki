@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { users } from "../config/mongoCollections.ts";
+import { users, wikis } from "../config/mongoCollections.ts";
 import wikiDataFunctions from "./wikis.ts";
 import {
     checkString,
@@ -154,8 +154,27 @@ const user_data_functions = {
         
         if (!updateInfo) {
             throw "unable to favorite wiki";
-          }
-        
+        }
+
+      const updatedWiki = {
+          favorites: wiki.favorites + 1,
+      };
+
+      console.log("Favorites: " + updatedWiki.favorites)
+
+      const wikisCollection = await wikis();
+
+      const updateWikiInfo = await wikisCollection.findOneAndUpdate(
+          { _id: new ObjectId(wikiId) },
+          { $set: updatedWiki },
+          { returnDocument: "after" }
+      );
+
+      if (!updateWikiInfo) {
+          throw "unable to add to wiki favorites";
+      }
+
+
         return updateInfo;
 
   },
@@ -197,6 +216,27 @@ const user_data_functions = {
         throw "unable to unfavorite wiki";
     }
 
+    if (wiki.favorites === 0){
+      throw "cant unfavorite"
+    }
+
+    const updatedWiki = {
+      favorites: wiki.favorites - 1,
+    };
+
+    console.log("Favorites: " + updatedWiki.favorites)
+
+    const wikisCollection = await wikis();
+
+    const updateWikiInfo = await wikisCollection.findOneAndUpdate(
+        { _id: new ObjectId(wikiId) },
+        { $set: updatedWiki },
+        { returnDocument: "after" }
+    );
+
+    if (!updateWikiInfo) {
+        throw "unable to add to wiki favorites";
+    }
     return updateInfo;
 
   },
@@ -232,6 +272,14 @@ const user_data_functions = {
     return { userDeleted: true };
 
   },
+
+    /**
+     * Gonna be used on browsing page to search for Wikis
+     */
+    async searchWikisByName(){
+
+
+    }
 
 };
 

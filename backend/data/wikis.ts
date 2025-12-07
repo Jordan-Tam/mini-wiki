@@ -145,7 +145,8 @@ const wiki_data_functions = {
             categories: ["UNCATEGORIZED"],
             collaborators: [],
             private_viewers: [],
-            pages: []
+            pages: [],
+            favorites: 0
         };
 
         const wikisCollection = await wikis();

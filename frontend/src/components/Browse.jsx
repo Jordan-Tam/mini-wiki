@@ -42,8 +42,14 @@ function Browse(){
             }
             
             setFavorites((prev) => isFavorite ? prev.filter((fav) => fav._id !== wikiId) 
-            : [...prev, wikis.find((w) => w._id === wikiId)]
-);
+            : [...prev, wikis.find((w) => w._id === wikiId)]);
+            
+            
+            setWikis(prev =>
+                prev.map(w =>
+                    w._id === wikiId ? { ...w, favorites: isFavorite ? w.favorites - 1 : w.favorites + 1 } : w
+                )
+            );
 
 
         } catch (e) {
@@ -132,9 +138,15 @@ function Browse(){
                                 >
                                     {console.log(typeof favorites)}
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
-                                        <FaHeart color="red" />
+                                        <>
+                                            <FaHeart color="red" />
+                                            <p> {wiki.favorites}</p>
+                                        </>
                                     ) : (
-                                        <FaRegHeart color="red" />
+                                        <>
+                                            <FaRegHeart color="red" />
+                                            <p> {wiki.favorites}</p>
+                                        </>
                                     )}
                                 </button>
 
