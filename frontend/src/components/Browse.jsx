@@ -65,7 +65,7 @@ function Browse(){
     useEffect(() => {
         const fetchData = async () => {
 			try {
-                setLoading(true)
+                //setLoading(true)
                 let response;
                 if (searchTerm.trim()) {
                     response = await fetch(`/api/wiki/search`, {   
