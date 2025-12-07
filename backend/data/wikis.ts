@@ -1,14 +1,22 @@
 import { ObjectId } from "mongodb";
+import slugify from "slugify";
 import { users, wikis } from "../config/mongoCollections.ts";
 import userDataFunctions from "./users.ts";
 import {
     checkString,
     checkId,
-    checkAccess
+    checkUrlName,
+    checkAccess,
+    checkWikiOrPageName,
+    checkDescription,
+    checkCategory
 } from "../helpers.ts";
 
 const wiki_data_functions = {
 
+    /**
+     * Returns an array of every wiki in existence.
+     */
     async getAllWikis() {
         
         const wikisCollection = await wikis();
@@ -19,6 +27,22 @@ const wiki_data_functions = {
 
     },
 
+    /**
+     * Returns an array of every taken wiki URL name.
+     */
+    async getAllWikiUrlNames() {
+
+        const wikisCollection = await wikis();
+
+        const wikisList = await this.getAllWikis();
+
+        return wikisList.map((wiki: any) => wiki.urlName);
+
+    },
+
+    /**
+     * Retrieves wiki object based on ObjectId and returns it.
+     */
     async getWikiById(
         id: string
     ) {
@@ -42,6 +66,35 @@ const wiki_data_functions = {
 
     },
 
+    /**
+     * Returns wiki object based on unique URL Name field and returns it.
+     */
+    async getWikiByUrlName(
+        urlName: string
+    ) {
+
+        // Input validation.
+        urlName = checkUrlName(urlName, "getWikiByUrl");
+
+        const wikisCollection = await wikis();
+
+        const wiki = await wikisCollection.findOne({
+            urlName
+        });
+
+        if (wiki === null) {
+            throw "No wiki with that URL.";
+        }
+
+        wiki._id = wiki._id.toString();
+
+        return wiki;
+
+    },
+
+    /**
+     * Returns an array of wikis that the user is either an owner of or a collaborator of.
+     */
     async getWikisByUser(
         userFirebaseUID: string,
     ) {
@@ -52,30 +105,51 @@ const wiki_data_functions = {
 
     },
 
+    /**
+     * 
+     * @param name 
+     * @param description 
+     * @param access 
+        * If this parameter is "public-view", all users will be able to view this wiki, but only the owner and the users listed in the "collaborators" array will be allowed to edit it.
+        * If this parameter is "public-edit", all users will be able to view AND edit this wiki.
+        * If this parameter is "private", only the owner and the users listed in the "collaborators" array will be allowed to view and edit, and only users listed in the "private_viewers" array will be allowed to view but not edit.
+     * @param owner 
+     * @returns 
+     */
     async createWiki(
         name: string,
+        urlName: string,
         description: string,
         access: string,
         owner: string
     ) {
 
         // Input validation.
-        name = checkString(name, "Wiki Name", "createWiki");
-        description = checkString(description, "Wiki Description", "createWiki");
+        name = checkWikiOrPageName(name,"createWiki");
+        urlName = checkUrlName(urlName, "createWiki");
+        description = checkDescription(description, "createWiki");
         access = checkAccess(access, "createWiki");
 
         // Check if user exists.
         await userDataFunctions.getUserByFirebaseUID(owner);
 
+        // Make sure URL name is unique.
+        if ((await (this.getAllWikiUrlNames())).includes(urlName)) {
+            throw "URL Name is already taken.";
+        }
+
         // Create the new wiki object.
         let newWiki = {
             name,
+            urlName,
             description,
             owner,
             access,
             categories: ["UNCATEGORIZED"],
             collaborators: [],
-            pages: []
+            private_viewers: [],
+            pages: [],
+            favorites: 0
         };
 
         const wikisCollection = await wikis();
@@ -90,6 +164,9 @@ const wiki_data_functions = {
 
     },
 
+    /**
+     * The DELETE WIKI route should first make sure that the logged-in user is the owner of this wiki before calling this function.
+     */
     async deleteWiki(id: string) {
 
         // Input validation.
@@ -116,7 +193,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "changeWikiName");
-        newName = checkString(newName, "Wiki Name", "changeWikiName");
+        newName = checkDescription(newName, "changeWikiName");
 
         // Create the updated wiki object.
         let updatedWiki = {
@@ -135,9 +212,7 @@ const wiki_data_functions = {
             throw "Could not update wiki name.";
         }
 
-        updateInfo._id = updateInfo._id.toString();
-
-        return updateInfo;
+        return (await this.getWikiById(wikiId.toString()));
 
     },
 
@@ -154,7 +229,9 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "changeWikiOwner");
-        newOwner = checkId(newOwner, "Wiki Owner", "changeWikiOwner");
+
+        // Check if user exists.
+        await userDataFunctions.getUserByFirebaseUID(newOwner);
 
         // Create the updated wiki object.
         let updatedWiki = {
@@ -173,9 +250,7 @@ const wiki_data_functions = {
             throw "Could not update wiki owner.";
         }
 
-        updateInfo._id = updateInfo._id.toString();
-
-        return updateInfo;
+        return (await this.getWikiById(wikiId.toString()));
 
     },
 
@@ -205,9 +280,7 @@ const wiki_data_functions = {
             throw "Could not update wiki access.";
         }
 
-        updateInfo._id = updateInfo._id.toString();
-
-        return updateInfo;
+        return (await this.getWikiById(wikiId.toString()));
 
     },
 
@@ -218,7 +291,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "createCategory");
-        category = checkString(category, "Wiki Category", "createCategory");
+        category = checkCategory(category, "createCategory");
 
         let wiki = await this.getWikiById(wikiId);
         if (wiki.categories.includes(category)) {
@@ -236,9 +309,48 @@ const wiki_data_functions = {
             throw "Could not create wiki category.";
         }
 
-        updateInfo._id = updateInfo._id.toString();
+        return (await this.getWikiById(wikiId.toString()));
 
-        return updateInfo;
+    },
+
+    async editCategory(
+        wikiId: string,
+        oldCategoryName: string,
+        newCategoryName: string
+    ) {
+
+        // Input validation.
+        wikiId = checkId(wikiId, "Wiki", "editCategory");
+        oldCategoryName = checkCategory(oldCategoryName, "editCategory");
+        newCategoryName = checkCategory(newCategoryName, "editCategory");
+
+        let wiki = await this.getWikiById(wikiId);
+
+        // Check if "oldCategoryName" exists in the categories array.
+        if (!(wiki.categories.includes(oldCategoryName))) {
+            throw "Category to edit does not exist.";
+        }
+
+        // Return early if old and new category names are the same.
+        if (oldCategoryName === newCategoryName) {
+            return;
+        }
+
+        // Make sure the new name is unique.
+        if (wiki.categories.includes(newCategoryName)) {
+            throw "Duplicate categories are not allowed.";
+        }
+
+        const wikisCollection = await wikis();
+        const updateInfo = await wikisCollection.findOneAndUpdate(
+            { _id: new ObjectId(wikiId) },
+            {
+                categories: wiki.categories.map((c: any) => c === oldCategoryName ? newCategoryName : c)
+            },
+            { returnDocument: "after" }
+        );
+
+        return (await this.getWikiById(wikiId.toString()));
 
     },
 
@@ -249,7 +361,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "deleteCategory");
-        category = checkString(category, "Wiki Category", "deleteCategory");
+        category = checkCategory(category, "deleteCategory");
 
         let wiki = await this.getWikiById(wikiId);
 
@@ -277,9 +389,7 @@ const wiki_data_functions = {
             throw "Could not delete wiki category.";
         }
 
-        updateInfo._id = updateInfo._id.toString();
-
-        return updateInfo;
+        return (await this.getWikiById(wikiId.toString()));
 
     },
 
@@ -290,7 +400,7 @@ const wiki_data_functions = {
 
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "doesCategoryExist");
-        category = checkString(category, "Wiki Category", "doesCategoryExist");
+        category = checkCategory(category, "doesCategoryExist");
 
         let wiki = await this.getWikiById(wikiId);
 
@@ -307,10 +417,29 @@ const wiki_data_functions = {
         wikiId = checkId(wikiId, "Wiki", "addCollaborator");
 
         // Check if wiki exists.
-        await this.getWikiById(wikiId);
+        let wiki = await this.getWikiById(wikiId);
 
         // Check if user exists.
         await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
+
+        // Check if user is already a collaborator.
+        if (wiki.collaborators.includes(userFirebaseUID)) {
+            throw "User is already a collaborator.";
+        }
+
+        const wikisCollection = await wikis();
+
+        const insertCollaboratorToWikiInfo = await wikisCollection.findOneAndUpdate(
+            {_id: new ObjectId(wikiId)},
+            {$push: {collaborators: userFirebaseUID}},
+            {returnDocument: "after"}
+        );
+
+        if (!insertCollaboratorToWikiInfo) {
+            throw "Collaborator could not be added.";
+        }
+
+        return (await this.getWikiById(wikiId.toString()));
 
     },
 
@@ -319,7 +448,128 @@ const wiki_data_functions = {
         userFirebaseUID: string
     ) {
 
+        // Input validation.
+        wikiId = checkId(wikiId, "Wiki", "removeCollaborator");
+
+        // Check if wiki exists.
+        let wiki = await this.getWikiById(wikiId);
+
+        // Check if user exists.
+        await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
+
+        // Check if user already wasn't a collaborator.
+        if (wiki.collaborators.includes(userFirebaseUID)) {
+            throw "User isn't a collaborator.";
+        }
+
+        const wikisCollection = await wikis();
+
+        const removeCollaboratorFromWikiInfo = await wikisCollection.findOneAndUpdate(
+            {_id: new ObjectId(wikiId)},
+            {$pull: {collaborators: userFirebaseUID}},
+            {returnDocument: "after"}
+        );
+
+        if (!removeCollaboratorFromWikiInfo) {
+            throw "Collaborator could not be removed.";
+        }
+
+        return (await this.getWikiById(wikiId.toString()));
+
     },
+
+    async addPrivateViewer(
+        wikiId: string,
+        userFirebaseUID: string
+    ) {
+
+        // Input validation.
+        wikiId = checkId(wikiId, "Wiki", "addPrivateViewer");
+
+        // Check if wiki exists.
+        let wiki = await this.getWikiById(wikiId);
+
+        // Check if user exists.
+        await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
+
+        // Check if user is already a private viewer.
+        if (wiki.private_viewers.includes(userFirebaseUID)) {
+            throw "User is already a private viewer.";
+        }
+
+        const wikisCollection = await wikis();
+
+        const insertPrivateViewerToWikiInfo = await wikisCollection.findOneAndUpdate(
+            {_id: new ObjectId(wikiId)},
+            {$push: {private_viewers: userFirebaseUID}},
+            {returnDocument: "after"}
+        );
+
+        if (!insertPrivateViewerToWikiInfo) {
+            throw "Private viewer could not be added.";
+        }
+
+        return (await this.getWikiById(wikiId.toString()));
+
+    },
+
+    async removePrivateViewer(
+        wikiId: string,
+        userFirebaseUID: string
+    ) {
+
+        // Input validation.
+        wikiId = checkId(wikiId, "Wiki", "removePrivateViewer");
+
+        // Check if wiki exists.
+        let wiki = await this.getWikiById(wikiId);
+
+        // Check if user exists.
+        await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
+
+        // Check if user already wasn't a collaborator.
+        if (wiki.private_viewers.includes(userFirebaseUID)) {
+            throw "User isn't a private viewer.";
+        }
+
+        const wikisCollection = await wikis();
+
+        const removePrivateViewerFromWikiInfo = await wikisCollection.findOneAndUpdate(
+            {_id: new ObjectId(wikiId)},
+            {$pull: {private_viewers: userFirebaseUID}},
+            {returnDocument: "after"}
+        );
+
+        if (!removePrivateViewerFromWikiInfo) {
+            throw "Private viewer could not be removed.";
+        }
+
+        return (await this.getWikiById(wikiId.toString()));
+
+    },
+
+    /**
+     * Gonna be used on browsing page to search for Wikis
+     */
+    async searchWikisByName(
+      searchTerm: string 
+    ){
+        
+        searchTerm = searchTerm.trim();
+        if(searchTerm.length>30){
+            throw 'wiki names are less than 30 characters'
+        }
+
+        const wikiCollection = await wikis();
+        const wikiSearch = await wikiCollection.find({name: {$regex: searchTerm, $options: "i"}}).toArray();
+        
+        // if(wikiSearch.length === 0 ){
+        //     return [];
+        // }
+
+        return wikiSearch
+
+    }
 
 };
 

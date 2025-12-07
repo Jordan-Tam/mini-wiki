@@ -6,11 +6,11 @@ import { useContext } from "react";
 function Header() {
 
   const { currentUser } = useContext(AuthContext);
-  console.log(currentUser);
+  //console.log(currentUser);
 
   return (
     <>
-      <nav className="navbar navbar-expand-sm navbar-dark bg-primary mb-3">
+      <nav className="navbar navbar-expand-sm navbar-dark bg-primary mb-3 sticky-top">
         <div className="container-fluid">
           <Link className="navbar-brand d-flex align-items-center justify-content-center" to="/home">
             <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" className="bi bi-book-half" viewBox="0 0 16 16">
@@ -36,12 +36,12 @@ function Header() {
                   </Link>
                 </li>
                 <li className="nav-item px-2">
-                  <Link className="nav-link" to="/">
+                  <Link className="nav-link" to="/browse">
                     Browse
                   </Link>
                 </li>
                 <li className="nav-item px-2">
-                  <Link className="nav-link" to="/">
+                  <Link className="nav-link" to="/create">
                     Create
                   </Link>
                 </li>

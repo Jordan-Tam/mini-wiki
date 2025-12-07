@@ -5,7 +5,7 @@ import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 
 function WikiHome() {
-	const { wikiId } = useParams();
+	const { wikiUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
 	const [wiki, setWiki] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ function WikiHome() {
 	useEffect(() => {
 		const fetchWiki = async () => {
 			try {
-				const response = await fetch(`/api/wiki/${wikiId}`, {
+				const response = await fetch(`/api/wiki/${wikiUrlName}`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
@@ -32,17 +32,17 @@ function WikiHome() {
 			}
 		};
 
-		if (wikiId && currentUser) fetchWiki();
-	}, [wikiId, currentUser]);
+		if (wikiUrlName && currentUser) fetchWiki();
+	}, [wikiUrlName, currentUser]);
 
 	const handleCloseModals = () => {
 		setShowNewCategoryModal(false);
 		setShowNewPageModal(false);
 	};
 
-	const handleCategoryCreated = (newCategory) => {
+	const handleCategoryCreated = (newCategory: any) => {
 		// Update wiki state with the new category
-		setWiki((prev) => ({
+		setWiki((prev: any) => ({
 			...prev,
 			categories: [...prev.categories, newCategory.name || newCategory]
 		}));
@@ -52,7 +52,7 @@ function WikiHome() {
 	if (error) return <p>Error: {error}</p>;
 
 	return (
-		<div>
+		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
 
@@ -83,7 +83,7 @@ function WikiHome() {
 					<ul>
 						{wiki.pages.map((page) => (
 							<li key={page._id}>
-								<Link to={`/wiki/${wikiId}/${page._id}`}>{page.name}</Link>
+								<Link to={`/${wikiUrlName}/${page._id}`}>{page.name}</Link>
 								<span
 									style={{
 										marginLeft: "1rem",
@@ -104,7 +104,7 @@ function WikiHome() {
 			{showNewCategoryModal && (
 				<CreateCategoryModal
 					isOpen={showNewCategoryModal}
-					wikiId={wikiId}
+					wikiId={wiki._id}
 					handleClose={handleCloseModals}
 					onCategoryCreated={handleCategoryCreated}
 				/>
@@ -113,7 +113,7 @@ function WikiHome() {
 			{showNewPageModal && (
 				<CreatePageModal
 					isOpen={showNewPageModal}
-					wikiId={wikiId}
+					wikiId={wiki._id}
 					categories={wiki?.categories}
 					handleClose={handleCloseModals}
 				/>

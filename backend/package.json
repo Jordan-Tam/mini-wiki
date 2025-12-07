@@ -4,6 +4,7 @@
 	"main": "main.ts",
 	"license": "MIT",
 	"scripts": {
+    "start": "ts-node --project tsconfig.json main.ts",
 		"dev": "ts-node --project tsconfig.json main.ts",
 		"seed": "ts-node --project tsconfig.json scripts/seed.ts"
 	},
@@ -28,6 +29,7 @@
 		"flat": "^6.0.1",
 		"mongodb": "^7.0.0",
 		"redis": "^5.9.0",
+    "slugify": "^1.6.6",
 		"ws": "^8.18.3"
 	}
 }

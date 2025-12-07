@@ -1,6 +1,8 @@
 import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
+import userDataFunctions from "../data/users.ts";
+import { checkAccess, checkCategory, checkDescription, checkUrlName, checkWikiOrPageName } from "../helpers.ts";
 
 export const router = Router();
 
@@ -36,29 +38,38 @@ router
 				});
 		}
 
-		console.log(req.body);
-		let { name, description, access } = req.body;
+		//console.log(req.body);
+		let { name, urlName, description, access } = req.body;
+		try{
+		name = checkWikiOrPageName(name);
+		urlName = checkUrlName(urlName);
+		description = checkDescription(description);
+		access = checkAccess(access);
+		}catch(e){
+			return res.status(400).json({error:e})
+		}
+
 
 		try {
 			return res.json(
 				await wikiDataFunctions.createWiki(
 					name,
+					urlName,
 					description,
 					access,
 					(req as any).user.uid
 				)
 			);
 		} catch (e) {
-			console.log("POST PROBLEM:" + e);
 			return res.status(500).json({ error: e });
 		}
 	});
 
-router
-	.route("/:id")
-
+router 
+	.route("/wikis")
+	
 	/**
-	 * Returns the wiki specified by "req.params.id".
+	 * Returns an array of public wikis.
 	 */
 	.get(async (req: any, res) => {
 		if (!req.user) {
@@ -67,17 +78,79 @@ router
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		let id = req.params.id;
+		try {
 
-		let wiki: any = await wikiDataFunctions.getWikiById(id);
+			const wikis = await wikiDataFunctions.getAllWikis();
 
-		if (wiki.owner !== req.user.uid && !wiki.collaborators.includes(req.user.uid)) {
-			return res
-				.status(403)
-				.json({ error: "You do not permission to access this resource." });
+			const public_wikis = [];
+			for (let wiki of wikis){
+				if (wiki.access === "public-edit" || wiki.access === "public-view"){
+					public_wikis.push(wiki);
+				}
+			}
+
+			return res.json(public_wikis);
+		
+		} catch (e) {
+
+			return res.status(500).json({error: e})
+
 		}
 
-		return res.json(wiki);
+	});
+
+	router.route("/urlTaken/:url").post(async (req, res) => {
+		let url = req.params.url.trim();
+		console.log(url);
+		try{
+			url = checkUrlName(url, "URL Taken route")
+		}catch(e){
+			return res.json({ error: e });
+		}
+		const takenURLs = await wikiDataFunctions.getAllWikiUrlNames();
+		if(takenURLs.includes(url.toLowerCase())){
+			return res.json({error: "URL taken"})
+		}
+		return res.json({ message: "URL available" });
+	})
+
+router
+	.route("/:urlName")
+
+	/**
+	 * Returns the wiki specified by "req.params.urlName".
+	 */
+	.get(async (req: any, res) => {
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		let urlName = req.params.urlName;
+
+		try {
+			let wiki: any = await wikiDataFunctions.getWikiByUrlName(urlName);
+
+			if (
+				wiki.owner !== req.user.uid &&
+				!wiki.collaborators.includes(req.user.uid) &&
+				wiki.access !== "public-edit" &&
+				wiki.access !== "public-view"
+			) {
+				return res
+					.status(403)
+					.json({ error: "You do not permission to access this resource." });
+			}
+
+			return res.json(wiki);
+		
+		} catch (e) {
+
+			return res.json(400).json({error: e});
+
+		}
+
 	})
 
 	/**
@@ -91,6 +164,38 @@ router
 	 * Deletes the wiki specified by "req.params.id".
 	 */
 	.delete(async (req, res) => {
+		return;
+	});
+
+router
+	.route("/search")
+	.post(async (req: any, res) => {
+		console.log("HERE")
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		const searchTerm = req.body.searchTerm.trim();
+		if (searchTerm.length > 50){
+			return res
+				.status(400)
+				.json({ error: "Wiki names are less than 50 characters"})
+		}
+
+		try {
+			
+			const returnValue = await wikiDataFunctions.searchWikisByName(searchTerm);
+
+			return res.json(returnValue)
+
+		} catch (e) {
+
+			return res.status(500).json({error: e})
+
+		}
+
 		return;
 	});
 
@@ -109,9 +214,17 @@ router
 		let id = req.params.id;
 		let { categoryName } = req.body;
 
+		let wiki;
+		try {
+			categoryName = checkCategory(categoryName, "POST :id/categories route")
+			wiki = await wikiDataFunctions.getWikiById(id);
+		} catch (e) {
+			return res.status(400).json({error: e});
+		}
+
 		try {
 			const updatedWiki = await wikiDataFunctions.createCategory(
-				id,
+				wiki._id,
 				categoryName
 			);
 			return res.json({ name: categoryName, wiki: updatedWiki });
@@ -134,6 +247,13 @@ router
 
 		let wikiId = req.params.id;
 		let { pageName, category } = req.body;
+
+		try{
+			pageName = checkWikiOrPageName(pageName, "POST :/id/pages")
+			category = checkCategory(category, "POST :/id/pages");
+		}catch(e){
+			return res.status(400).json({error: e})
+		}
 
 		try {
 			const newPage = await pageDataFunctions.createPage(
@@ -245,3 +365,5 @@ router
 	.delete(async (req, res) => {
 		return;
 	});
+
+export default router;

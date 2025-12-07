@@ -5,6 +5,7 @@ const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 const NUMBERS = "0123456789";
 const LETTERS_AND_NUMBERS = UPPERCASE_LETTERS + LOWERCASE_LETTERS + NUMBERS;
 const LETTERS_AND_NUMBERS_PLUS = LETTERS_AND_NUMBERS + "._-";
+const URL_NAME_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 
 const checkString = (
     str: string,
@@ -44,6 +45,67 @@ const checkId = (
 
 };
 
+const checkWikiOrPageName = (
+  name: string,
+  funcName?: string
+): string => {
+  // Basic string validation.
+  name = checkString(name, "Wiki/Page Name", funcName);
+  // Length restrictions.
+  if (name.length < 1 || name.length > 40) {
+    throw "Wiki/Page name must be between 1-40 characters long.";
+  }
+
+  return name
+
+}
+
+const checkCategory = (category: string, funcName?: string): string => {
+  // Basic string validation.
+  category = checkString(category, "Category name", funcName);
+  // Length restrictions.
+  if (category.length < 1 || category.length > 20) {
+    throw "Category name must be between 1-20 characters long.";
+  }
+
+  return category;
+};
+
+const checkUrlName = (
+  urlName: string,
+  funcName?: string
+): string => {
+
+    // Basic string validation.
+    urlName = checkString(urlName, "Wiki URL", funcName);
+
+    // Length restrictions.
+    if (urlName.length < 4 || urlName.length > 30) {
+        throw "Wiki URL must be between 4-30 characters long.";
+    }
+
+    // Character restrictions.
+    for (let char of urlName) {
+        if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1) {
+            throw "Wiki URL Name must contain only letters, numbers, hyphens, and underscores.";
+        }
+    }
+
+    return urlName;
+
+}
+
+const checkDescription = (description: string, funcName?: string): string => {
+  // Basic string validation.
+  description = checkString(description, "Wiki Description", funcName);
+  // Length restrictions.
+  if (description.length < 1 || description.length > 800) {
+    throw "Description must be between 1-800 characters long.";
+  }
+
+  return description;
+};
+
 const checkUsername = (
     username: string,
     funcName?: string
@@ -53,7 +115,7 @@ const checkUsername = (
     username = checkString(username, "Username", funcName);
 
     // Length restrictions.
-    if (username.length < 2 && username.length > 20) {
+    if (username.length < 2 || username.length > 20) {
         throw "Username must be between 2-20 characters long.";
     }
 
@@ -77,13 +139,13 @@ const checkAccess = (
     access = checkString(access, "Access", funcName);
 
     if (
-        (access !== "public")
+        (access !== "public-view")
         &&
-        (access !== "permissioned")
+        (access !== "public-edit")
         &&
         (access !== "private")
     ) {
-        throw "Access type must be 'public', 'permissioned', or 'private'."
+        throw "Access type must be 'public-view', 'public-edit', or 'private'.";
     }
 
     return access;
@@ -161,8 +223,12 @@ const checkPassword = (
 export {
     checkString,
     checkId,
+    checkUrlName,
     checkUsername,
     checkAccess,
     checkPassword,
-    checkEmail
+    checkEmail,
+    checkWikiOrPageName,
+    checkDescription,
+    checkCategory
 };

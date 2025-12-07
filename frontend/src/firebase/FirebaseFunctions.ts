@@ -2,7 +2,6 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signOut,
-  updateProfile,
   signInWithEmailAndPassword,
   updatePassword,
   signInWithPopup,
@@ -18,7 +17,6 @@ import {
 async function doCreateUserWithEmailAndPassword(
   email: string,
   password: string,
-  displayName: string
 ) {
   const auth = getAuth();
   await createUserWithEmailAndPassword(auth, email, password);
@@ -34,7 +32,6 @@ async function doCreateUserWithEmailAndPassword(
       console.log("Error adding account to database");
     }
 
-    await updateProfile(auth.currentUser, { displayName: displayName });
   } else {
     console.log("Not logged in!");
   }

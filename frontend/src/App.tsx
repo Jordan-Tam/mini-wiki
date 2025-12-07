@@ -4,13 +4,15 @@ import Landing from "./components/Landing.tsx";
 import Home from "./components/Home.jsx";
 import SignIn from "./components/SignIn.jsx";
 import SignUp from "./components/SignUp.jsx";
-import Profile from "./components/Profile.jsx";
+import Profile from "./components/Profile.js";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import TestingPage from "./components/TestingPage.jsx";
 import WikiHome from "./components/WikiHome.tsx";
 import ArticleCreator from "./components/ArticleCreator.tsx";
 import Article from "./components/Article.tsx";
+import Browse from "./components/Browse.jsx";
+import CreateWiki from "./components/CreateWiki.jsx";
 
 function App() {
 	return (
@@ -19,6 +21,8 @@ function App() {
 				<Header />
 				<Routes>
 					<Route path="/" element={<Landing />} />
+					<Route path="/browse" element={<Browse />} />
+					<Route path="/create" element={<CreateWiki />} />
 					<Route path="/home" element={<PrivateRoute />}>
 						<Route path="/home" element={<Home />} />
 					</Route>
@@ -29,19 +33,19 @@ function App() {
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/testing" element={<TestingPage />} />
 					<Route
-						path="/wiki/:wikiId/:pageId/create"
+						path="/:wikiUrlName/:pageId/create"
 						element={<ArticleCreator />}
 					/>
 					{/* NOTE: THE BELOW IS TEMPORARY JUST TO GET THINGS WORKING, NEED TO SETUP A SPECIFIC ARTICLE EDITING PAGE */}
 					<Route
-						path="/wiki/:wikiId/:pageId/edit"
+						path="/:wikiUrlName/:pageId/edit"
 						element={<ArticleCreator />}
 					/>
 					<Route
-						path="/wiki/:wikiId/:pageId"
+						path="/:wikiUrlName/:pageId"
 						element={<Article fetchFromUrl={true} editHref="/edit" />}
 					/>
-					<Route path="/wiki/:wikiId" element={<WikiHome />}>
+					<Route path="/:wikiUrlName" element={<WikiHome />}>
 						<Route path=":category" />
 						<Route path="chat" />
 						<Route path="collaborators" />

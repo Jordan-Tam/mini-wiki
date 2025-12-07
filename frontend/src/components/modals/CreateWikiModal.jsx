@@ -1,6 +1,7 @@
 import {useContext, useState} from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
+import URLInputCheck from "../URLInputCheck.jsx";
 
 Modal.setAppElement("#root");
 
@@ -10,6 +11,7 @@ const customStyles = {
         left: '50%',
         right: 'auto',
         bottom: 'auto',
+        marginTop: '25px',
         marginRight: '-50%',
         transform: 'translate(-50%, -50%)',
         width: '50%',
@@ -28,11 +30,13 @@ function CreateWikiModal(props) {
 
     // Form stuff
     const [name, setName] = useState("");
+    const [urlName, setUrlName] = useState("");
     const [description, setDescription] = useState("");
-    const [access, setAccess] = useState(true);
+    const [access, setAccess] = useState(2);
     const [error, setError] = useState("");
     const [disableSubmit, setDisableSubmit] = useState(false);
-    
+    const [URLOK, setURLOK] = useState(null); 
+
     // Submit form function
     const submitForm = async (e) => {
 
@@ -55,19 +59,20 @@ function CreateWikiModal(props) {
                 },
                 body: JSON.stringify({
                     name,
+                    urlName,
                     description,
-                    access: access ? "public" : "private"
+                    access: access === 0 ? "public-edit" : (access === 1 ? "public-view" : "private")
                 })
             });
             if (!response.ok) {
                 setDisableSubmit(false);
-                throw response.statusText;
+                throw (await response.json()).error;
             }
-            const result = await response.json();
-            props.setWikisData(prev => [...prev, result])
+            //const result = await response.json();
+            //props.setWikisData(prev => [...prev, result])
         } catch (e) {
             setDisableSubmit(false);
-            setError(`${e}`);
+            setError(e);
             return;
         }
 
@@ -103,7 +108,6 @@ function CreateWikiModal(props) {
                         </button>
                     </div>
                 </div>
-                {error && <p style={{color: "red"}}>{error}</p>}
                 <form
                 onSubmit={(e) => submitForm(e)}
                 >
@@ -121,6 +125,25 @@ function CreateWikiModal(props) {
                         />
                         <label htmlFor="name">Name</label>
                     </div>
+                    <div className="form-floating mb-3">
+                        <input
+                            className="form-control"
+                            placeholder="urlName"
+                            type="text"
+                            id="urlName"
+                            name="urlName"
+                            value={urlName}
+                            onChange={e => setUrlName(e.target.value)}
+                            disabled={disableSubmit}
+                            required
+                        />
+                        <label htmlFor="urlName">URL Name</label>
+                        <p className="small text-muted">The URL Name is used to uniquely identify the wiki in web addresses. Please choose wisely because you will not be able to change it after the wiki has been created.</p>
+                    </div>
+                        <URLInputCheck
+                        url={urlName}
+                        setURLOK={setURLOK}
+                        />
                     <div className="form-floating mb-3">
                         {/* //TODO: Change this to a textarea. */}
                         <input
@@ -141,33 +164,50 @@ function CreateWikiModal(props) {
                         <input
                             className="form-check-input"
                             type="radio"
-                            id="public"
-                            name="public"
-                            checked={access}
-                            onChange={() => setAccess(true)}
+                            id="public-edit"
+                            name="public-edit"
+                            checked={access === 0}
+                            onChange={() => setAccess(0)}
                             disabled={disableSubmit}
                         />
-                        <label className="form-check-label" htmlFor="public">
-                            Public
+                        <label className="form-check-label" htmlFor="public-edit">
+                            <span style={{fontWeight: "bold"}}>Publicly Editable:</span> All users can view and edit this wiki.
                         </label>
                     </div>
                     <div className="form-check">
                         <input
                             className="form-check-input"
                             type="radio"
-                            id="public"
-                            name="public"
-                            checked={!access}
-                            onChange={() => setAccess(false)}
+                            id="public-view"
+                            name="public-view"
+                            checked={access === 1}
+                            onChange={() => setAccess(1)}
                             disabled={disableSubmit}
                         />
-                        <label className="form-check-label" htmlFor="public">
-                            Private
+                        <label className="form-check-label" htmlFor="public-view">
+                            <span style={{fontWeight: "bold"}}>Publicly Viewable:</span> All users can view this wiki, but only collaborators can edit.
                         </label>
                     </div>
-                    <button className="btn btn-primary mt-3" type="submit" disabled={disableSubmit}>
-                        Create Wiki
-                    </button>
+                    <div className="form-check">
+                        <input
+                            className="form-check-input"
+                            type="radio"
+                            id="private"
+                            name="private"
+                            checked={access === 2}
+                            onChange={() => setAccess(2)}
+                            disabled={disableSubmit}
+                        />
+                        <label className="form-check-label" htmlFor="private">
+                            <span style={{fontWeight: "bold"}}>Private:</span> Only users you allow can view or edit this wiki.
+                        </label>
+                    </div>
+                    <div className="d-flex align-items-baseline">
+                        <button className="btn btn-primary mt-3 me-3" type="submit" disabled={disableSubmit && !URLOK}>
+                            Create Wiki
+                        </button>
+                        {error && <span style={{color: "red"}}>{error}</span>}
+                    </div>
                 </form>
             </Modal>
         </div>
