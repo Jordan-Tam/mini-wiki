@@ -168,6 +168,38 @@ router
 	});
 
 router
+	.route("/search")
+	.post(async (req: any, res) => {
+		console.log("HERE")
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		const searchTerm = req.body.searchTerm.trim();
+		if (searchTerm.length > 50){
+			return res
+				.status(400)
+				.json({ error: "Wiki names are less than 50 characters"})
+		}
+
+		try {
+			
+			const returnValue = await wikiDataFunctions.searchWikisByName(searchTerm);
+
+			return res.json(returnValue)
+
+		} catch (e) {
+
+			return res.status(500).json({error: e})
+
+		}
+
+		return;
+	});
+
+router
 	.route("/:id/categories")
 	/**
 	 * Creates a new category in the wiki
