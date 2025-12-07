@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { wikis } from "../config/mongoCollections.ts";
 import wikiDataFunctions from "./wikis.ts";
-import { checkString, checkId, checkUsername } from "../helpers.ts";
+import { checkString, checkId, checkUsername, checkCategory, checkWikiOrPageName } from "../helpers.ts";
 
 const page_data_functions = {
 	async getPageById(wikiId: string, pageId: string) {
@@ -25,7 +25,7 @@ const page_data_functions = {
 	async getPagesByCategory(wikiId: string, category: string) {
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createPage");
-		category = checkString(category, "Wiki Category", "getPagesByCategory");
+		category = checkCategory(category, "getPagesByCategory");
 
 		await wikiDataFunctions.doesCategoryExist(wikiId, category);
 
@@ -45,8 +45,8 @@ const page_data_functions = {
 	async createPage(wikiId: string, name: string, category: string) {
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createPage");
-		name = checkString(name, "Page Name", "createPage");
-		category = checkString(category, "Wiki Category", "createPage");
+		name = checkWikiOrPageName(name, "createPage");
+		category = checkCategory(category, "createPage");
 
 		// Create the new page object.
 		const newPage = {
@@ -128,7 +128,7 @@ const page_data_functions = {
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "changePageCategory");
 		pageId = checkId(pageId, "Page", "changePageCategory");
-		newCategory = checkString(newCategory, "Category", "changePageCategory");
+		newCategory = checkCategory(newCategory, "changePageCategory");
 		await wikiDataFunctions.doesCategoryExist(wikiId, newCategory);
 	}
 };
