@@ -13,6 +13,15 @@ import ArticleCreator from "./components/ArticleCreator.tsx";
 import Article from "./components/Article.tsx";
 import Browse from "./components/Browse.jsx"
 import CreateWiki from "./components/CreateWiki.jsx";
+import CategoryPage from "./components/CategoryPage.jsx";
+
+/**
+ * FORBIDDEN WIKI URL NAMES:
+ * browse, create, home, profile, user, signin, signup, testing
+ * 
+ * FORBIDDEN PAGE NAMES:
+ * category, chat, search
+ */
 
 function App() {
 	return (
@@ -29,29 +38,17 @@ function App() {
 					<Route path="/profile" element={<PrivateRoute />}>
 						<Route path="/profile" element={<Profile />} />
 					</Route>
+					{/* <Route path="/user" /> */}
 					<Route path="/signin" element={<SignIn />} />
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/testing" element={<TestingPage />} />
-					<Route
-						path="/:wikiUrlName/:pageId/create"
-						element={<ArticleCreator />}
-					/>
-					{/* NOTE: THE BELOW IS TEMPORARY JUST TO GET THINGS WORKING, NEED TO SETUP A SPECIFIC ARTICLE EDITING PAGE */}
-					<Route
-						path="/:wikiUrlName/:pageId/edit"
-						element={<ArticleCreator />}
-					/>
-					<Route
-						path="/:wikiUrlName/:pageId"
-						element={<Article fetchFromUrl={true} editHref="/edit" />}
-					/>
-					<Route path="/:wikiUrlName" element={<WikiHome />}>
-						<Route path=":category" />
-						<Route path="chat" />
-						<Route path="collaborators" />
-						<Route path="new-page" />
-						<Route path="search" />
-					</Route>
+					<Route path="/:wikiUrlName" element={<WikiHome />} />
+					<Route path="/:wikiUrlName/category/:category" element={<CategoryPage />} />
+					{/* <Route path="/:wikiUrlName/chat" /> */}
+					{/* <Route path="/:wikiUrlName/search" /> */}
+					<Route path="/:wikiUrlName/:pageId/create" element={<ArticleCreator />} />
+					<Route path="/:wikiUrlName/:pageId/edit" element={<ArticleCreator />} />
+					<Route path="/:wikiUrlName/:pageId" element={<Article fetchFromUrl={true} editHref="/edit" />} />
 				</Routes>
 			</AuthProvider>
 		</>

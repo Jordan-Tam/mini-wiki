@@ -10,7 +10,7 @@ router
 	.route("/")
 
 	/**
-	 * Returns every wiki where the user is an owner or collaborator.
+	 *! Returns every wiki where the user is an owner or collaborator.
 	 */
 	.get(async (req: any, res: any) => {
 		if (!req.user) {
@@ -27,7 +27,7 @@ router
 	})
 
 	/**
-	 * Creates a wiki.
+	 *! Creates a wiki.
 	 */
 	.post(async (req, res) => {
 		if (!(req as any).user) {
@@ -69,7 +69,7 @@ router
 	.route("/wikis")
 	
 	/**
-	 * Returns an array of public wikis.
+	 *! Returns an array of public wikis.
 	 */
 	.get(async (req: any, res) => {
 		if (!req.user) {
@@ -112,24 +112,24 @@ router
 			return res.json({error: "URL taken"})
 		}
 		return res.json({ message: "URL available" });
-	})
+	});
 
 router
 	.route("/:urlName")
 
 	/**
-	 * Returns the wiki specified by "req.params.urlName".
+	 *! Returns the wiki specified by "req.params.urlName".
 	 */
 	.get(async (req: any, res) => {
+
 		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
+			return res.status(401).json({ error: "You must be logged in to perform this action." });
 		}
 
 		let urlName = req.params.urlName;
 
 		try {
+
 			let wiki: any = await wikiDataFunctions.getWikiByUrlName(urlName);
 
 			if (
@@ -138,9 +138,7 @@ router
 				wiki.access !== "public-edit" &&
 				wiki.access !== "public-view"
 			) {
-				return res
-					.status(403)
-					.json({ error: "You do not permission to access this resource." });
+				return res.status(403).json({ error: "You do not permission to access this resource." });
 			}
 
 			return res.json(wiki);
@@ -168,9 +166,50 @@ router
 	});
 
 router
+	.route("/:urlName/category/:category")
+
+	/**
+	 *! Returns a list of pages associated with the wiki URL name and category.
+	 */
+	.get(async (req: any, res) => {
+
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		let wikiUrlName = req.params.urlName;
+		let category = req.params.category;
+		let wiki: any;
+
+		// Basic input validation.
+		try {
+			wikiUrlName = checkUrlName(wikiUrlName, "GET /:urlName/:category");
+			category = checkCategory(category, "GET /:urlName/:category");
+		} catch (e) {
+			return res.status(400).json({error: e});
+		}
+
+		// Check if wiki exists.
+		try {
+			wiki = await wikiDataFunctions.getWikiByUrlName(wikiUrlName);
+		} catch (e) {
+			return res.status(404).json({error: e});
+		}
+
+		try {
+			return res.json(await pageDataFunctions.getPagesByCategory(wiki._id.toString(), category));
+		} catch (e) {
+			return res.status(500).json({error: e});
+		}
+
+	});
+
+router
 	.route("/search")
 	.post(async (req: any, res) => {
-		console.log("HERE")
+
 		if (!req.user) {
 			return res
 				.status(401)

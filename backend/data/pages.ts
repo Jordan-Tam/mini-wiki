@@ -4,7 +4,9 @@ import wikiDataFunctions from "./wikis.ts";
 import { checkString, checkId, checkUsername, checkCategory, checkWikiOrPageName } from "../helpers.ts";
 
 const page_data_functions = {
+
 	async getPageById(wikiId: string, pageId: string) {
+
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "getPageById");
 		pageId = checkId(pageId, "Page", "getPageById");
@@ -18,9 +20,12 @@ const page_data_functions = {
 		}
 
 		throw "Page not found.";
+
 	},
 
-	async getPageByUrl() {},
+	async getPageByUrl() {
+		
+	},
 
 	async getPagesByCategory(wikiId: string, category: string) {
 		// Input validation.

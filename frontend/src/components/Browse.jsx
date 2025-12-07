@@ -180,7 +180,6 @@ function Browse(){
                                         cursor: "pointer"
                                     }}
                                 >
-                                    {console.log(typeof favorites)}
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
                                         <>
                                             <FaHeart color="red" />

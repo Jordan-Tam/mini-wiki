@@ -3,6 +3,7 @@ import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext.jsx";
 import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
+import CategoryCard from "./cards/CategoryCard.jsx";
 
 function WikiHome() {
 	const { wikiUrlName } = useParams();
@@ -22,11 +23,14 @@ function WikiHome() {
 						Authorization: "Bearer " + currentUser?.accessToken
 					}
 				});
-				if (!response.ok) throw new Error("Failed to fetch wiki");
+				if (!response.ok) {
+					throw (await response.json()).error;
+				}
+				//throw new Error("Failed to fetch wiki");
 				const data = await response.json();
 				setWiki(data);
-			} catch (err) {
-				setError(err.message);
+			} catch (e: any) {
+				setError(e);
 			} finally {
 				setLoading(false);
 			}
@@ -56,7 +60,7 @@ function WikiHome() {
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
 
-			<div style={{ marginTop: "2rem" }}>
+			<div className="mb-3" style={{ marginTop: "2rem" }}>
 				<button onClick={() => setShowNewCategoryModal(true)}>
 					+ New Category
 				</button>
@@ -68,7 +72,17 @@ function WikiHome() {
 				</button>
 			</div>
 
-			<div style={{ marginTop: "2rem" }}>
+			<div className="mb-3">
+				{wiki?.categories?.map((category) => (
+					<CategoryCard
+						wikiUrlName={wikiUrlName}
+						category={category}
+						numOfPages={wiki.pages.filter((p) => p.category === category).length}
+					/>
+				))}
+			</div>
+
+			{/* <div style={{ marginTop: "2rem" }}>
 				<h2>Categories</h2>
 				<ul>
 					{wiki?.categories?.map((category) => (
@@ -99,7 +113,7 @@ function WikiHome() {
 				) : (
 					<p>No pages yet. Create one to get started!</p>
 				)}
-			</div>
+			</div> */}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
