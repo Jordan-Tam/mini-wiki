@@ -17,6 +17,7 @@ function Browse(){
 	const [error, setError] = useState(null);
     const [favorites, setFavorites] = useState([]);
     const [searchTerm, setSearchTerm] = useState(""); 
+    const [favoritesOnly, setFavoritesOnly] = useState()
 
     const favorite_or_unfavorite = async (wikiId) => {
 
@@ -118,7 +119,7 @@ function Browse(){
 		if (currentUser){
             fetchData();
         }
-	}, [currentUser, searchTerm]);
+	}, [currentUser, searchTerm, setFavoritesOnly]);
 
     if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
@@ -134,10 +135,32 @@ function Browse(){
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
+            
+            <br/>
+            <br/>
+            {!favoritesOnly &&
+                <button
+                    onClick={() => setFavoritesOnly(true)}
+                >
+                    Filter By Favorites
+                </button>
+            }
 
-            {wikis && wikis.length > 0 ? (
-                <div>
-                    {wikis.map((wiki) => (
+            {favoritesOnly &&
+                <button
+                onClick={() => setFavoritesOnly(false)}
+                >
+                Show All Wikis
+            </button>
+            
+            }
+        <br/>
+        <br/>
+            <div> 
+                {(favoritesOnly ? wikis.filter(w => favorites.some(fav => fav._id === w._id)) : wikis).length > 0 ? 
+                (
+                    (favoritesOnly ? wikis.filter(w => favorites.some(fav => fav._id === w._id)) : wikis)
+                    .map((wiki) => (
                         <div className="card mb-3" key={wiki._id}>
                             <div className="card-body">
                                 <Link to={`/${wiki.urlName}`} style={{textDecoration: "none"}}>
@@ -161,23 +184,29 @@ function Browse(){
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
                                         <>
                                             <FaHeart color="red" />
-                                            <p> {wiki.favorites}</p>
+                                            <p>
+                                                {wiki.favorites}
+                                            </p>
                                         </>
                                     ) : (
                                         <>
                                             <FaRegHeart color="red" />
-                                            <p> {wiki.favorites}</p>
+                                            <p> 
+                                                {wiki.favorites}
+                                            </p>
                                         </>
                                     )}
                                 </button>
-
                             </div>
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <p> No Wikis Found</p>
-            )}
+                    ))
+                ) : (
+                    <h5>
+                        {favoritesOnly ? "You do not have any wikis currently favorited." : "No Wikis Found"}
+                    </h5>  
+                )}
+            </div>
+       
         </>
     );
     
