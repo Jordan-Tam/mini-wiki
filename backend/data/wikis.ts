@@ -191,9 +191,6 @@ const wiki_data_functions = {
         // Input validation.
         wikiId = checkId(wikiId, "Wiki", "changeWikiName");
         newName = checkString(newName, "Wiki Name", "changeWikiName");
-        if (newName.length > 50){
-            throw 'wiki name must be <50 characters'
-        }
         // Create the updated wiki object.
         let updatedWiki = {
             name: newName
@@ -555,8 +552,8 @@ const wiki_data_functions = {
     ){
         
         searchTerm = searchTerm.trim();
-        if(searchTerm.length>50){
-            throw 'wiki names are less than 50 characters'
+        if(searchTerm.length>30){
+            throw 'wiki names are less than 30 characters'
         }
 
         const wikiCollection = await wikis();
