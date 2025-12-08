@@ -2,7 +2,7 @@ import userDataFunctions from "../data/users.ts";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
 import { indexPage } from "../lib/search/indexer.ts";
-import { ensureIndex } from "../lib/search/search.ts";
+import { ensureIndex, esClient, WIKI_INDEX } from "../lib/search/search.ts";
 import { databaseConnection } from "../config/mongoConnection.ts";
 import { users, wikis } from "../config/mongoCollections.ts";
 
@@ -270,7 +270,8 @@ const seedWikis: SeedWiki[] = [
 	},
 	{
 		name: "Personal Finance Guide",
-		description: "Private notes on investment strategies and financial planning",
+		description:
+			"Private notes on investment strategies and financial planning",
 		urlName: "personal-finance-guide",
 		ownerUid: SEED_USER_UIDS[7],
 		access: "private",
@@ -313,9 +314,21 @@ async function seedDatabase() {
 		console.log(`Deleted ${deletedUsers.deletedCount} users`);
 		console.log(`Deleted ${deletedWikis.deletedCount} wikis`);
 
-		// Ensure Elasticsearch index exists
+		// Delete and recreate Elasticsearch index
+		console.log("\n--- Resetting Elasticsearch Index ---");
+		try {
+			await esClient.indices.delete({ index: WIKI_INDEX });
+			console.log("Deleted existing Elasticsearch index");
+		} catch (err: any) {
+			if (err.statusCode === 404) {
+				console.log("No existing index to delete");
+			} else {
+				throw err;
+			}
+		}
+
 		await ensureIndex();
-		console.log("Elasticsearch index ready");
+		console.log("Created fresh Elasticsearch index");
 
 		console.log("\n--- Seeding Users ---");
 		const createdUsers: SeedUser[] = [];

@@ -9,7 +9,7 @@ export async function indexPage(wikiId: string, page: any) {
 	const doc = {
 		wikiId,
 		pageId: page._id?.toString() ?? page.id,
-		title: page.name,
+		pageTitle: page.name,
 		category: page.category ?? "UNCATEGORIZED",
 		content: contentJoined
 	};

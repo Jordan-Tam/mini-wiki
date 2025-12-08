@@ -15,7 +15,7 @@ export async function ensureIndex() {
 				properties: {
 					wikiId: { type: "keyword" },
 					pageId: { type: "keyword" },
-					title: { type: "text" },
+					pageTitle: { type: "text" },
 					category: { type: "keyword" },
 					content: { type: "text" }
 				}
@@ -30,7 +30,7 @@ export async function ensureIndex() {
 export interface SearchResult {
 	wikiId: string;
 	pageId: string;
-	title: string;
+	pageTitle: string;
 	category: string;
 	score: number;
 	highlights: Record<string, string[]>;
@@ -60,7 +60,7 @@ export async function searchWikis(
 					{
 						multi_match: {
 							query: searchTerm,
-							fields: ["title^2", "content"],
+							fields: ["pageTitle^2", "content"],
 							type: "best_fields",
 							fuzziness: "AUTO"
 						}
@@ -77,7 +77,7 @@ export async function searchWikis(
 		},
 		highlight: {
 			fields: {
-				title: {},
+				pageTitle: {},
 				content: {
 					fragment_size: 150,
 					number_of_fragments: 3
@@ -91,7 +91,7 @@ export async function searchWikis(
 	const results: SearchResult[] = response.hits.hits.map((hit: any) => ({
 		wikiId: hit._source.wikiId,
 		pageId: hit._source.pageId,
-		title: hit._source.title,
+		pageTitle: hit._source.pageTitle,
 		category: hit._source.category,
 		score: hit._score,
 		highlights: hit.highlight || {}
