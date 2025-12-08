@@ -86,8 +86,6 @@ const Article: React.FC<ArticleProps> = ({
 		if (wikiUrlName && pageUrlName && currentUser) fetchPage();
 	}, [wikiUrlName, pageUrlName, currentUser, fetchFromUrl]);
 
-	console.log("what up")
-
 	// Memoize the edit button to prevent re-rendering if dependencies don't change
 	const editButton = useMemo(() => {
 		if (!onEdit && !editHref) return null;
@@ -98,9 +96,9 @@ const Article: React.FC<ArticleProps> = ({
 			: undefined;
 
 		return fullEditUrl ? (
-			<a href={fullEditUrl} aria-label="Edit this article">
-				Edit
-			</a>
+			<Link className="mb-3" to={fullEditUrl} aria-label="Edit this article">
+				<p className="btn btn-warning">Edit</p>
+			</Link>
 		) : (
 			<button type="button" onClick={onEdit} aria-label="Edit this article">
 				Edit
@@ -117,9 +115,9 @@ const Article: React.FC<ArticleProps> = ({
 	const displayTitle = fetchFromUrl ? fetchedPage?.name : title;
 
 	return (
-		<article className={className}>
+		<article className={`${className} container-fluid`}>
 			<div>
-				<h1>{displayTitle ?? "Article"}</h1>
+				<h1 className="mb-3">{displayTitle ?? "Article"}</h1>
 				{editButton}
 			</div>
 
