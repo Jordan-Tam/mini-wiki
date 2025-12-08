@@ -12,10 +12,10 @@ Repository for our Stevens CS-554 (Web Dev 2) final project
 ### First Time Setup
 
 1. Clone the repository and navigate to the project directory
-2. Run all services with Docker Compose in detached mode:
+2. Run all services with Docker Compose:
 
 ```bash
-docker compose up --build -d
+docker compose up --build
 ```
 
 3. Wait for all services to start. The application will:
@@ -32,13 +32,13 @@ docker compose up --build -d
 For subsequent runs (when only code changes):
 
 ```bash
-docker compose up -d
+docker compose up
 ```
 
 **Note**: The seed service will run each time, which clears and repopulates the database. If you want to preserve existing data, start only the main services:
 
 ```bash
-docker compose up -d elasticsearch mongo redis backend frontend
+docker compose up elasticsearch mongo redis backend frontend
 ```
 
 ### When Dependencies Change
@@ -47,14 +47,14 @@ If you update `package.json`, `Dockerfile`, or `docker-compose.yml`:
 
 ```bash
 docker compose build
-docker compose up -d
+docker compose up
 ```
 
 **Note**: This will also reseed the database. To preserve data while rebuilding, use:
 
 ```bash
 docker compose build
-docker compose up -d elasticsearch mongo redis backend frontend
+docker compose up elasticsearch mongo redis backend frontend
 ```
 
 ### Viewing Only Specific Service Logs
