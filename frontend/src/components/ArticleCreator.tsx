@@ -13,7 +13,7 @@ interface EditorItem {
 }
 
 function ArticleCreator() {
-	const { wikiId, pageId } = useParams();
+	const { wikiUrlName, pageId } = useParams();
 	const { currentUser } = useContext(AuthContext);
 	const navigate = useNavigate();
 	const [editors, setEditors] = useState<EditorItem[]>([]);
@@ -74,25 +74,42 @@ function ArticleCreator() {
 	const createPage = async () => {
 		const markdownArray: string[] = editors.map((editor) => editor.content);
 
+		// Validate that we have the required IDs
+		if (!wikiUrlName || !pageId) {
+			alert(
+				`Missing required parameters: wikiUrlName=${wikiUrlName}, pageId=${pageId}`
+			);
+			console.error("Missing params:", { wikiUrlName, pageId });
+			return;
+		}
+
+		// console.log("Creating page with:", { wikiUrlName, pageId, contentLength: markdownArray.length });
+
 		try {
 			setIsSaving(true);
-			const response = await fetch(`/api/wiki/${wikiId}/pages/${pageId}/content`, {
-				method: "POST",
-				headers: {
-					Authorization: "Bearer " + currentUser.accessToken,
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					content: markdownArray
-				})
-			});
+			const response = await fetch(
+				`/api/wiki/${wikiUrlName}/pages/${pageId}/content`,
+				{
+					method: "POST",
+					headers: {
+						Authorization: "Bearer " + currentUser.accessToken,
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({
+						content: markdownArray
+					})
+				}
+			);
 
 			if (!response.ok) {
 				throw new Error("Failed to save page");
 			}
 
-			// Success - navigate to the page view
-			navigate(`/wiki/${wikiId}/${pageId}`);
+			// Get the updated page data which includes the URL
+			const updatedPage = await response.json();
+			
+			// Success - navigate to the page view using the page URL
+			navigate(`/${wikiUrlName}/${updatedPage.urlName}`);
 		} catch (error) {
 			alert(`Error saving page: ${error}`);
 			setIsSaving(false);
@@ -181,7 +198,11 @@ function ArticleCreator() {
 			</div>
 			{editors.length > 0 && (
 				<div className="create-page-section">
-					<button onClick={createPage} className="btn-create-page" disabled={isSaving}>
+					<button
+						onClick={createPage}
+						className="btn-create-page"
+						disabled={isSaving}
+					>
 						{isSaving ? "Saving..." : "Create Page"}
 					</button>
 				</div>
