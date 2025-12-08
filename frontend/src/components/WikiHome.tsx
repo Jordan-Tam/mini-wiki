@@ -59,12 +59,12 @@ function WikiHome() {
 		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
-
-			<div className="mb-3" style={{ marginTop: "2rem" }}>
-				<button onClick={() => setShowNewCategoryModal(true)}>
+			<div className="mt-3 mb-3">
+				<button className="btn btn-secondary" onClick={() => setShowNewCategoryModal(true)}>
 					+ New Category
 				</button>
 				<button
+					className="btn btn-secondary"
 					onClick={() => setShowNewPageModal(true)}
 					style={{ marginLeft: "1rem" }}
 				>

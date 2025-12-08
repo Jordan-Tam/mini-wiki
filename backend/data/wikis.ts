@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { users, wikis } from "../config/mongoCollections.ts";
 import userDataFunctions from "./users.ts";
+import pageDataFunctions from "./pages.ts";
 import {
     checkString,
     checkId,
@@ -181,6 +182,14 @@ const wiki_data_functions = {
             throw "Could not delete wiki.";
         }
 
+        // Iterate through every user and delete the wiki's ID if it appears in their favorites array.
+        const usersList = await userDataFunctions.getUsers();
+        for (let user of usersList) {
+            if (user.favorites.includes(id)) {
+                await userDataFunctions.removeFavorite(id, user.firebaseUID);
+            }
+        }
+
         return true;
         
     },
@@ -348,6 +357,13 @@ const wiki_data_functions = {
             },
             { returnDocument: "after" }
         );
+
+        // For each page in the category, update their category field to reflect the new category name.
+        for (let page of wiki.pages) {
+            if (page.category === oldCategoryName) {
+                await pageDataFunctions.changePageCategory(wiki._id, page._id, newCategoryName);
+            }
+        }
 
         return (await this.getWikiById(wikiId.toString()));
 

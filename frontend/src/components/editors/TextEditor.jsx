@@ -55,6 +55,7 @@ function TextEditor({
 				<textarea
 					ref={textareaRef}
 					name="userTextArea"
+					style={{resize: "both"}}
 					id={textareaId}
 					value={text}
 					rows="10"

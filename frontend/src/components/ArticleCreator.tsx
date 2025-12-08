@@ -100,7 +100,7 @@ function ArticleCreator() {
 	};
 
 	return (
-		<div className="article-creator">
+		<div className="container-fluid article-creator">
 			<div className="article-creator-header">
 				<h2>Create New Article</h2>
 				<div className="add-editor-buttons">

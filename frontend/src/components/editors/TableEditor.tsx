@@ -290,6 +290,7 @@ function TableEditor({
 					}}
 					onClick={updateCurrentCellFromCursor}
 					onKeyUp={updateCurrentCellFromCursor}
+					style={{resize: "both"}}
 				></textarea>
 			</div>
 			{showPreview && (
