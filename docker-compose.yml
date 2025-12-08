@@ -44,7 +44,7 @@ services:
       - elasticsearch
       - redis
     environment:
-      - MONGO_URL=mongodb://mongo:27017/mini-wiki
+      - MONGO_URL=mongodb://mongo:27017
       - ES_URL=http://elasticsearch:9200
       - REDIS_URL=redis://redis:6379
       - NODE_ENV=development
@@ -85,7 +85,7 @@ services:
       - mongo
       - elasticsearch
     environment:
-      - MONGO_URL=mongodb://mongo:27017/mini-wiki
+      - MONGO_URL=mongodb://mongo:27017
       - ES_URL=http://elasticsearch:9200
     networks:
       - miniwiki-net
