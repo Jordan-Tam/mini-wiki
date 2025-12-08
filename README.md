@@ -8,34 +8,17 @@ Requirements: having docker and docker compose setup and installed.
 docker compose up --build
 ```
 
-## (NEED TO TEST) Running docker with dev mode
-
-Start db services only:
+Afterwards, if only code changes:
 
 ```
-docker compose up -d mongo elasticsearch redis
+docker compose up
 ```
 
-Run seed script:
+If a dependency (package.json), Dockerfile, or the docker-compose file changes:
 
 ```
-docker compose up seed
-```
-
-Start backend locally:
-
-```
-# in backend/
-npm install
-npm run dev
-```
-
-Start frontend locally:
-
-```
-# in frontend/
-npm install
-npm run dev
+docker compose build
+docker compose up
 ```
 
 ## IMPORTANT NOTE:

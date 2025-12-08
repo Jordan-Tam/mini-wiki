@@ -12,7 +12,9 @@ services:
       - esdata:/usr/share/elasticsearch/data
     networks:
       - miniwiki-net
-
+    # https://docs.docker.com/engine/logging/configure/
+    logging:
+      driver: "none"
   mongo:
     image: mongo:7
     container_name: miniwiki-mongo
@@ -23,6 +25,8 @@ services:
       - mongodata:/data/db
     networks:
       - miniwiki-net
+    logging:
+      driver: "none"
 
   redis:
     image: redis:7
@@ -32,6 +36,8 @@ services:
       - "6379:6379"
     networks:
       - miniwiki-net
+    logging:
+      driver: "none"
 
   backend:
     build:
