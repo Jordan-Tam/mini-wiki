@@ -2,7 +2,7 @@ import { Router } from "express";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
 import userDataFunctions from "../data/users.ts";
-import { checkAccess, checkCategory, checkDescription, checkUrlName, checkWikiOrPageName } from "../helpers.ts";
+import { checkString, checkAccess, checkCategory, checkDescription, checkUrlName, checkWikiOrPageName } from "../helpers.ts";
 
 export const router = Router();
 
@@ -278,6 +278,7 @@ router
 	 * Creates a new page in the wiki
 	 */
 	.post(async (req: any, res) => {
+
 		if (!req.user) {
 			return res
 				.status(401)
@@ -306,12 +307,46 @@ router
 		}
 	});
 
-router
+router.route("/:wikiUrlName/pages/:pageUrlName")
+
+	.get(async (req: any, res) => {
+
+		if (!req.user) {
+			return res.status(401).json({ error: "You must be logged in to perform this action." });
+		}
+
+		let wikiUrlName = req.params.wikiUrlName;
+		let pageUrlName = req.params.pageUrlName;
+		let wiki: any;
+
+		// Input validation.
+		try {
+			wikiUrlName = checkUrlName(wikiUrlName);
+			pageUrlName = checkString(pageUrlName, "Page URL");
+		} catch (e) {
+			return res.status(400).json({error: e});
+		}
+
+		// Check if wiki exists.
+		try {
+			wiki = await wikiDataFunctions.getWikiByUrlName(wikiUrlName);
+		} catch (e) {
+			return res.status(404).json({error: e});
+		}
+
+		// Get page from wiki document.
+		try {
+			return res.json(await (pageDataFunctions.getPageByUrlName(wiki._id, pageUrlName)));
+		} catch (e) {
+			return res.status(404).json({error: `${e}`});
+		}
+
+	});
+
+/* router
 	.route("/:id/pages/:pageId")
 
-	/**
-	 *! Gets a specific page by ID
-	 */
+	//! Gets a specific page by ID
 	.get(async (req: any, res) => {
 		if (!req.user) {
 			return res
@@ -328,7 +363,7 @@ router
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
-	});
+	}); */
 
 router
 	.route("/:id/pages/:pageId/content")

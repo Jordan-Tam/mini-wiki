@@ -46,9 +46,9 @@ function App() {
 					<Route path="/:wikiUrlName/category/:category" element={<CategoryPage />} />
 					{/* <Route path="/:wikiUrlName/chat" /> */}
 					{/* <Route path="/:wikiUrlName/search" /> */}
+					<Route path="/:wikiUrlName/:pageUrlName" element={<Article fetchFromUrl={true} editHref="/edit" />} />
 					<Route path="/:wikiUrlName/:pageId/create" element={<ArticleCreator />} />
 					<Route path="/:wikiUrlName/:pageId/edit" element={<ArticleCreator />} />
-					<Route path="/:wikiUrlName/:pageId" element={<Article fetchFromUrl={true} editHref="/edit" />} />
 				</Routes>
 			</AuthProvider>
 		</>

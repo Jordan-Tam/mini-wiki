@@ -24,16 +24,19 @@ const page_data_functions = {
 
 	},
 
-	async getPageByUrl(
+	async getPageByUrlName(
 		wikiId: string,
 		urlName: string
 	) {
 
 		// Input validation.
+		wikiId = checkId(wikiId, "Wiki");
+		urlName = checkString(urlName, "Page URL");
 
-        const wiki: any = wikiDataFunctions.getWikiById(wikiId);
+        const wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
 		for (let page of wiki.pages) {
+			console.log(`${page.urlName} === ${urlName}`)
 			if (page.urlName === urlName) {
 				return page;
 			}
