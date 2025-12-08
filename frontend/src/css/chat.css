@@ -1,0 +1,30 @@
+
+.chat-container {
+    display: flex;
+    
+    /* flex-flow: column; */ 
+    flex-direction: column;  
+
+    background-color: #bbdefb;
+    height: 100%;
+    padding: 15px;
+    gap: 5px;
+
+}
+
+.chat-container > div{
+    background: #ffecb3;
+    border: 3px solid #ffcc80;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.chat-messages-box { 
+    /* flex:95 1 auto; */
+    flex-grow:95;
+}
+            
+.chat-text-box { 
+    /* flex:5 1 auto; */
+    flex-grow:5;
+}
