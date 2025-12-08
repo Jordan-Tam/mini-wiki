@@ -105,8 +105,11 @@ function ArticleCreator() {
 				throw new Error("Failed to save page");
 			}
 
-			// Success - navigate to the page view
-			navigate(`/${wikiUrlName}/${pageId}`);
+			// Get the updated page data which includes the URL
+			const updatedPage = await response.json();
+			
+			// Success - navigate to the page view using the page URL
+			navigate(`/${wikiUrlName}/${updatedPage.urlName}`);
 		} catch (error) {
 			alert(`Error saving page: ${error}`);
 			setIsSaving(false);
