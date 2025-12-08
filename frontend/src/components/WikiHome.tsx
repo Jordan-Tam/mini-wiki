@@ -114,6 +114,7 @@ function WikiHome() {
 				<CreatePageModal
 					isOpen={showNewPageModal}
 					wikiId={wiki._id}
+					wikiUrlName={wiki.urlName}
 					categories={wiki?.categories}
 					handleClose={handleCloseModals}
 				/>

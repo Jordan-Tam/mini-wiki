@@ -1,4 +1,3 @@
-// backend/src/lib/search.ts
 import { Client } from "@elastic/elasticsearch";
 
 export const esClient = new Client({
@@ -12,20 +11,100 @@ export async function ensureIndex() {
 	if (!exists) {
 		await esClient.indices.create({
 			index: WIKI_INDEX,
-			body: {
-				mappings: {
-					properties: {
-						wikiId: { type: "keyword" },
-						pageId: { type: "keyword" },
-						title: { type: "text" },
-						category: { type: "keyword" },
-						content: { type: "text" }
-					}
+			mappings: {
+				properties: {
+					wikiId: { type: "keyword" },
+					pageId: { type: "keyword" },
+					title: { type: "text" },
+					category: { type: "keyword" },
+					content: { type: "text" }
 				}
 			}
-		});
+		} as any);
 		console.log("Created index:", WIKI_INDEX);
 	} else {
 		console.log("Index exists:", WIKI_INDEX);
 	}
+}
+
+export interface SearchResult {
+	wikiId: string;
+	pageId: string;
+	title: string;
+	category: string;
+	score: number;
+	highlights: Record<string, string[]>;
+}
+
+export async function searchWikis(
+	searchTerm: string,
+	wikiIds: string[]
+): Promise<Record<string, SearchResult[]>> {
+	/**
+	 * Search across multiple wikis that the user has access to
+	 */
+
+	if (!searchTerm || searchTerm.trim() === "") {
+		throw new Error("Search term cannot be empty");
+	}
+
+	if (!wikiIds || wikiIds.length === 0) {
+		return {};
+	}
+
+	const response = await esClient.search({
+		index: WIKI_INDEX,
+		query: {
+			bool: {
+				must: [
+					{
+						multi_match: {
+							query: searchTerm,
+							fields: ["title^2", "content"],
+							type: "best_fields",
+							fuzziness: "AUTO"
+						}
+					}
+				],
+				filter: [
+					{
+						terms: {
+							wikiId: wikiIds
+						}
+					}
+				]
+			}
+		},
+		highlight: {
+			fields: {
+				title: {},
+				content: {
+					fragment_size: 150,
+					number_of_fragments: 3
+				}
+			}
+		},
+		size: 100
+	} as any);
+
+	// Group results by wikiId for easier frontend consumption
+	const results: SearchResult[] = response.hits.hits.map((hit: any) => ({
+		wikiId: hit._source.wikiId,
+		pageId: hit._source.pageId,
+		title: hit._source.title,
+		category: hit._source.category,
+		score: hit._score,
+		highlights: hit.highlight || {}
+	}));
+
+	// Group by wiki
+	const groupedResults: Record<string, SearchResult[]> = {};
+	results.forEach((result: SearchResult) => {
+		if (!groupedResults[result.wikiId]) {
+			groupedResults[result.wikiId] = [];
+		}
+		groupedResults[result.wikiId].push(result);
+	});
+
+	return groupedResults;
 }
