@@ -47,8 +47,10 @@ const Article: React.FC<ArticleProps> = ({
 	className,
 	fetchFromUrl = false
 }) => {
+
 	const location = useLocation();
-	const { wikiId, pageId } = useParams();
+	const { wikiUrlName, pageUrlName } = useParams();
+	//TODO: const { wikiUrlName, pageUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
 	const [fetchedPage, setFetchedPage] = useState(null);
 	const [loading, setLoading] = useState(fetchFromUrl);
@@ -59,25 +61,32 @@ const Article: React.FC<ArticleProps> = ({
 
 		const fetchPage = async () => {
 			try {
-				const response = await fetch(`/api/wiki/${wikiId}/pages/${pageId}`, {
+				const response = await fetch(`/api/wiki/${wikiUrlName}/pages/${pageUrlName}`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
 					}
 				});
 
-				if (!response.ok) throw new Error("Failed to fetch page");
+				if (!response.ok) {
+					throw "Failed to fetch page";
+				}
+
 				const data = await response.json();
 				setFetchedPage(data);
-			} catch (err) {
-				setError((err as Error).message);
+				setLoading(false);
+				
+			} catch (e: any) {
+				setError(`${e}`);
 			} finally {
 				setLoading(false);
 			}
 		};
 
-		if (wikiId && pageId && currentUser) fetchPage();
-	}, [wikiId, pageId, currentUser, fetchFromUrl]);
+		if (wikiUrlName && pageUrlName && currentUser) fetchPage();
+	}, [wikiUrlName, pageUrlName, currentUser, fetchFromUrl]);
+
+	console.log("what up")
 
 	// Memoize the edit button to prevent re-rendering if dependencies don't change
 	const editButton = useMemo(() => {

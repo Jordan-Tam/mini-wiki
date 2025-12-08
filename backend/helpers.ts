@@ -12,14 +12,10 @@ const checkString = (
 	varName: string,
 	funcName?: string
 ): string => {
-	console.log(str);
-
 	// Check if "str" is composed of only spaces.
 	if (str.trim().length === 0) {
 		throw `${varName} cannot be an empty string or just spaces.`;
 	}
-
-	console.log(2);
 
 	// Return trimmed string.
 	return str.trim();

@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
+import WikiCard from "./cards/WikiCard.jsx";
 import CreateWikiModal from "./modals/CreateWikiModal.jsx";
 
 function Home() {
@@ -78,69 +79,48 @@ function Home() {
 		);
 	} else {
 		return (
-			<>
-			<div className="row">
-				<div className="ms-3 col-3">
-					<div id="list-example" className="list-group sticky-top" style={{top: "77px", zIndex: 99}}>
-					<a className="list-group-item list-group-item-action" href="#favorited">Favorited</a>
-					<a className="list-group-item list-group-item-action" href="#owned">Owned</a>
-					<a className="list-group-item list-group-item-action" href="#collaborator">Collaborator</a>
-					<a className="list-group-item list-group-item-action" href="#viewer">Viewer</a>
-					<a className="list-group-item list-group-item-action" href="#following">Following</a>
+			<div className="container-fluid">
+				<div className="row">
+					<div className="ms-3 col-2">
+						<div id="list-example" className="list-group sticky-top" style={{top: "77px", zIndex: 99}}>
+						<a className="list-group-item list-group-item-action" href="#favorited">Favorited</a>
+						<a className="list-group-item list-group-item-action" href="#owner">Owner</a>
+						<a className="list-group-item list-group-item-action" href="#collaborator">Collaborator</a>
+						<a className="list-group-item list-group-item-action" href="#viewer">Viewer</a>
+						</div>
 					</div>
-				</div>
-				<div className="col-8">
-					<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" className="scrollspy-example" tabIndex="0" style={{overflowY: "auto"}}>
-						<h4 id="favorited">FAVORITES</h4>
-						{favorites && favorites.length > 0 ? (
-							favorites.map((wiki) => (
-								<Link to={`/${wiki.urlName}`} style={{ textDecoration: "none" }} key={wiki._id}>
-									<div className="card mb-3">
-										<div className="card-body">
-											<h3 className="card-title">{wiki.name}</h3>
-											<p className="card-text">{wiki.description}</p>
-										</div>
-									</div>
-								</Link>
-							))
-						) : (
-							<>
-								<p>No favorited wikis yet.
-									<Link to="/browse" 
-										style={{ marginLeft: "5px" }}>
-										Find some!
-									</Link> 
-								</p>
-							</>
-						)}
+					<div className="col-8">
+						<div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" className="scrollspy-example" tabIndex="0">
+							<h4 id="favorited">FAVORITES</h4>
+							{favorites && favorites.length > 0 ? (
+								favorites.map((wiki) => (
+									<WikiCard wiki={wiki}/>
+								))
+							) : (
+								<>
+									<p>No favorited wikis yet.
+										<Link to="/browse" 
+											style={{ marginLeft: "5px" }}>
+											Find some!
+										</Link> 
+									</p>
+								</>
+							)}
 
-						<h4 id="owner">OWNER</h4>
-						{wikisData && wikisData.map((wiki) => {
-							return (
-								<Link to={`/${wiki.urlName}`} style={{textDecoration: "none"}}>
-									<div className="card mb-3">
-										<div className="card-body">
-											<h3 className="card-title">
-												{wiki.name}
-											</h3>
-											<p className="card-text">
-												{wiki.description}
-											</p>
-										</div>
-									</div>
-								</Link>
-							);
-						})}
-						<h4 id="collaborator">COLLABORATOR</h4>
-						<p>...</p>
-						<h4 id="viewer">PRIVATE VIEWER</h4>
-						<p>...</p>
-						<h4 id="following">FOLLOWING</h4>
-						<p>...</p>
+							<h4 id="owner">OWNER</h4>
+							<p className="small text-muted">Public and private wikis you have ownership of.</p>
+							{wikisData && wikisData.map((wiki) => <WikiCard wiki={wiki} />)}
+							<h4 id="collaborator">COLLABORATOR </h4>
+							<p className="small text-muted">Public and private wikis where you aren't the owner but have been granted exclusive editing permissions.</p>
+							<p className="small text-muted">Does not include public wikis where editing is available to all users.</p>
+							<p>...</p>
+							<h4 id="viewer">PRIVATE VIEWER</h4>
+							<p className="small text-muted">Private wikis where you aren't the owner but have been granted view-only permissions.</p>
+							<p>...</p>
+						</div>
 					</div>
 				</div>
 			</div>
-			</>
 		)
 	}
 }

@@ -126,7 +126,7 @@ function Browse(){
 
     // console.log(favorites)
     return (
-        <>
+        <div className="container-fluid">
             <h1>Browse Public Wikis</h1>
     
             <input
@@ -180,7 +180,6 @@ function Browse(){
                                         cursor: "pointer"
                                     }}
                                 >
-                                    {console.log(typeof favorites)}
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
                                         <>
                                             <FaHeart color="red" />
@@ -207,7 +206,7 @@ function Browse(){
                 )}
             </div>
        
-        </>
+        </div>
     );
     
 }
