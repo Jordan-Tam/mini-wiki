@@ -1,10 +1,13 @@
 import { ObjectId } from "mongodb";
+import slugify from "slugify";
 import { wikis } from "../config/mongoCollections.ts";
 import wikiDataFunctions from "./wikis.ts";
 import { checkString, checkId, checkUsername, checkCategory, checkWikiOrPageName } from "../helpers.ts";
 
 const page_data_functions = {
+
 	async getPageById(wikiId: string, pageId: string) {
+
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "getPageById");
 		pageId = checkId(pageId, "Page", "getPageById");
@@ -18,9 +21,30 @@ const page_data_functions = {
 		}
 
 		throw "Page not found.";
+
 	},
 
-	async getPageByUrl() {},
+	async getPageByUrlName(
+		wikiId: string,
+		urlName: string
+	) {
+
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki");
+		urlName = checkString(urlName, "Page URL");
+
+        const wiki: any = await wikiDataFunctions.getWikiById(wikiId);
+
+		for (let page of wiki.pages) {
+			console.log(`${page.urlName} === ${urlName}`)
+			if (page.urlName === urlName) {
+				return page;
+			}
+		}
+
+		throw "Page not found.";
+		
+	},
 
 	async getPagesByCategory(wikiId: string, category: string) {
 		// Input validation.
@@ -52,7 +76,7 @@ const page_data_functions = {
 		const newPage = {
 			_id: new ObjectId(),
 			name,
-			url: name, //TODO: Remove all forbidden characters and turn spaces into underscores
+			urlName: slugify(name, {replacement: "_"}),
 			category,
 			content: []
 		};
@@ -61,10 +85,10 @@ const page_data_functions = {
 
 		let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
-		// Make sure the page name is unique within its category.
+		// Make sure the page name is unique within its wiki.
 		for (let page of wiki.pages) {
 			if (page.name === name) {
-				throw "Page name must be unique within its category.";
+				throw "Page name must be unique.";
 			}
 		}
 
