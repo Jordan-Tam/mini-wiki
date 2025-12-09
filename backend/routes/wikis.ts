@@ -554,12 +554,44 @@ router
 		return;
 	})
 
-	/**
-	 * Add collaborator to wiki
-	 * (specify collaborator in body)
-	 */
-	.post(async (req, res) => {
-		return;
+	/** 
+	 * Add collaborator to wiki 
+	 * (specify collaborator in body) 
+	 */ 
+	.post(async (req: any, res) => {
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		const username = req.body.username.trim();
+
+		const wikiId = req.params._id.trim();
+		try {
+			checkId(wikiId, "wiki", "POST /:id/collaborators");
+		} catch (e){
+			return res.status(400).json({error: e})
+		}
+		let user = ""
+
+		try {
+			user = await userDataFunctions.getUserIdByUsername(username)
+		} catch (e){
+			return res.status(404).json({error: "User not found"})
+		}
+
+		try {
+
+			const retVal = wikiDataFunctions.addCollaborator(wikiId, user)
+			return res.json(retVal);
+
+		} catch (e) {
+			return res 
+				.status(500)
+				.json({error: e})
+		}
+		
 	})
 
 	/**

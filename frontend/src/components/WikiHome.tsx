@@ -5,6 +5,7 @@ import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
+import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
 
 function WikiHome() {
 
@@ -22,6 +23,7 @@ function WikiHome() {
 	const [showNewPageModal, setShowNewPageModal] = useState(false);
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
+	const [showAddCollabModal, setShowAddCollabModal] = useState(false);
 
 	useEffect(() => {
 		const fetchWiki = async () => {
@@ -54,6 +56,7 @@ function WikiHome() {
 		setShowNewPageModal(false);
 		setShowEditCategoryModal(false);
 		setShowDeleteCategoryModal(false);
+		setShowAddCollabModal(false);
 	};
 
 	/* const handleCategoryCreated = (newCategory: any) => {
@@ -72,7 +75,12 @@ function WikiHome() {
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
 			<div className="mt-3 mb-3">
-				{(wiki.access === "private" || wiki.access === "public-view") && <button className="btn btn-success me-3">View Collaborators</button>}
+				{(wiki?.access === "private" || wiki?.access === "public-view") && 
+					<>
+						<button className="btn btn-success me-3" onClick={() => setShowAddCollabModal(true)} >Add a collaborator</button>
+						<button className="btn btn-success me-3">View Collaborators</button>
+					</>
+				}
 				{wiki.access === "private" && <button className="btn btn-success me-3">View Private Viewers</button>}
 				<button className="btn btn-warning me-3">Edit Wiki</button>
 				<button className="btn btn-secondary me-3" onClick={() => setShowNewCategoryModal(true)}>
@@ -154,6 +162,15 @@ function WikiHome() {
 					categoryName={category}
 					setWiki={setWiki}
 					handleClose={handleCloseModals}
+				/>
+			)}
+
+			{showAddCollabModal && (
+				<AddCollaboratorModal
+					isOpen={showAddCollabModal}
+					wikiId={wiki._id}
+					handleClose={handleCloseModals}
+					setWiki={setWiki}
 				/>
 			)}
 

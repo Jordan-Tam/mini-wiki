@@ -405,6 +405,11 @@ const wiki_data_functions = {
 			throw "User is already a collaborator.";
 		}
 
+		// Check if user is already the owner
+		if(wiki.owner === userFirebaseUID){
+			throw "Owner cannot add themself as a collaborator!"
+		}
+
 		const wikisCollection = await wikis();
 
 		const insertCollaboratorToWikiInfo = await wikisCollection.findOneAndUpdate(

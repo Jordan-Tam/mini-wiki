@@ -16,6 +16,7 @@ function Home() {
 	const [loading, setLoading] = useState(true);
 	const [wikisData, setWikisData] = useState(undefined);
 	const [favorites, setFavorites] = useState([]);
+	const [collaborator, setCollaborator] = useState([]);
 
 	// Modal
 	const [showCreateWikiModal, setShowCreateWikiModal] = useState(false);
@@ -43,6 +44,16 @@ function Home() {
 				//console.log(favoriteResult)
 
 				setFavorites(favoriteResult);
+
+				const collaboratorResponse = await fetch(`/api/users/${currentUser._id}/collaborator`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + token
+					}
+				});
+				const cResult = await collaboratorResponse.json();
+
+				setCollaborator(cResult);
 
 				setLoading(false);
 			} catch (e) {
@@ -113,7 +124,20 @@ function Home() {
 							<h4 id="collaborator">COLLABORATOR </h4>
 							<p className="small text-muted">Public and private wikis where you aren't the owner but have been granted exclusive editing permissions.</p>
 							<p className="small text-muted">Does not include public wikis where editing is available to all users.</p>
-							<p>...</p>
+							{collaborator && collaborator.length > 0 ? (
+								collaborator.map((wiki) => (
+									<WikiCard wiki={wiki}/>
+								))
+							) : (
+								<>
+									<p>No wikis with colloboration access yet.
+										<Link to="/browse" 
+											style={{ marginLeft: "5px" }}>
+											Find some!
+										</Link> 
+									</p>
+								</>
+							)}
 							<h4 id="viewer">PRIVATE VIEWER</h4>
 							<p className="small text-muted">Private wikis where you aren't the owner but have been granted view-only permissions.</p>
 							<p>...</p>
