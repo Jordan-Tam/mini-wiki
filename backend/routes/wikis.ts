@@ -22,7 +22,7 @@ router
 	.route("/")
 
 	/**
-	 *! Returns every wiki where the user is an owner or collaborator.
+	 *! Returns an object of three arrays: OWNER, COLLABORATOR, and PRIVATE_VIEWER.
 	 */
 	.get(async (req: any, res: any) => {
 		if (!req.user) {
@@ -206,8 +206,6 @@ router
 	 *! Returns a list of pages associated with the wiki URL name and category.
 	 */
 	.get(async (req: any, res) => {
-
-		console.log("hi");
 
 		if (!req.user) {
 			return res

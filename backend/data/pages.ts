@@ -36,7 +36,6 @@ const page_data_functions = {
         const wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
 		for (let page of wiki.pages) {
-			console.log(`${page.urlName} === ${urlName}`)
 			if (page.urlName === urlName) {
 				return page;
 			}
@@ -51,15 +50,9 @@ const page_data_functions = {
 		wikiId = checkId(wikiId, "Wiki", "createPage");
 		category = checkCategory(category, "getPagesByCategory");
 
-		console.log(1)
-
 		await wikiDataFunctions.doesCategoryExist(wikiId, category);
 
-		console.log(2)
-
 		let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
-
-		console.log(3)
 
 		let returnedPages = [];
 
@@ -68,8 +61,6 @@ const page_data_functions = {
 				returnedPages.push(page);
 			}
 		}
-
-		console.log(4)
 
 		return returnedPages;
 	},
