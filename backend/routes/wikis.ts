@@ -13,6 +13,7 @@ import {
 	checkWikiOrPageName,
 	checkUsername
 } from "../helpers.ts";
+import user_data_functions from "../data/users.ts";
 
 export const router = Router();
 
@@ -558,8 +559,42 @@ router
 	/**
 	 * List collabortors on wiki
 	 */
-	.get(async (req, res) => {
-		return;
+	.get(async (req:any, res) => {
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+		const wikiId = req.params.id.trim();
+		try {
+			checkId(wikiId, "wiki", "POST /:id/collaborators");
+		} catch (e){
+			return res.status(400).json({error: e})
+		}
+
+		try {
+			
+			const wiki = await wikiDataFunctions.getWikiById(wikiId);
+
+			const collaborators = wiki.collaborators;
+
+			const usernames = [];
+			for (let account of collaborators){
+				let user = await user_data_functions.getUserByFirebaseUID(account);
+				usernames.push(user.username)
+			}
+
+			return res.json(usernames);
+
+		} catch (e) {
+
+			return res 
+				.status(500)
+				.json({error: e})
+
+		}
+
+
 	})
 
 	/** 

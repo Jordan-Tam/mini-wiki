@@ -574,4 +574,5 @@ const wiki_data_functions = {
 	}
 };
 
+
 export default wiki_data_functions;
