@@ -85,14 +85,7 @@ const wiki_data_functions = {
 	 * Returns an array of wikis that the user is either an owner of or a collaborator of.
 	 */
 	async getWikisByUser(userFirebaseUID: string) {
-		let wikisList = await this.getAllWikis();
-
-		return wikisList.filter(
-			(wiki: any) =>
-				wiki.owner === userFirebaseUID ||
-				wiki.collaborators.includes(userFirebaseUID)
-		);
-
+		
 		let wikisList = await this.getAllWikis();
 
 		return {

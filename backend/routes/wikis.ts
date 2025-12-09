@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createClient } from "redis";
+import redisFunctions from "../lib/redis/redis.ts";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
 import userDataFunctions from "../data/users.ts";
@@ -15,9 +15,6 @@ import {
 
 export const router = Router();
 
-/* const client = createClient();
-await client.connect(); */
-
 router
 	.route("/")
 
@@ -25,17 +22,23 @@ router
 	 *! Returns an object of three arrays: OWNER, COLLABORATOR, and PRIVATE_VIEWER.
 	 */
 	.get(async (req: any, res: any) => {
+
 		if (!req.user) {
 			return res.status(401).json({
 				error: "/wiki: You must be logged in to perform this action."
 			});
 		}
 
-		/* let exists_in_cache = await clientInformation.exists(``) */
+		if (await redisFunctions.exists_in_cache("getWikisByUser")) {
+			return res.json(await redisFunctions.get_json("getWikiByUser"));
+		}
 
-		return res.json({
-			wikis: await wikiDataFunctions.getWikisByUser(req.user.uid)
-		});
+		let wikis = await wikiDataFunctions.getWikisByUser(req.user.uid);
+
+		await redisFunctions.set_json("getWikisByUser", wikis);
+
+		return res.json(wikis);
+
 	})
 
 	/**
