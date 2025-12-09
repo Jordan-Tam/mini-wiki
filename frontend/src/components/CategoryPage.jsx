@@ -10,6 +10,7 @@ function CategoryPage() {
 
     const [data, setData] = useState(undefined);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(undefined);
 
     // Sorting
     const [sortByName, setSortByName] = useState(undefined);
@@ -33,6 +34,7 @@ function CategoryPage() {
                 setData(result);
                 setLoading(false);
             } catch (e) {
+                setError(`${e}`);
                 setLoading(false);
             }
         }
@@ -45,7 +47,7 @@ function CategoryPage() {
         );
     } else if (!data) {
         return (
-            <p>Page Not Found</p>
+            <p>{error}</p>
         );
     } else {
         return (
@@ -57,7 +59,9 @@ function CategoryPage() {
                         <tr className="table-info">
                             <th scope="col" onClick={() => {console.log("yippee")}}>Page Name</th>
                             <th scope="col">Last Edited</th>
+                            <th scope="col">Last Edited By</th>
                             <th scope="col">First Created</th>
+                            <th scope="col">First Created By</th>
                         </tr>
                     </thead>
                     <tbody className="table-group-divider">
@@ -69,7 +73,9 @@ function CategoryPage() {
                                     </Link>
                                 </td>
                                 <td>{page.last_edited}</td>
+                                <td>{page.last_edited_by}</td>
                                 <td>{page.first_created}</td>
+                                <td>{page.first_created_by}</td>
                             </tr>
                         ))}
                     </tbody>

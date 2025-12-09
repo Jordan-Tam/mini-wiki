@@ -133,6 +133,7 @@ const wiki_data_functions = {
 			owner,
 			access,
 			categories: ["UNCATEGORIZED"],
+			categories_slugified: ["UNCATEGORIZED"],
 			collaborators: [],
 			private_viewers: [],
 			pages: [],

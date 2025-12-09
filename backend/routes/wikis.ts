@@ -206,6 +206,9 @@ router
 	 *! Returns a list of pages associated with the wiki URL name and category.
 	 */
 	.get(async (req: any, res) => {
+
+		console.log("hi");
+
 		if (!req.user) {
 			return res
 				.status(401)
@@ -231,6 +234,7 @@ router
 			return res.status(404).json({ error: e });
 		}
 
+		// Call the data function.
 		try {
 			return res.json(
 				await pageDataFunctions.getPagesByCategory(

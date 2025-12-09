@@ -51,9 +51,15 @@ const page_data_functions = {
 		wikiId = checkId(wikiId, "Wiki", "createPage");
 		category = checkCategory(category, "getPagesByCategory");
 
+		console.log(1)
+
 		await wikiDataFunctions.doesCategoryExist(wikiId, category);
 
+		console.log(2)
+
 		let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
+
+		console.log(3)
 
 		let returnedPages = [];
 
@@ -62,6 +68,8 @@ const page_data_functions = {
 				returnedPages.push(page);
 			}
 		}
+
+		console.log(4)
 
 		return returnedPages;
 	},
@@ -81,7 +89,9 @@ const page_data_functions = {
 			category_slugified: slugify(category, {replacement: "_"}),
 			content: [],
 			first_created: new Date().toLocaleString(),
-			last_edited: new Date().toLocaleString()
+			last_edited: new Date().toLocaleString(),
+			first_created_by: "TO BE IMPLEMENTED",
+			last_edited_by: "TO BE IMPLEMENTED"
 		};
 
 		const wikisCollection = await wikis();

@@ -5,7 +5,6 @@ import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
-import CategoryCard from "./cards/CategoryCard.jsx";
 
 function WikiHome() {
 
@@ -73,13 +72,15 @@ function WikiHome() {
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
 			<div className="mt-3 mb-3">
-				<button className="btn btn-secondary" onClick={() => setShowNewCategoryModal(true)}>
+				{(wiki.access === "private" || wiki.access === "public-view") && <button className="btn btn-success me-3">View Collaborators</button>}
+				{wiki.access === "private" && <button className="btn btn-success me-3">View Private Viewers</button>}
+				<button className="btn btn-warning me-3">Edit Wiki</button>
+				<button className="btn btn-secondary me-3" onClick={() => setShowNewCategoryModal(true)}>
 					+ New Category
 				</button>
 				<button
-					className="btn btn-secondary"
+					className="btn btn-secondary me-3"
 					onClick={() => setShowNewPageModal(true)}
-					style={{ marginLeft: "1rem" }}
 				>
 					+ New Page
 				</button>
@@ -131,7 +132,7 @@ function WikiHome() {
 					isOpen={showNewPageModal}
 					wikiId={wiki._id}
 					wikiUrlName={wiki.urlName}
-					category={category}
+					categories={wiki?.categories}
 					handleClose={handleCloseModals}
 				/>
 			)}
