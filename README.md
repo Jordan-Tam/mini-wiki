@@ -11,6 +11,8 @@ Repository for our Stevens CS-554 (Web Dev 2) final project
 
 ### First Time Setup
 
+**NOTE**: On Windows, make sure you have docker set to use WSL2 as the engine (see Docket Desktop's general settings) and that you run all the docker commands in a WSL Terminal!
+
 1. Clone the repository and navigate to the project directory
 2. Run all services with Docker Compose:
 
