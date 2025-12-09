@@ -48,11 +48,25 @@ router
 			});
 		}
 
+		const FORBIDDEN_WIKI_URL_NAMES = [
+          "browse",
+          "create",
+          "home",
+          "profile",
+          "user",
+          "signin",
+          "signup",
+          "testing",
+        ];
+
 		//console.log(req.body);
 		let { name, urlName, description, access } = req.body;
 		try {
 			name = checkWikiOrPageName(name);
 			urlName = checkUrlName(urlName);
+			if(FORBIDDEN_WIKI_URL_NAMES.includes(urlName)){
+				throw ``
+			}
 			description = checkDescription(description);
 			access = checkAccess(access);
 		} catch (e) {

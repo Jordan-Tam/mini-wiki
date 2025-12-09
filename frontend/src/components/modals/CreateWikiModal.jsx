@@ -2,6 +2,7 @@ import {useContext, useState} from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 import TakenCheck from "../TakenCheck";
+import { checkUrlName } from "../../../helpers.ts";
 
 Modal.setAppElement("#root");
 
@@ -37,16 +38,35 @@ function CreateWikiModal(props) {
     const [disableSubmit, setDisableSubmit] = useState(false);
     const [URLOK, setURLOK] = useState(null); 
 
+    const FORBIDDEN_WIKI_URL_NAMES = [
+      "browse",
+      "create",
+      "home",
+      "profile",
+      "user",
+      "signin",
+      "signup",
+      "testing",
+    ];
+
     // Submit form function
     const submitForm = async (e) => {
 
         e.preventDefault();
 
-        // Frontend input validation (to be implemented)
+        // Frontend input validation (to be implemented) (I implemented urlname checking - Owen)
         try {
+          setUrlName(checkUrlName(urlName));
+          if (FORBIDDEN_WIKI_URL_NAMES.includes(urlName)){
+            setDisableSubmit(false);
+            setError("Cannot use this Wiki URL.");
+            return;
+          }
 
         } catch (e) {
-
+          setDisableSubmit(false);
+          setError(e);
+          return;
         }
 
         try {
@@ -146,7 +166,7 @@ function CreateWikiModal(props) {
             <TakenCheck
               variable={urlName}
               setOK={setURLOK}
-              varName={"URL"}
+              varName={"Wiki URL"}
               serverURL="http://localhost:3000/wiki/urlTaken/"
             />
             <div className="form-floating mb-3">
