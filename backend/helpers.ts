@@ -4,7 +4,6 @@ const UPPERCASE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 const NUMBERS = "0123456789";
 const LETTERS_AND_NUMBERS = UPPERCASE_LETTERS + LOWERCASE_LETTERS + NUMBERS;
-const LETTERS_AND_NUMBERS_PLUS = LETTERS_AND_NUMBERS + "._-";
 const URL_NAME_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 const CATEGORY_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 
@@ -106,7 +105,7 @@ const checkUsername = (username: string, funcName?: string): string => {
 
 	// Character restrictions.
 	for (let char of username) {
-		if (LETTERS_AND_NUMBERS_PLUS.indexOf(char) === -1) {
+		if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1) {
 			throw "Username must contain only letters, numbers, periods, hyphens, and underscores.";
 		}
 	}
