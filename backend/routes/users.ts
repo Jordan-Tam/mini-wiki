@@ -277,6 +277,7 @@ router
      * List wikis that user is a collaborator of
      */
     .get(async (req: any, res) => {
+      //console.log("yo")
       if (!req.user){
         return res
           .status(401)
@@ -286,14 +287,13 @@ router
       try{
 
         const wikis = await wiki_data_functions.getWikisByUser(req.params.id)
-
         const collaborateStatus = [];
         for (let wiki of wikis){
           if (wiki.owner !== req.params.id){
             collaborateStatus.push(wiki)
           }
         }
-
+        console.log(collaborateStatus[0])
         return res.json(collaborateStatus);
       } catch (e) {
         return res.status(500).json({error: e})

@@ -71,7 +71,7 @@ const user_data_functions = {
       throw `User Not Found.`;
     }
 
-    return user._id;
+    return user.firebaseUID;
 
   },
 

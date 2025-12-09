@@ -10,7 +10,8 @@ import {
 	checkCategory,
 	checkDescription,
 	checkUrlName,
-	checkWikiOrPageName
+	checkWikiOrPageName,
+	checkUsername
 } from "../helpers.ts";
 
 export const router = Router();
@@ -42,6 +43,7 @@ router
 	 *! Creates a wiki.
 	 */
 	.post(async (req, res) => {
+		console.log("a")
 		if (!(req as any).user) {
 			return res.status(401).json({
 				error: "/wiki: You must be logged in to perform this action."
@@ -104,6 +106,7 @@ router
 	});
 
 router.route("/search").post(async (req: any, res) => {
+	console.log("b")
 	if (!req.user) {
 		return res
 			.status(401)
@@ -136,6 +139,7 @@ router
 	 *! Used for real-time feedback.
 	 */
 	.post(async (req, res) => {
+	console.log("c")
 	let url = req.params.url.trim();
 	console.log(url);
 	try {
@@ -254,7 +258,7 @@ router
 	 *! Creates a new category in the wiki
 	 */
 	.post(async (req: any, res) => {
-
+		console.log("d")
 		console.log("POST /:wikiId/categories");
 
 		if (!req.user) {
@@ -396,6 +400,7 @@ router
 	 * Creates a new page in the wiki
 	 */
 	.post(async (req: any, res) => {
+		console.log("e")
 		if (!req.user) {
 			return res
 				.status(401)
@@ -497,6 +502,7 @@ router
 	 * Updates page content
 	 */
 	.post(async (req: any, res) => {
+		console.log("d")
 		if (!req.user) {
 			return res
 				.status(401)
@@ -530,6 +536,7 @@ router
 	 * Requires wiki content in body
 	 */
 	.post(async (req, res) => {
+		console.log("g")
 		return;
 	});
 
@@ -539,6 +546,7 @@ router
 	 * Publish changes publicly
 	 */
 	.post(async (req, res) => {
+		console.log("h")
 		return;
 	});
 
@@ -565,11 +573,11 @@ router
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		const username = req.body.username.trim();
-
-		const wikiId = req.params._id.trim();
+		let username = ""
+		const wikiId = req.params.id.trim();
 		try {
 			checkId(wikiId, "wiki", "POST /:id/collaborators");
+			username = checkUsername(req.body.username, "POST");
 		} catch (e){
 			return res.status(400).json({error: e})
 		}
@@ -582,8 +590,8 @@ router
 		}
 
 		try {
-
-			const retVal = wikiDataFunctions.addCollaborator(wikiId, user)
+			console.log(user)
+			const retVal = await wikiDataFunctions.addCollaborator(wikiId, user)
 			return res.json(retVal);
 
 		} catch (e) {

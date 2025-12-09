@@ -27,16 +27,16 @@ async function Main(): Promise<any> {
 	 */
 
 	APP.use(async (req, res, next) => {
-		console.log("Inside authentication middleware");
+		//console.log("Inside authentication middleware");
 		const token = req.headers.authorization?.split(" ")[1];
-		console.log(token);
+		//console.log(token);
 		if (token === "undefined" || !token) {
 			console.log("no token");
 			return next(); //This can be changed to take the user to a 401 page.
 		}
 		try {
 			const decodeValue = await admin.auth().verifyIdToken(token);
-			console.log(decodeValue);
+			//console.log(decodeValue);
 			if (decodeValue) {
 				(req as any).user = decodeValue; //This is essentially req.session.user from 546
 			}

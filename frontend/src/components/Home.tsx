@@ -44,15 +44,15 @@ function Home() {
 				//console.log(favoriteResult)
 
 				setFavorites(favoriteResult);
-
-				const collaboratorResponse = await fetch(`/api/users/${currentUser._id}/collaborator`, {
+				console.log(currentUser)
+				const collaboratorResponse = await fetch(`/api/users/${currentUser.uid}/collaborator`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + token
 					}
 				});
 				const cResult = await collaboratorResponse.json();
-
+				
 				setCollaborator(cResult);
 
 				setLoading(false);
@@ -120,7 +120,9 @@ function Home() {
 
 							<h4 id="owner">OWNER</h4>
 							<p className="small text-muted">Public and private wikis you have ownership of.</p>
-							{wikisData && wikisData.map((wiki) => <WikiCard wiki={wiki} />)}
+							{wikisData && wikisData.map((wiki) => 
+								<WikiCard wiki={wiki}/>
+							)}
 							<h4 id="collaborator">COLLABORATOR </h4>
 							<p className="small text-muted">Public and private wikis where you aren't the owner but have been granted exclusive editing permissions.</p>
 							<p className="small text-muted">Does not include public wikis where editing is available to all users.</p>
