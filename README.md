@@ -29,16 +29,16 @@ docker compose up --build
 
 ### Regular Development Workflow
 
-For subsequent runs (when only code changes):
+For subsequent runs (when only code changes), and use the `-d` flag to not show all logs for all services:
 
 ```bash
-docker compose up
+docker compose up [-d]
 ```
 
-**Note**: The seed service will run each time, which clears and repopulates the database. If you want to preserve existing data, start only the main services:
+**Note**: The seed service will run each time, which clears and repopulates the database. If you want to preserve existing data, start only the main services, and use the `-d` flag to not show all logs for all services:
 
 ```bash
-docker compose up elasticsearch mongo redis backend frontend
+docker compose up [-d] elasticsearch mongo redis backend frontend
 ```
 
 ### When Dependencies Change
@@ -47,19 +47,19 @@ If you update `package.json`, `Dockerfile`, or `docker-compose.yml`:
 
 ```bash
 docker compose build
-docker compose up
+docker compose up [-d]
 ```
 
 **Note**: This will also reseed the database. To preserve data while rebuilding, use:
 
 ```bash
 docker compose build
-docker compose up elasticsearch mongo redis backend frontend
+docker compose up [-d] elasticsearch mongo redis backend frontend
 ```
 
 ### Viewing Only Specific Service Logs
 
-To reduce log noise and only see backend/frontend logs:
+To reduce log noise and only see backend/frontend logs, use the `-d` flag and then connect to the logs of the specific services you want to see the logs for (in this example, just backend/frontend):
 
 ```bash
 docker compose up -d
@@ -83,10 +83,16 @@ docker compose down -v
 ## Hot Reload / Live Development
 
 - **Frontend**: Vite will automatically reload when you save changes to files in `frontend/src/`
-- **Backend**: Does not auto-reload. After making changes to TypeScript files in `backend/`, restart the backend container:
+- **Backend**: TypeScript changes are available immediately via the volume mount and `ts-node`. However, the server does not auto-reload. To apply changes, restart the backend container:
 
 ```bash
 docker compose restart backend
+```
+
+**Note**: Only rebuild if you change `package.json`, `Dockerfile`, or other build configuration:
+
+```bash
+docker compose up -d --build backend
 ```
 
 ## Database Access
@@ -119,6 +125,18 @@ The seed service runs automatically with `docker compose up` (clears and repopul
 ```bash
 docker compose run --rm seed
 ```
+
+### When You Need to Clear All Data
+
+If you make changes to the database schema or data structure that are incompatible with existing data, you'll need to clear everything and reseed:
+
+```bash
+docker compose down -v
+docker compose up -d elasticsearch mongo redis backend
+docker compose run --rm seed
+```
+
+The `-v` flag removes all volumes, which deletes all MongoDB data, Elasticsearch indices, and forces a fresh database state.
 
 ## Architecture
 

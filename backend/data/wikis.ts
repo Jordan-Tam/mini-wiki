@@ -133,7 +133,7 @@ const wiki_data_functions = {
 			owner,
 			access,
 			categories: ["UNCATEGORIZED"],
-			categories_slugified: ["UNCATEGORIZED"],
+			categories_slugified: [slugify("UNCATEGORIZED", { replacement: "_" })],
 			collaborators: [],
 			private_viewers: [],
 			pages: [],
@@ -259,7 +259,6 @@ const wiki_data_functions = {
 	},
 
 	async createCategory(wikiId: string, category: string) {
-
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createCategory");
 		category = checkCategory(category, "createCategory");
@@ -272,10 +271,12 @@ const wiki_data_functions = {
 		const wikisCollection = await wikis();
 		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			{ $push: {
-				categories: category,
-				categories_slugified: slugify(category, {replacement: "_"})
-			} },
+			{
+				$push: {
+					categories: category,
+					categories_slugified: slugify(category, { replacement: "_" })
+				}
+			},
 			{ returnDocument: "after" }
 		);
 
@@ -305,7 +306,7 @@ const wiki_data_functions = {
 
 		// Return early if old and new category names are the same.
 		if (oldCategoryName === newCategoryName) {
-			return await this.getWikiById(wikiId.toString());;
+			return await this.getWikiById(wikiId.toString());
 		}
 
 		// Make sure the new name is unique.
@@ -316,17 +317,16 @@ const wiki_data_functions = {
 		const wikisCollection = await wikis();
 		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			{ $set: {
-				categories: wiki.categories.map((c: any) =>
-					c === oldCategoryName ? newCategoryName : c
-				),
-				categories_slugified: wiki.categories_slugified.map((c: any) =>
-					c === slugify(oldCategoryName, {replacement: "_"})
-					?
-					slugify(newCategoryName, {replacement: "_"})
-					:
-					c
-				)
+			{
+				$set: {
+					categories: wiki.categories.map((c: any) =>
+						c === oldCategoryName ? newCategoryName : c
+					),
+					categories_slugified: wiki.categories_slugified.map((c: any) =>
+						c === slugify(oldCategoryName, { replacement: "_" })
+							? slugify(newCategoryName, { replacement: "_" })
+							: c
+					)
 				}
 			},
 			{ returnDocument: "after" }
@@ -387,7 +387,12 @@ const wiki_data_functions = {
 
 		let wiki = await this.getWikiById(wikiId);
 
-		return (wiki.categories.includes(category) && wiki.categories_slugified.includes(slugify(category, {replacement: "_"})));
+		const categoriesSlugified = wiki.categories_slugified || [];
+
+		return (
+			wiki.categories.includes(category) &&
+			categoriesSlugified.includes(slugify(category, { replacement: "_" }))
+		);
 	},
 
 	async addCollaborator(wikiId: string, userFirebaseUID: string) {
