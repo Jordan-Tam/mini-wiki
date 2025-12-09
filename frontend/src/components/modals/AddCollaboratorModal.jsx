@@ -33,7 +33,7 @@ function AddCollaboratorModal({ isOpen, handleClose, wikiId }) {
         setSuccess(false);
 
         try {
-            const response = await fetch(`/api/wiki/${wikiId}/collaborator`, {
+            const response = await fetch(`/api/wiki/${wikiId}/collaborators`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
