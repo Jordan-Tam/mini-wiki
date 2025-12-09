@@ -12,6 +12,7 @@ import {
 	checkDescription,
 	checkCategory
 } from "../helpers.ts";
+import { indexPage, deletePageFromIndex } from "../lib/search/indexer.ts";
 
 const wiki_data_functions = {
 	/**
@@ -158,6 +159,9 @@ const wiki_data_functions = {
 		// Input validation.
 		id = checkId(id, "Wiki", "deleteWiki");
 
+		// Get the wiki to access its pages before deletion
+		const wiki = await this.getWikiById(id);
+
 		const wikisCollection = await wikis();
 
 		const deletionInfo = await wikisCollection.findOneAndDelete({
@@ -166,6 +170,11 @@ const wiki_data_functions = {
 
 		if (!deletionInfo) {
 			throw "Could not delete wiki.";
+		}
+
+		// Remove all pages from Elasticsearch index
+		for (let page of wiki.pages) {
+			await deletePageFromIndex(page._id.toString());
 		}
 
 		// Iterate through every user and delete the wiki's ID if it appears in their favorites array.
@@ -340,6 +349,7 @@ const wiki_data_functions = {
 					page._id,
 					newCategoryName
 				);
+				// Note: changePageCategory already handles re-indexing
 			}
 		}
 
@@ -352,6 +362,9 @@ const wiki_data_functions = {
 		category = checkCategory(category, "deleteCategory");
 
 		let wiki = await this.getWikiById(wikiId);
+
+		// Get pages that will be affected (moved to UNCATEGORIZED)
+		const affectedPages = wiki.pages.filter((page: any) => page.category === category);
 
 		// Pages associated with the deleted category are moved to the UNCATEGORIZED category.
 		let updatedWiki = {
@@ -375,6 +388,12 @@ const wiki_data_functions = {
 
 		if (!updateInfo) {
 			throw "Could not delete wiki category.";
+		}
+
+		// Re-index affected pages with their new UNCATEGORIZED category
+		for (let page of affectedPages) {
+			const updatedPage = await pageDataFunctions.getPageById(wikiId, page._id.toString());
+			await indexPage(wikiId, updatedPage);
 		}
 
 		return await this.getWikiById(wikiId.toString());
