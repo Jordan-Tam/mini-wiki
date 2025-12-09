@@ -6,6 +6,7 @@ const NUMBERS = "0123456789";
 const LETTERS_AND_NUMBERS = UPPERCASE_LETTERS + LOWERCASE_LETTERS + NUMBERS;
 const LETTERS_AND_NUMBERS_PLUS = LETTERS_AND_NUMBERS + "._-";
 const URL_NAME_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
+const CATEGORY_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 
 const checkString = (
 	str: string,
@@ -45,11 +46,20 @@ const checkWikiOrPageName = (name: string, funcName?: string): string => {
 };
 
 const checkCategory = (category: string, funcName?: string): string => {
+
 	// Basic string validation.
 	category = checkString(category, "Category name", funcName);
+	
 	// Length restrictions.
 	if (category.length < 1 || category.length > 20) {
 		throw "Category name must be between 1-20 characters long.";
+	}
+
+	// Character restrictions.
+	for (let char of category) {
+		if (CATEGORY_ALLOWED_CHARACTERS.indexOf(char) === -1) {
+			throw "Category must contain only letters, numbers, hyphens, and underscores.";
+		}
 	}
 
 	return category;

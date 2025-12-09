@@ -3,16 +3,25 @@ import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext.jsx";
 import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
+import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import CategoryCard from "./cards/CategoryCard.jsx";
 
 function WikiHome() {
+
 	const { wikiUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
+
+	// API call
 	const [wiki, setWiki] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+
+	// Modal
+	const [category, setCategory] = useState(undefined);
 	const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
 	const [showNewPageModal, setShowNewPageModal] = useState(false);
+	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
+	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
 
 	useEffect(() => {
 		const fetchWiki = async () => {
@@ -40,17 +49,20 @@ function WikiHome() {
 	}, [wikiUrlName, currentUser]);
 
 	const handleCloseModals = () => {
+		setCategory(undefined);
 		setShowNewCategoryModal(false);
 		setShowNewPageModal(false);
+		setShowEditCategoryModal(false);
+		setShowDeleteCategoryModal(false);
 	};
 
-	const handleCategoryCreated = (newCategory: any) => {
+	/* const handleCategoryCreated = (newCategory: any) => {
 		// Update wiki state with the new category
 		setWiki((prev: any) => ({
 			...prev,
 			categories: [...prev.categories, newCategory.name || newCategory]
 		}));
-	};
+	}; */
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
@@ -74,53 +86,39 @@ function WikiHome() {
 
 			<div className="mb-3">
 				{wiki?.categories?.map((category) => (
-					<CategoryCard
-						wikiUrlName={wikiUrlName}
-						category={category}
-						numOfPages={wiki.pages.filter((p) => p.category === category).length}
-					/>
+					<div className="card mb-3">
+						<div className="card-body">
+							<Link
+								to={`/${wikiUrlName}/category/${category}`}
+								style={{textDecoration: "none"}}
+							>
+								<h3 className="card-title">{category}</h3>
+							</Link>
+							<p>
+								<span style={{fontWeight: "bold"}}>Number of Pages:</span> {wiki.pages.filter((p) => p.category === category).length}
+							</p>
+							<button
+								className="btn btn-warning me-3"
+								onClick={() => {
+									setCategory(category);
+									setShowEditCategoryModal(true);
+								}}
+							>Edit</button>
+							<button
+								className="btn btn-danger"
+								onClick={() => setShowDeleteCategoryModal(true)}
+							>Delete</button>
+						</div>
+					</div>
 				))}
 			</div>
-
-			{/* <div style={{ marginTop: "2rem" }}>
-				<h2>Categories</h2>
-				<ul>
-					{wiki?.categories?.map((category) => (
-						<li key={category}>{category}</li>
-					))}
-				</ul>
-			</div>
-
-			<div style={{ marginTop: "2rem" }}>
-				<h2>Pages</h2>
-				{wiki?.pages && wiki.pages.length > 0 ? (
-					<ul>
-						{wiki.pages.map((page) => (
-							<li key={page._id}>
-								<Link to={`/${wikiUrlName}/${page._id}`}>{page.name}</Link>
-								<span
-									style={{
-										marginLeft: "1rem",
-										fontSize: "0.9em",
-										color: "#666"
-									}}
-								>
-									({page.category})
-								</span>
-							</li>
-						))}
-					</ul>
-				) : (
-					<p>No pages yet. Create one to get started!</p>
-				)}
-			</div> */}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
 					isOpen={showNewCategoryModal}
 					wikiId={wiki._id}
 					handleClose={handleCloseModals}
-					onCategoryCreated={handleCategoryCreated}
+					setWiki={setWiki}
 				/>
 			)}
 
@@ -129,10 +127,21 @@ function WikiHome() {
 					isOpen={showNewPageModal}
 					wikiId={wiki._id}
 					wikiUrlName={wiki.urlName}
-					categories={wiki?.categories}
+					category={category}
 					handleClose={handleCloseModals}
 				/>
 			)}
+
+			{showEditCategoryModal && (
+				<EditCategoryModal
+					isOpen={showEditCategoryModal}
+					wikiId={wiki._id}
+					oldCategoryName={category}
+					setWiki={setWiki}
+					handleClose={handleCloseModals}
+				/>
+			)}
+
 		</div>
 	);
 }

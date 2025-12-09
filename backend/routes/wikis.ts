@@ -1,9 +1,11 @@
 import { Router } from "express";
+import { createClient } from "redis";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
 import userDataFunctions from "../data/users.ts";
 import {
 	checkString,
+	checkId,
 	checkAccess,
 	checkCategory,
 	checkDescription,
@@ -12,6 +14,9 @@ import {
 } from "../helpers.ts";
 
 export const router = Router();
+
+/* const client = createClient();
+await client.connect(); */
 
 router
 	.route("/")
@@ -25,6 +30,8 @@ router
 				error: "/wiki: You must be logged in to perform this action."
 			});
 		}
+
+		/* let exists_in_cache = await clientInformation.exists(``) */
 
 		return res.json({
 			wikis: await wikiDataFunctions.getWikisByUser(req.user.uid)
@@ -96,7 +103,39 @@ router
 		}
 	});
 
-router.route("/urlTaken/:url").post(async (req, res) => {
+router.route("/search").post(async (req: any, res) => {
+	if (!req.user) {
+		return res
+			.status(401)
+			.json({ error: "You must be logged in to perform this action." });
+	}
+
+	const searchTerm = req.body.searchTerm.trim();
+	if (searchTerm.length > 50) {
+		return res
+			.status(400)
+			.json({ error: "Wiki names are less than 50 characters" });
+	}
+
+	try {
+		const returnValue = await wikiDataFunctions.searchWikisByName(searchTerm);
+
+		return res.json(returnValue);
+	} catch (e) {
+		return res.status(500).json({ error: e });
+	}
+
+	return;
+});
+
+router
+	.route("/urlTaken/:url")
+	
+	/**
+	 *! Checks if the wiki URL name is already taken.
+	 *! Used for real-time feedback.
+	 */
+	.post(async (req, res) => {
 	let url = req.params.url.trim();
 	console.log(url);
 	try {
@@ -109,7 +148,7 @@ router.route("/urlTaken/:url").post(async (req, res) => {
 		return res.json({ error: "URL taken" });
 	}
 	return res.json({ message: "URL available" });
-});
+	});
 
 router
 	.route("/:urlName")
@@ -204,63 +243,110 @@ router
 		}
 	});
 
-router.route("/search").post(async (req: any, res) => {
-	if (!req.user) {
-		return res
-			.status(401)
-			.json({ error: "You must be logged in to perform this action." });
-	}
-
-	const searchTerm = req.body.searchTerm.trim();
-	if (searchTerm.length > 50) {
-		return res
-			.status(400)
-			.json({ error: "Wiki names are less than 50 characters" });
-	}
-
-	try {
-		const returnValue = await wikiDataFunctions.searchWikisByName(searchTerm);
-
-		return res.json(returnValue);
-	} catch (e) {
-		return res.status(500).json({ error: e });
-	}
-
-	return;
-});
-
 router
-	.route("/:id/categories")
+	.route("/:wikiId/categories")
+
 	/**
-	 * Creates a new category in the wiki
+	 *! Creates a new category in the wiki
 	 */
 	.post(async (req: any, res) => {
+
+		console.log("POST /:wikiId/categories");
+
 		if (!req.user) {
 			return res
 				.status(401)
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		let id = req.params.id;
+		let wikiId = req.params.wikiId;
 		let { categoryName } = req.body;
 
 		let wiki;
 		try {
-			categoryName = checkCategory(categoryName, "POST :id/categories route");
-			wiki = await wikiDataFunctions.getWikiById(id);
+			categoryName = checkCategory(categoryName, "POST :wikiId/categories route");
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
 		} catch (e) {
 			return res.status(400).json({ error: e });
 		}
 
 		try {
-			const updatedWiki = await wikiDataFunctions.createCategory(
+			return res.json(await (wikiDataFunctions.createCategory(
 				wiki._id,
 				categoryName
-			);
-			return res.json({ name: categoryName, wiki: updatedWiki });
+			)));
+			/* return res.json({ name: categoryName, wiki: updatedWiki }); */
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
+	})
+
+	/**
+	 *! Edits an existing category in the wiki.
+	 */
+	.patch(async (req: any, res) => {
+
+		console.log("PATCH /:wikiId/categories");
+
+		// Make sure user is logged in.
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		// Retrieve path and request body parameters.
+		let wikiId = req.params.wikiId;
+		let { oldCategoryName, newCategoryName } = req.body;
+
+		console.log(wikiId, oldCategoryName, newCategoryName);
+
+		// Input validation.
+		try {
+
+			wikiId = checkId(wikiId, "Wiki");
+			oldCategoryName = checkCategory(oldCategoryName); // this should never error
+			newCategoryName = checkCategory(newCategoryName);
+
+		} catch (e) {
+
+			return res.status(400).json({error: e});
+
+		}
+
+		// Check if wiki exists.
+		try {
+
+			await wikiDataFunctions.getWikiById(wikiId);
+		
+		} catch (e) {
+			
+			return res.status(404).json({error: e});
+		
+		}
+
+		// Call the edit function.
+		try {
+
+			console.log("here");
+
+			return res.json(await (wikiDataFunctions.editCategory(wikiId, oldCategoryName, newCategoryName)));
+
+		} catch (e) {
+			
+			console.log(e);
+
+			return res.status(500).json({error: e});
+
+		}
+
+	})
+
+	/**
+	 *! Deletes a category from the wiki.
+	 */
+	.delete(async (req: any, res) => {
+
 	});
 
 router

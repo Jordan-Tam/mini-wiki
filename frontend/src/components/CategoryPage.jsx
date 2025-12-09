@@ -11,7 +11,11 @@ function CategoryPage() {
     const [data, setData] = useState(undefined);
     const [loading, setLoading] = useState(true);
 
-    const [sort, setSort] = useState("");
+    // Sorting
+    const [sortByName, setSortByName] = useState(undefined);
+    const [sortByLastEdited, setSortByLastEdited] = useState(undefined);
+    const [sortByFirstCreated, setSortByFirstCreated] = useState(undefined);
+    const [reverse, setReverse] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
@@ -45,16 +49,33 @@ function CategoryPage() {
         );
     } else {
         return (
+            <>
             <div className="container-fluid">
                 <h1>{category}</h1>
-                <ul style={{listStyleType: "none"}}>
-                    {data && data.map((page) => (
-                        <li>
-                            <Link to={`/${wikiUrlName}/${page.urlName}`}>{page.name}</Link>
-                        </li>
-                    ))}
-                </ul>
+                <table className="table table-striped table-hover table-bordered" style={{tableLayout: "fixed"}}>
+                    <thead>
+                        <tr className="table-info">
+                            <th scope="col" onClick={() => {console.log("yippee")}}>Page Name</th>
+                            <th scope="col">Last Edited</th>
+                            <th scope="col">First Created</th>
+                        </tr>
+                    </thead>
+                    <tbody className="table-group-divider">
+                        {data && data.map((page) => (
+                            <tr>
+                                <td>
+                                    <Link to={`/${wikiUrlName}/${page.urlName}`}>
+                                        {page.name}
+                                    </Link>
+                                </td>
+                                <td>{page.last_edited}</td>
+                                <td>{page.first_created}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
+            </>
         );
     }
 

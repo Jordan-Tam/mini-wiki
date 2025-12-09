@@ -117,8 +117,9 @@ const Article: React.FC<ArticleProps> = ({
 	return (
 		<article className={`${className} container-fluid`}>
 			<div>
-				<h1 className="mb-3">{displayTitle ?? "Article"}</h1>
+				<p><span style={{fontWeight: "bold"}}>Category: </span><Link to={`/${wikiUrlName}/category/${fetchedPage.category}`}>{fetchedPage.category}</Link></p>
 				{editButton}
+				<h1 className="mb-3">{displayTitle ?? "Article"}</h1>
 			</div>
 
 			<div>

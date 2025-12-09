@@ -52,19 +52,19 @@ function CreateCategoryModal(props) {
 
 			if (!response.ok) {
 				setDisableSubmit(false);
-				throw response.statusText;
+				throw (await response.json()).error;
 			}
 
 			// Success - update parent wiki state
 			const result = await response.json();
-			props.onCategoryCreated(result);
+			props.setWiki(result);
 			setCategoryName("");
 			setError("");
 			alert("Category created successfully!");
 			props.handleClose();
 		} catch (e) {
 			setDisableSubmit(false);
-			setError(`Error creating category: ${e}`);
+			setError(`${e}`);
 		}
 	};
 

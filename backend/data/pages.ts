@@ -78,7 +78,10 @@ const page_data_functions = {
 			name,
 			urlName: slugify(name, {replacement: "_"}),
 			category,
-			content: []
+			category_slugified: slugify(category, {replacement: "_"}),
+			content: [],
+			first_created: new Date().toLocaleString(),
+			last_edited: new Date().toLocaleString()
 		};
 
 		const wikisCollection = await wikis();
@@ -131,7 +134,8 @@ const page_data_functions = {
 			},
 			{
 				$set: {
-					"pages.$.content": newContent
+					"pages.$.content": newContent,
+					"pages.$.last_edited": new Date().toLocaleString()
 				}
 			},
 			{ returnDocument: "after" }
@@ -149,11 +153,29 @@ const page_data_functions = {
 		pageId: string,
 		newCategory: string
 	) {
+
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "changePageCategory");
 		pageId = checkId(pageId, "Page", "changePageCategory");
 		newCategory = checkCategory(newCategory, "changePageCategory");
 		await wikiDataFunctions.doesCategoryExist(wikiId, newCategory);
+
+		const wikisCollection = await wikis();
+
+		const updateInfo = await wikisCollection.findOneAndUpdate(
+			{
+				_id: new ObjectId(wikiId),
+				"pages._id": new ObjectId(pageId)
+			},
+			{
+				$set: {
+					"pages.$.category": newCategory,
+					"pages.$.category_slugified": slugify(newCategory, {replacement: "_"})
+				}
+			},
+			{ returnDocument: "after" }
+		);
+
 	}
 };
 
