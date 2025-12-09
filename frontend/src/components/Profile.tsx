@@ -3,7 +3,7 @@ import ChangePasswordModal from "./modals/ChangePasswordModal";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
-import UsernameInputCheck from "./UsernameInputCheck";
+import TakenCheck from "./TakenCheck";
 
 function Profile() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
@@ -66,20 +66,22 @@ function Profile() {
   return (
     <div className="container-fluid">
       <h2>{currentUser.username}'s Account Page</h2>
-        <div className="form-floating mb-3" style={{ width: "500px" }}>
-          <input
-            className="form-control"
-            name="usernameInput"
-            id="usernameInput"
-            placeholder="username"
-            onChange={(event) => handleUsernameChange(event.target.value)}
-          />
-          <label htmlFor="usernameInput">Change Username</label>
-        </div>
+      <div className="form-floating mb-3" style={{ width: "500px" }}>
+        <input
+          className="form-control"
+          name="usernameInput"
+          id="usernameInput"
+          placeholder="username"
+          onChange={(event) => handleUsernameChange(event.target.value)}
+        />
+        <label htmlFor="usernameInput">Change Username</label>
+      </div>
       {currentUser && (
-        <UsernameInputCheck
-          username={username}
-          setChangeUsernameOK={setChangeUsernameOK}
+        <TakenCheck
+          variable={username}
+          varName={"Username"}
+          setOK={setChangeUsernameOK}
+          serverURL="http://localhost:3000/users/usernameTaken/"
         />
       )}
 
