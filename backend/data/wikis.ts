@@ -366,7 +366,7 @@ const wiki_data_functions = {
 		};
 
 		const wikisCollection = await wikis();
-		const updateInfo = await wikisCollection.findOneAndReplace(
+		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
 			updatedWiki,
 			{ returnDocument: "after" }

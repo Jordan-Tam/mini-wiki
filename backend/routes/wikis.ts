@@ -286,8 +286,6 @@ router
 	 */
 	.patch(async (req: any, res) => {
 
-		console.log("PATCH /:wikiId/categories");
-
 		// Make sure user is logged in.
 		if (!req.user) {
 			return res
@@ -298,8 +296,6 @@ router
 		// Retrieve path and request body parameters.
 		let wikiId = req.params.wikiId;
 		let { oldCategoryName, newCategoryName } = req.body;
-
-		console.log(wikiId, oldCategoryName, newCategoryName);
 
 		// Input validation.
 		try {
@@ -328,13 +324,9 @@ router
 		// Call the edit function.
 		try {
 
-			console.log("here");
-
 			return res.json(await (wikiDataFunctions.editCategory(wikiId, oldCategoryName, newCategoryName)));
 
 		} catch (e) {
-			
-			console.log(e);
 
 			return res.status(500).json({error: e});
 
@@ -346,6 +338,51 @@ router
 	 *! Deletes a category from the wiki.
 	 */
 	.delete(async (req: any, res) => {
+
+		// Make sure user is logged in.
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		// Retrieve path and request body parameters.
+		let wikiId = req.params.wikiId;
+		let { categoryName } = req.body;
+
+		// Input validation.
+		try {
+
+			wikiId = checkId(wikiId, "Wiki");
+			categoryName = checkCategory(categoryName);
+
+		} catch (e) {
+
+			return res.status(400).json({error: e});
+
+		}
+
+		// Check if wiki exists.
+		try {
+
+			await wikiDataFunctions.getWikiById(wikiId);
+		
+		} catch (e) {
+			
+			return res.status(404).json({error: e});
+		
+		}
+
+		// Call the edit function.
+		try {
+
+			return res.json(await (wikiDataFunctions.deleteCategory(wikiId, categoryName)));
+
+		} catch (e) {
+
+			return res.status(500).json({error: e});
+
+		}
 
 	});
 

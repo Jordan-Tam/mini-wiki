@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext.jsx";
 import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 import EditCategoryModal from "./modals/EditCategoryModal.jsx";
+import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
 import CategoryCard from "./cards/CategoryCard.jsx";
 
 function WikiHome() {
@@ -106,7 +107,10 @@ function WikiHome() {
 							>Edit</button>
 							<button
 								className="btn btn-danger"
-								onClick={() => setShowDeleteCategoryModal(true)}
+								onClick={() => {
+									setCategory(category);
+									setShowDeleteCategoryModal(true);
+								}}
 							>Delete</button>
 						</div>
 					</div>
@@ -137,6 +141,16 @@ function WikiHome() {
 					isOpen={showEditCategoryModal}
 					wikiId={wiki._id}
 					oldCategoryName={category}
+					setWiki={setWiki}
+					handleClose={handleCloseModals}
+				/>
+			)}
+
+			{showDeleteCategoryModal && (
+				<DeleteCategoryModal
+					isOpen={showDeleteCategoryModal}
+					wikiId={wiki._id}
+					categoryName={category}
 					setWiki={setWiki}
 					handleClose={handleCloseModals}
 				/>
