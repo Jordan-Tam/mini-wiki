@@ -17,7 +17,7 @@ function Browse(){
 	const [error, setError] = useState(null);
     const [favorites, setFavorites] = useState([]);
     const [searchTerm, setSearchTerm] = useState(""); 
-    const [favoritesOnly, setFavoritesOnly] = useState()
+    const [favoritesOnly, setFavoritesOnly] = useState(false)
 
     const favorite_or_unfavorite = async (wikiId) => {
 
@@ -88,7 +88,7 @@ function Browse(){
                 }
 
 				const data = await response.json();
-                console.log(data);
+                // console.log(data);
 				setWikis(data);
 
                 const favoriteResponse = await fetch(`/api/users/favorites`, {
@@ -126,6 +126,8 @@ function Browse(){
 	if (error) return <p>Error: {error}</p>;
 
     // console.log(favorites)
+    console.log( typeof wikis)
+    console.log(wikis.length)
     return (
         <div className="container-fluid">
             <h1>Browse Public Wikis</h1>

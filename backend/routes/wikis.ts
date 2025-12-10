@@ -136,7 +136,7 @@ router
 
 			const public_wikis = await wikiDataFunctions.getAllPublicWikis();
 
-			await redisFunctions.set("publicWikis", public_wikis); // REDIS
+			// await redisFunctions.set("publicWikis", public_wikis); // REDIS (This line is breaking the browse page)
 
 			return res.json(public_wikis);
 
