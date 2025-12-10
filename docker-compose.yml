@@ -21,7 +21,7 @@ services:
         ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 30
+      retries: 10
   mongo:
     image: mongo:7
     container_name: miniwiki-mongo
@@ -36,9 +36,9 @@ services:
       driver: "none"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
 
   redis:
     image: redis:7
@@ -52,14 +52,17 @@ services:
       driver: "none"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
-      retries: 10
+      retries: 5
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      cache_from:
+        - miniwiki-backend:latest
+    image: miniwiki-backend:latest
     container_name: miniwiki-backend
     restart: on-failure
     depends_on:
@@ -86,6 +89,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      cache_from:
+        - miniwiki-frontend:latest
+    image: miniwiki-frontend:latest
     container_name: miniwiki-frontend
     restart: on-failure
     depends_on:
