@@ -287,7 +287,7 @@ router
 
       try{
 
-        const wikis = await wiki_data_functions.getWikisByUser(req.params.id)
+        const wikis: any = await wiki_data_functions.getWikisByUser(req.params.id)
         const collaborateStatus = [];
         for (let wiki of wikis){
           if (wiki.owner !== req.params.id){

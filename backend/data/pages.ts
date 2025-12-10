@@ -10,6 +10,7 @@ import {
 	checkWikiOrPageName
 } from "../helpers.ts";
 import { indexPage, deletePageFromIndex } from "../lib/search/indexer.ts";
+import user_data_functions from "./users.ts";
 
 const page_data_functions = {
 	async getPageById(wikiId: string, pageId: string) {
@@ -134,6 +135,10 @@ const page_data_functions = {
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "changePageContent");
 		pageId = checkId(pageId, "Page", "changePageContent");
+
+		// Check if wiki and page exists.
+		await wikiDataFunctions.getWikiById(wikiId);
+		await this.getPageById(wikiId, pageId);
 
 		const wikisCollection = await wikis();
 

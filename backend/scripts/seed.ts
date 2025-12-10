@@ -394,7 +394,7 @@ async function seedDatabase() {
 						// Update page content
 						await pageDataFunctions.changePageContent(
 							newWiki._id.toString(),
-							newPage._id.toString(),
+							newPage.pages[newPage.pages.length - 1]._id.toString(),
 							pageData.content
 						);
 

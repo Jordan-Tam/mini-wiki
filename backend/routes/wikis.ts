@@ -52,7 +52,7 @@ router
 	/**
 	 *! Creates a wiki.
 	 */
-	.post(async (req, res) => {
+	.post(async (req: any, res) => {
 		
 		if (!(req as any).user) {
 			return res.status(401).json({
