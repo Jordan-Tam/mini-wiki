@@ -37,6 +37,7 @@ async function Main(): Promise<any> {
 		try {
 			const decodeValue = await admin.auth().verifyIdToken(token);
 			//console.log(decodeValue);
+			//console.log(decodeValue);
 			if (decodeValue) {
 				(req as any).user = decodeValue; //This is essentially req.session.user from 546
 			}

@@ -86,8 +86,8 @@ router
       //console.log(favorites);
 			return res.json(favorites)
 		} catch (e) {
-      console.log("favorites error")
-			console.log(e);
+      //console.log("favorites error")
+			//console.log(e);
       return res.status(500).json({ error: e });
 		
     }

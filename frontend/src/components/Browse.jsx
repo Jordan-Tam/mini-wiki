@@ -88,6 +88,7 @@ function Browse(){
                 }
 
 				const data = await response.json();
+                console.log(data);
 				setWikis(data);
 
                 const favoriteResponse = await fetch(`/api/users/favorites`, {

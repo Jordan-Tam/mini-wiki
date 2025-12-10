@@ -12,6 +12,7 @@ import {
 	checkDescription,
 	checkCategory
 } from "../helpers.ts";
+import { indexPage, deletePageFromIndex } from "../lib/search/indexer.ts";
 
 const wiki_data_functions = {
 	/**
@@ -22,6 +23,17 @@ const wiki_data_functions = {
 
 		const wikisList = await wikisCollection.find({}).toArray();
 
+		return wikisList;
+	},
+
+	/**
+	 * Returns an array of every public wiki.
+	 */
+	async getAllPublicWikis() {
+		const wikisCollection = await wikis();
+		const wikisList = await wikisCollection.find({
+			access: {$in: ["public-edit", "public-view"]}
+		}).toArray();
 		return wikisList;
 	},
 
@@ -84,13 +96,15 @@ const wiki_data_functions = {
 	 * Returns an array of wikis that the user is either an owner of or a collaborator of.
 	 */
 	async getWikisByUser(userFirebaseUID: string) {
+		
 		let wikisList = await this.getAllWikis();
 
-		return wikisList.filter(
-			(wiki: any) =>
-				wiki.owner === userFirebaseUID ||
-				wiki.collaborators.includes(userFirebaseUID)
-		);
+		return {
+			OWNER: wikisList.filter((wiki:any) => wiki.owner === userFirebaseUID),
+			COLLABORATOR: wikisList.filter((wiki:any) => wiki.owner !== userFirebaseUID && wiki.collaborators.includes(userFirebaseUID)),
+			PRIVATE_VIEWER: wikisList.filter((wiki:any) => wiki.owner !== userFirebaseUID && wiki.private_viewers.includes(userFirebaseUID))
+		};
+
 	},
 
 	/**
@@ -133,7 +147,7 @@ const wiki_data_functions = {
 			owner,
 			access,
 			categories: ["UNCATEGORIZED"],
-			categories_slugified: ["UNCATEGORIZED"],
+			categories_slugified: [slugify("UNCATEGORIZED", { replacement: "_" })],
 			collaborators: [],
 			private_viewers: [],
 			pages: [],
@@ -158,6 +172,9 @@ const wiki_data_functions = {
 		// Input validation.
 		id = checkId(id, "Wiki", "deleteWiki");
 
+		// Get the wiki to access its pages before deletion
+		const wiki = await this.getWikiById(id);
+
 		const wikisCollection = await wikis();
 
 		const deletionInfo = await wikisCollection.findOneAndDelete({
@@ -166,6 +183,11 @@ const wiki_data_functions = {
 
 		if (!deletionInfo) {
 			throw "Could not delete wiki.";
+		}
+
+		// Remove all pages from Elasticsearch index
+		for (let page of wiki.pages) {
+			await deletePageFromIndex(page._id.toString());
 		}
 
 		// Iterate through every user and delete the wiki's ID if it appears in their favorites array.
@@ -259,7 +281,6 @@ const wiki_data_functions = {
 	},
 
 	async createCategory(wikiId: string, category: string) {
-
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createCategory");
 		category = checkCategory(category, "createCategory");
@@ -272,10 +293,12 @@ const wiki_data_functions = {
 		const wikisCollection = await wikis();
 		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			{ $push: {
-				categories: category,
-				categories_slugified: slugify(category, {replacement: "_"})
-			} },
+			{
+				$push: {
+					categories: category,
+					categories_slugified: slugify(category, { replacement: "_" })
+				}
+			},
 			{ returnDocument: "after" }
 		);
 
@@ -305,7 +328,7 @@ const wiki_data_functions = {
 
 		// Return early if old and new category names are the same.
 		if (oldCategoryName === newCategoryName) {
-			return await this.getWikiById(wikiId.toString());;
+			return await this.getWikiById(wikiId.toString());
 		}
 
 		// Make sure the new name is unique.
@@ -316,17 +339,16 @@ const wiki_data_functions = {
 		const wikisCollection = await wikis();
 		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			{ $set: {
-				categories: wiki.categories.map((c: any) =>
-					c === oldCategoryName ? newCategoryName : c
-				),
-				categories_slugified: wiki.categories_slugified.map((c: any) =>
-					c === slugify(oldCategoryName, {replacement: "_"})
-					?
-					slugify(newCategoryName, {replacement: "_"})
-					:
-					c
-				)
+			{
+				$set: {
+					categories: wiki.categories.map((c: any) =>
+						c === oldCategoryName ? newCategoryName : c
+					),
+					categories_slugified: wiki.categories_slugified.map((c: any) =>
+						c === slugify(oldCategoryName, { replacement: "_" })
+							? slugify(newCategoryName, { replacement: "_" })
+							: c
+					)
 				}
 			},
 			{ returnDocument: "after" }
@@ -340,6 +362,7 @@ const wiki_data_functions = {
 					page._id,
 					newCategoryName
 				);
+				// Note: changePageCategory already handles re-indexing
 			}
 		}
 
@@ -352,6 +375,9 @@ const wiki_data_functions = {
 		category = checkCategory(category, "deleteCategory");
 
 		let wiki = await this.getWikiById(wikiId);
+
+		// Get pages that will be affected (moved to UNCATEGORIZED)
+		const affectedPages = wiki.pages.filter((page: any) => page.category === category);
 
 		// Pages associated with the deleted category are moved to the UNCATEGORIZED category.
 		let updatedWiki = {
@@ -377,6 +403,12 @@ const wiki_data_functions = {
 			throw "Could not delete wiki category.";
 		}
 
+		// Re-index affected pages with their new UNCATEGORIZED category
+		for (let page of affectedPages) {
+			const updatedPage = await pageDataFunctions.getPageById(wikiId, page._id.toString());
+			await indexPage(wikiId, updatedPage);
+		}
+
 		return await this.getWikiById(wikiId.toString());
 	},
 
@@ -387,10 +419,16 @@ const wiki_data_functions = {
 
 		let wiki = await this.getWikiById(wikiId);
 
-		return (wiki.categories.includes(category) && wiki.categories_slugified.includes(slugify(category, {replacement: "_"})));
+		const categoriesSlugified = wiki.categories_slugified || [];
+
+		return (
+			wiki.categories.includes(category) &&
+			categoriesSlugified.includes(slugify(category, { replacement: "_" }))
+		);
 	},
 
 	async addCollaborator(wikiId: string, userFirebaseUID: string) {
+
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "addCollaborator");
 
@@ -399,6 +437,11 @@ const wiki_data_functions = {
 
 		// Check if user exists.
 		await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
+
+		// Check if wiki is "public-edit".
+		if (wiki.access === "public-edit") {
+			throw "User already has edit permissions.";
+		}
 
 		// Check if user is already a collaborator.
 		if (wiki.collaborators.includes(userFirebaseUID)) {
