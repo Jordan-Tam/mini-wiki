@@ -2,6 +2,7 @@ import userDataFunctions from "../data/users.ts";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
 import { indexPage } from "../lib/search/indexer.ts";
+import redisFunctions from "../lib/redis/redis.ts";
 import { ensureIndex, esClient, WIKI_INDEX } from "../lib/search/search.ts";
 import { databaseConnection } from "../config/mongoConnection.ts";
 import { users, wikis } from "../config/mongoCollections.ts";
@@ -313,6 +314,9 @@ async function seedDatabase() {
 
 		console.log(`Deleted ${deletedUsers.deletedCount} users`);
 		console.log(`Deleted ${deletedWikis.deletedCount} wikis`);
+
+		// Clear Redis cache
+		await redisFunctions.clear_all();
 
 		// Delete and recreate Elasticsearch index
 		console.log("\n--- Resetting Elasticsearch Index ---");

@@ -27,6 +27,17 @@ const wiki_data_functions = {
 	},
 
 	/**
+	 * Returns an array of every public wiki.
+	 */
+	async getAllPublicWikis() {
+		const wikisCollection = await wikis();
+		const wikisList = await wikisCollection.find({
+			access: {$in: ["public-edit", "public-view"]}
+		}).toArray();
+		return wikisList;
+	},
+
+	/**
 	 * Returns an array of every taken wiki URL name.
 	 */
 	async getAllWikiUrlNames() {
@@ -85,13 +96,15 @@ const wiki_data_functions = {
 	 * Returns an array of wikis that the user is either an owner of or a collaborator of.
 	 */
 	async getWikisByUser(userFirebaseUID: string) {
+		
 		let wikisList = await this.getAllWikis();
 
-		return wikisList.filter(
-			(wiki: any) =>
-				wiki.owner === userFirebaseUID ||
-				wiki.collaborators.includes(userFirebaseUID)
-		);
+		return {
+			OWNER: wikisList.filter((wiki:any) => wiki.owner === userFirebaseUID),
+			COLLABORATOR: wikisList.filter((wiki:any) => wiki.owner !== userFirebaseUID && wiki.collaborators.includes(userFirebaseUID)),
+			PRIVATE_VIEWER: wikisList.filter((wiki:any) => wiki.owner !== userFirebaseUID && wiki.private_viewers.includes(userFirebaseUID))
+		};
+
 	},
 
 	/**
@@ -415,6 +428,7 @@ const wiki_data_functions = {
 	},
 
 	async addCollaborator(wikiId: string, userFirebaseUID: string) {
+
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "addCollaborator");
 
@@ -424,10 +438,17 @@ const wiki_data_functions = {
 		// Check if user exists.
 		await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
 
+		// Check if wiki is "public-edit".
+		if (wiki.access === "public-edit") {
+			throw "User already has edit permissions.";
+		}
+
 		// Check if user is already a collaborator.
 		if (wiki.collaborators.includes(userFirebaseUID)) {
 			throw "User is already a collaborator.";
 		}
+
+		// TODO: Check if user is already a private_viewer. What to do in that case?
 
 		const wikisCollection = await wikis();
 

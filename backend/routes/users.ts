@@ -83,11 +83,11 @@ router
         let favorited_wiki = await wiki_data_functions.getWikiById(favorite);
         favorites.push(favorited_wiki)
       }
-      console.log(favorites);
+      //console.log(favorites);
 			return res.json(favorites)
 		} catch (e) {
-      console.log("favorites error")
-			console.log(e);
+      //console.log("favorites error")
+			//console.log(e);
       return res.status(500).json({ error: e });
 		
     }
