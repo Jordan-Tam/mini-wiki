@@ -26,12 +26,6 @@ router
 	 */
 	.get(async (req: any, res: any) => {
 
-		if (!req.user) {
-			return res.status(401).json({
-				error: "/wiki: You must be logged in to perform this action."
-			});
-		}
-
 		if (await redisFunctions.exists_in_cache(`${req.user.uid}/getWikisByUser`)) {
 			return res.json(await redisFunctions.get_json(`${req.user.uid}/getWikisByUser`)); // REDIS
 		}
@@ -54,11 +48,6 @@ router
 	 */
 	.post(async (req: any, res) => {
 		
-		if (!(req as any).user) {
-			return res.status(401).json({
-				error: "/wiki: You must be logged in to perform this action."
-			});
-		}
 
 		const FORBIDDEN_WIKI_URL_NAMES = [
           "browse",
@@ -122,12 +111,6 @@ router
 	 */
 	.get(async (req: any, res) => {
 
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
-
 		try {
 
 			if (await redisFunctions.exists_in_cache("publicWikis")) {
@@ -146,12 +129,6 @@ router
 	});
 
 router.route("/search").post(async (req: any, res) => {
-	
-	if (!req.user) {
-		return res
-			.status(401)
-			.json({ error: "You must be logged in to perform this action." });
-	}
 
 	const searchTerm = req.body.searchTerm.trim();
 	if (searchTerm.length > 50) {
@@ -168,7 +145,6 @@ router.route("/search").post(async (req: any, res) => {
 		return res.status(500).json({ error: e });
 	}
 
-	return;
 });
 
 router
@@ -202,11 +178,6 @@ router
 	 */
 	.get(async (req: any, res) => {
 
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		let urlName = req.params.urlName;
 
@@ -283,13 +254,6 @@ router
 	 */
 	.get(async (req: any, res) => {
 
-
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
-
 		let wikiUrlName = req.params.urlName;
 		let category = req.params.category;
 		let wiki: any;
@@ -331,12 +295,6 @@ router
 	.post(async (req: any, res) => {
 		//console.log("POST /:wikiId/categories");
 
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
-
 		let wikiId = req.params.wikiId;
 		let { categoryName } = req.body;
 
@@ -368,13 +326,6 @@ router
 	 *! Edits an existing category in the wiki.
 	 */
 	.patch(async (req: any, res) => {
-
-		// Make sure user is logged in.
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		// Retrieve path and request body parameters.
 		let wikiId = req.params.wikiId;
@@ -427,13 +378,6 @@ router
 	 */
 	.delete(async (req: any, res) => {
 
-		// Make sure user is logged in.
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
-
 		// Retrieve path and request body parameters.
 		let wikiId = req.params.wikiId;
 		let { categoryName } = req.body;
@@ -485,12 +429,6 @@ router
 	 * Creates a new page in the wiki
 	 */
 	.post(async (req: any, res) => {
-		
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		let wikiId = req.params.id;
 		let { pageName, category } = req.body;
@@ -538,11 +476,6 @@ router
 	 * TODO: THIS ROUTE IS MARKED FOR DELETION
 	 */
 	.get(async (req: any, res) => {
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		let wikiUrlName = req.params.wikiUrlName;
 		let pageUrlName = req.params.pageUrlName;
@@ -580,13 +513,6 @@ router
 	 * ! Updates page content
 	 */
 	.post(async (req: any, res) => {
-		
-		
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		// Get path and request body parameters.
 		let urlName = req.params.urlName;
@@ -665,11 +591,7 @@ router
 	 * List collabortors on wiki
 	 */
 	.get(async (req:any, res) => {
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
+
 		const wikiId = req.params.id.trim();
 		try {
 			checkId(wikiId, "wiki", "POST /:id/collaborators");
@@ -707,11 +629,6 @@ router
 	 * (specify collaborator in body) 
 	 */ 
 	.post(async (req: any, res) => {
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		let username = ""
 		const wikiId = req.params.id.trim();
@@ -748,11 +665,6 @@ router
 	 * (specify collaborator in body)
 	 */
 	.delete(async (req:any, res) => {
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		let username = ""
 		const wikiId = req.params.id.trim();

@@ -15,13 +15,6 @@ router.post("/", async (req, res) => {
 		const { searchTerm } = req.body;
 		const user = (req as any).user;
 
-		// Check if user is authenticated
-		if (!user || !user.uid) {
-			return res.status(401).json({
-				error: "Authentication required"
-			});
-		}
-
 		// Validate search term
 		if (!searchTerm || typeof searchTerm !== "string") {
 			return res.status(400).json({

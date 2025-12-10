@@ -30,8 +30,8 @@ router.route("/usernameTaken/:username").post(async (req, res) => {
 /**
  * Register account using firebase
  */
-router.route("/registerFB").post(async (req, res) => {
-  let user = (req as any).user;
+router.route("/registerFB").post(async (req: any, res) => {
+  let user = req.user;
   let firebaseUID = user.user_id;
   let email = user.email;
   try {
@@ -58,12 +58,6 @@ router
    * Get the user's list of favorite wikis.
    */
 	.get(async (req: any, res) => {
-
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		try {
 
@@ -99,11 +93,6 @@ router
    */
   .post(async (req: any, res) => {
 
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		let { wikiId } = req.body;
 
@@ -135,12 +124,6 @@ router
    * Removes a wiki from the user's favorites array.
    */
   .delete(async (req: any, res) => {
-
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
     let { wikiId } = req.body;
 
@@ -176,9 +159,9 @@ router
   /**
    * get user by id
    */
-  .get(async (req, res) => {
+  .get(async (req: any, res) => {
     let firebaseUID = req.params.id;
-    let tokenId = (req as any).user.user_id;
+    let tokenId = req.user.user_id;
     if (firebaseUID !== tokenId) {
       return res.status(403).json({ error: "FirebaseUID mismatch" });
     }
@@ -196,9 +179,9 @@ router
   /**
    * update username
    */
-  .patch(async (req, res) => {
+  .patch(async (req: any, res) => {
     let firebaseUID = req.params.id;
-    let tokenId = (req as any).user.user_id;
+    let tokenId = req.user.user_id;
     if (firebaseUID !== tokenId) {
       return res
         .status(403)
@@ -223,9 +206,9 @@ router
   /**
    * Delete user (self)
    */
-  .delete(async (req, res) => {
+  .delete(async (req: any, res) => {
     let firebaseUID = req.params.id;
-    let tokenId = (req as any).user.user_id;
+    let tokenId = req.user.user_id;
     if (firebaseUID !== tokenId) {
       return res
         .status(403)
@@ -255,11 +238,6 @@ router
 router
   .route("/:id/wikis")
   .get(async (req: any, res) => {
-    if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
 
 		try {
 			const wikis = await wiki_data_functions.getWikisByUser(req.params.id)
@@ -278,12 +256,6 @@ router
      * List wikis that user is a collaborator of
      */
     .get(async (req: any, res) => {
-      
-      if (!req.user){
-        return res
-          .status(401)
-          .json({ error: "You must be logged in to perform this action." })
-      }
 
       try{
 

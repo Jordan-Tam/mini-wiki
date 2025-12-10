@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { checkUrlName, checkUsername } from "../../helpers.ts";
 
 const FORBIDDEN_WIKI_URL_NAMES = [
@@ -13,9 +14,9 @@ const FORBIDDEN_WIKI_URL_NAMES = [
 ];
 const FORBIDDEN_PAGE_URL_NAMES = ["category", "chat", "search"];
 
-// const FORBIDDEN_CHARACTERS = [".", "#", "%", "/", "\\", "?", ]
-
 function TakenCheck(props) {
+  const { currentUser } = useContext(AuthContext);
+
   useEffect(() => {
     async function taken(variable) {
       const status = document.getElementById("status");
@@ -58,6 +59,9 @@ function TakenCheck(props) {
         console.log(`checking if ${variable} is taken.`);
         let response = await fetch(`${props.serverURL}${variable}`, {
           method: "POST",
+          headers: {
+            Authorization: "Bearer " + currentUser.accessToken,
+          },
         });
         if (!response.ok) {
           status.innerHTML = "Server error";
