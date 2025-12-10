@@ -45,12 +45,10 @@ function WikiHome() {
 				if (!response.ok) {
 					throw (await response.json()).error;
 				}
-				//throw new Error("Failed to fetch wiki");
 				const data = await response.json();
 				setWiki(data);
-
 			} catch (e) {
-				setError(e);
+				setError(`${e}`);
 			} 
 		};
 
