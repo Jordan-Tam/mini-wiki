@@ -44,7 +44,7 @@ router
 	 *! Creates a wiki.
 	 */
 	.post(async (req, res) => {
-		console.log("a")
+		
 		if (!(req as any).user) {
 			return res.status(401).json({
 				error: "/wiki: You must be logged in to perform this action."
@@ -107,7 +107,7 @@ router
 	});
 
 router.route("/search").post(async (req: any, res) => {
-	console.log("b")
+	
 	if (!req.user) {
 		return res
 			.status(401)
@@ -140,9 +140,9 @@ router
 	 *! Used for real-time feedback.
 	 */
 	.post(async (req, res) => {
-	console.log("c")
+	
 	let url = req.params.url.trim();
-	console.log(url);
+	//console.log(url);
 	try {
 		url = checkUrlName(url, "URL Taken route");
 	} catch (e) {
@@ -212,7 +212,6 @@ router
 	 */
 	.get(async (req: any, res) => {
 
-		console.log("hi");
 
 		if (!req.user) {
 			return res
@@ -259,8 +258,7 @@ router
 	 *! Creates a new category in the wiki
 	 */
 	.post(async (req: any, res) => {
-		console.log("d")
-		console.log("POST /:wikiId/categories");
+		//console.log("POST /:wikiId/categories");
 
 		if (!req.user) {
 			return res
@@ -401,7 +399,7 @@ router
 	 * Creates a new page in the wiki
 	 */
 	.post(async (req: any, res) => {
-		console.log("e")
+		
 		if (!req.user) {
 			return res
 				.status(401)
@@ -503,7 +501,7 @@ router
 	 * Updates page content
 	 */
 	.post(async (req: any, res) => {
-		console.log("d")
+		
 		if (!req.user) {
 			return res
 				.status(401)
@@ -537,7 +535,7 @@ router
 	 * Requires wiki content in body
 	 */
 	.post(async (req, res) => {
-		console.log("g")
+		
 		return;
 	});
 
@@ -547,7 +545,7 @@ router
 	 * Publish changes publicly
 	 */
 	.post(async (req, res) => {
-		console.log("h")
+		
 		return;
 	});
 
@@ -625,8 +623,9 @@ router
 		}
 
 		try {
-			console.log(user)
+			//console.log(user)
 			const retVal = await wikiDataFunctions.addCollaborator(wikiId, user)
+			//console.log(retVal)
 			return res.json(retVal);
 
 		} catch (e) {
@@ -641,8 +640,41 @@ router
 	 * Remove collaborator
 	 * (specify collaborator in body)
 	 */
-	.delete(async (req, res) => {
-		return;
+	.delete(async (req:any, res) => {
+		if (!req.user) {
+			return res
+				.status(401)
+				.json({ error: "You must be logged in to perform this action." });
+		}
+
+		let username = ""
+		const wikiId = req.params.id.trim();
+		try {
+			checkId(wikiId, "wiki", "DELETE /:id/collaborators");
+			username = checkUsername(req.body.username, "POST");
+		} catch (e){
+			return res.status(400).json({error: e})
+		}
+		let user = ""
+
+		try {
+			user = await userDataFunctions.getUserIdByUsername(username)
+		} catch (e){
+			return res.status(404).json({error: "User not found"})
+		}
+
+		try {
+
+			//console.log(user)
+			const retVal = await wikiDataFunctions.removeCollaborator(wikiId, user);
+			return res.json(retVal);
+
+		} catch (e) {
+
+			return res 
+				.status(500)
+				.json({error: e})
+		}
 	});
 
 export default router;

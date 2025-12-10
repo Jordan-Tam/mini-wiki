@@ -6,7 +6,7 @@ import CreatePageModal from "./modals/CreatePageModal.jsx";
 import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
 import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
-
+import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx"
 function WikiHome() {
 
 	const { wikiUrlName } = useParams();
@@ -26,7 +26,9 @@ function WikiHome() {
 	const [showAddCollabModal, setShowAddCollabModal] = useState(false);
 	const [collaborators, setCollaborators] = useState(undefined);
 	const [showCollaborators, setShowCollaborators] = useState(false)
-
+	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
+	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] = useState(false)
+	
 	useEffect(() => {
 		const fetchWiki = async () => {
 			try {
@@ -91,6 +93,7 @@ function WikiHome() {
 		setShowEditCategoryModal(false);
 		setShowDeleteCategoryModal(false);
 		setShowAddCollabModal(false);
+		setShowDeleteCollaboratorModal(false);
 	};
 
 	/* const handleCategoryCreated = (newCategory: any) => {
@@ -103,7 +106,7 @@ function WikiHome() {
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
-	console.log(collaborators);
+	//console.log(collaborators);
 	return (
 		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
@@ -117,12 +120,30 @@ function WikiHome() {
 						}
 						{showCollaborators && (
 							<>
-							<button className="btn btn-success me-3" onClick={() => setShowCollaborators(false)}>Hide Collaborators</button>
+							<button className="btn btn-success ms-3" onClick={() => setShowCollaborators(false)}>Hide Collaborators</button>
 							<ul className="list-group mt-2">
+							{collaborators && collaborators.length === 0 && (
+								<li className="list-group-item text-muted">
+									This wiki currently has no collaborators!s
+								</li>
+							)}
+								
 								{collaborators?.map((username) => (
-									<li key={username} className="list-group-item">
-										{username}
-									</li>
+									<>
+										<li key={username} className="list-group-item d-flex justify-content-between align-items-center">
+											<p>{username}</p>
+											<button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeleteCollaborator(username);
+													setShowDeleteCollaboratorModal(true);
+												}}
+											>
+												Remove Collaborator
+											</button>
+										</li>
+
+									</>
 								))}
 							</ul>
 							</>
@@ -219,6 +240,16 @@ function WikiHome() {
 					wikiId={wiki._id}
 					handleClose={handleCloseModals}
 					setWiki={setWiki}
+				/>
+			)}
+
+			{showDeleteCollaboratorModal && (
+				<DeleteCollaboratorModal
+					isOpen={showDeleteCollaboratorModal}
+					handleClose={handleCloseModals}
+					username={deleteCollaborator}
+					setWiki={setWiki}
+					wikiId={wiki._id}
 				/>
 			)}
 

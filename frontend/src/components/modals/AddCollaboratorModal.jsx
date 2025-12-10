@@ -18,7 +18,7 @@ const customStyles = {
     }
 };
 
-function AddCollaboratorModal({ isOpen, handleClose, wikiId }) {
+function AddCollaboratorModal({ isOpen, handleClose, setWiki, wikiId }) {
     const { currentUser } = useContext(AuthContext);
 
     const [username, setUsername] = useState("");
@@ -51,7 +51,8 @@ function AddCollaboratorModal({ isOpen, handleClose, wikiId }) {
             }
 
             setSuccess(true);
-
+            setWiki(data);
+            handleClose();
         } catch (err) {
             setError("Server error.");
         } finally {

@@ -83,7 +83,7 @@ router
         let favorited_wiki = await wiki_data_functions.getWikiById(favorite);
         favorites.push(favorited_wiki)
       }
-      console.log(favorites);
+      //console.log(favorites);
 			return res.json(favorites)
 		} catch (e) {
       console.log("favorites error")
@@ -192,6 +192,7 @@ router
       return res.json({ error: e });
     }
   })
+
   /**
    * update username
    */
@@ -277,7 +278,7 @@ router
      * List wikis that user is a collaborator of
      */
     .get(async (req: any, res) => {
-      //console.log("yo")
+      
       if (!req.user){
         return res
           .status(401)
@@ -293,7 +294,7 @@ router
             collaborateStatus.push(wiki)
           }
         }
-        console.log(collaborateStatus[0])
+        //console.log(collaborateStatus[0])
         return res.json(collaborateStatus);
       } catch (e) {
         return res.status(500).json({error: e})

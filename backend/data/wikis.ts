@@ -436,7 +436,7 @@ const wiki_data_functions = {
 		await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
 
 		// Check if user already wasn't a collaborator.
-		if (wiki.collaborators.includes(userFirebaseUID)) {
+		if (!wiki.collaborators.includes(userFirebaseUID)) {
 			throw "User isn't a collaborator.";
 		}
 
