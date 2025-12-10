@@ -427,6 +427,8 @@ router
 	 */
 	.delete(async (req: any, res) => {
 
+		//console.log("DELETE /:wikiId/categories");
+
 		// Make sure user is logged in.
 		if (!req.user) {
 			return res
@@ -662,7 +664,7 @@ router
 router
 	.route("/:id/collaborators")
 	/**
-	 * List collabortors on wiki
+	 * List collaborators on wiki
 	 */
 	.get(async (req:any, res) => {
 		if (!req.user) {
