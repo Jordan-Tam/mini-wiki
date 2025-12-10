@@ -10,7 +10,8 @@ import {
 	checkCategory,
 	checkDescription,
 	checkUrlName,
-	checkWikiOrPageName
+	checkWikiOrPageName,
+	checkContentArray
 } from "../helpers.ts";
 
 export const router = Router();
@@ -29,13 +30,18 @@ router
 			});
 		}
 
-		if (await redisFunctions.exists_in_cache("getWikisByUser")) {
-			return res.json(await redisFunctions.get_json("getWikiByUser"));
+		if (await redisFunctions.exists_in_cache(`${req.user.uid}/getWikisByUser`)) {
+			return res.json(await redisFunctions.get_json(`${req.user.uid}/getWikisByUser`)); // REDIS
 		}
 
-		let wikis = await wikiDataFunctions.getWikisByUser(req.user.uid);
+		let wikis;
+		try {
+			wikis = await wikiDataFunctions.getWikisByUser(req.user.uid);
+		} catch (e) {
+			return res.status(500).json({error: e});
+		}
 
-		await redisFunctions.set_json("getWikisByUser", wikis);
+		await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, wikis); // REDIS
 
 		return res.json(wikis);
 
@@ -44,7 +50,8 @@ router
 	/**
 	 *! Creates a wiki.
 	 */
-	.post(async (req, res) => {
+	.post(async (req: any, res) => {
+
 		if (!(req as any).user) {
 			return res.status(401).json({
 				error: "/wiki: You must be logged in to perform this action."
@@ -62,9 +69,11 @@ router
           "testing",
         ];
 
-		//console.log(req.body);
 		let { name, urlName, description, access } = req.body;
+
+		// 400: Input validation.
 		try {
+
 			name = checkWikiOrPageName(name);
 			urlName = checkUrlName(urlName);
 			if(FORBIDDEN_WIKI_URL_NAMES.includes(urlName)){
@@ -72,20 +81,32 @@ router
 			}
 			description = checkDescription(description);
 			access = checkAccess(access);
+
 		} catch (e) {
 			return res.status(400).json({ error: e });
 		}
 
 		try {
-			return res.json(
-				await wikiDataFunctions.createWiki(
-					name,
-					urlName,
-					description,
-					access,
-					(req as any).user.uid
-				)
+
+			let wiki = await wikiDataFunctions.createWiki(
+				name,
+				urlName,
+				description,
+				access,
+				(req as any).user.uid
 			);
+
+			await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser(req.user.uid)); // REDIS
+
+			if (wiki.access === "public-edit" || wiki.access === "public-view") {
+				await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
+			}
+
+			return res.json(wiki);
+
+			// TODO: When adding collaborators/viewers, make sure that the user being added has their personal getWikisByUser key-value updated.
+			// TODO: And if that wiki is also public, update the publicWikis entry as done above.
+
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
@@ -98,6 +119,7 @@ router
 	 *! Returns an array of public wikis.
 	 */
 	.get(async (req: any, res) => {
+
 		if (!req.user) {
 			return res
 				.status(401)
@@ -105,16 +127,17 @@ router
 		}
 
 		try {
-			const wikis = await wikiDataFunctions.getAllWikis();
 
-			const public_wikis = [];
-			for (let wiki of wikis) {
-				if (wiki.access === "public-edit" || wiki.access === "public-view") {
-					public_wikis.push(wiki);
-				}
+			if (await redisFunctions.exists_in_cache("publicWikis")) {
+				return res.json(await redisFunctions.get("publicWikis")); // REDIS
 			}
 
+			const public_wikis = await wikiDataFunctions.getAllPublicWikis();
+
+			await redisFunctions.set("publicWikis", public_wikis); // REDIS
+
 			return res.json(public_wikis);
+
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
@@ -174,6 +197,7 @@ router
 	 *! Returns the wiki specified by "req.params.urlName".
 	 */
 	.get(async (req: any, res) => {
+
 		if (!req.user) {
 			return res
 				.status(401)
@@ -182,7 +206,34 @@ router
 
 		let urlName = req.params.urlName;
 
+		// This comes before checking the cache in order to trim the string first.
 		try {
+			urlName = checkUrlName(urlName);
+		} catch (e) {
+			return res.status(400).json({error: e});
+		}
+
+		if (await redisFunctions.exists_in_cache(urlName)) {
+			let cached_wiki = await redisFunctions.get_json(urlName); // REDIS
+			if (
+				cached_wiki.access !== "public-edit"
+				&&
+				cached_wiki.access !== "public-view"
+				&&
+				cached_wiki.owner !== req.user.uid
+				&&
+				!(cached_wiki.collaborators.includes(req.user.uid))
+				&&
+				!(cached_wiki.private_viewers.includes(req.user.uid))
+			) {
+				return res.status(403).json({error: "You do not have access to this wiki."});
+			} else {
+				return res.json(cached_wiki);
+			}
+		}
+
+		try {
+			
 			let wiki: any = await wikiDataFunctions.getWikiByUrlName(urlName);
 
 			if (
@@ -196,7 +247,10 @@ router
 					.json({ error: "You do not permission to access this resource." });
 			}
 
+			await redisFunctions.set_json(urlName, wiki); // REDIS
+
 			return res.json(wiki);
+
 		} catch (e) {
 			return res.json(400).json({ error: e });
 		}
@@ -220,7 +274,8 @@ router
 	.route("/:urlName/category/:category")
 
 	/**
-	 *! Returns a list of pages associated with the wiki URL name and category.
+	 * ! Returns a list of pages associated with the wiki URL name and category.
+	 * TODO: THIS ROUTE IS MARKED FOR DELETION
 	 */
 	.get(async (req: any, res) => {
 
@@ -290,11 +345,16 @@ router
 		}
 
 		try {
-			return res.json(await (wikiDataFunctions.createCategory(
+
+			let updatedWiki = await (wikiDataFunctions.createCategory(
 				wiki._id,
 				categoryName
-			)));
-			/* return res.json({ name: categoryName, wiki: updatedWiki }); */
+			));
+
+			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+
+			return res.json(updatedWiki);
+
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
@@ -330,9 +390,10 @@ router
 		}
 
 		// Check if wiki exists.
+		let wiki;
 		try {
 
-			await wikiDataFunctions.getWikiById(wikiId);
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
 		
 		} catch (e) {
 			
@@ -343,7 +404,11 @@ router
 		// Call the edit function.
 		try {
 
-			return res.json(await (wikiDataFunctions.editCategory(wikiId, oldCategoryName, newCategoryName)));
+			let updatedWiki = await (wikiDataFunctions.editCategory(wikiId, oldCategoryName, newCategoryName));
+
+			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+
+			return res.json(updatedWiki);
 
 		} catch (e) {
 
@@ -382,9 +447,10 @@ router
 		}
 
 		// Check if wiki exists.
+		let wiki;
 		try {
 
-			await wikiDataFunctions.getWikiById(wikiId);
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
 		
 		} catch (e) {
 			
@@ -395,7 +461,11 @@ router
 		// Call the edit function.
 		try {
 
-			return res.json(await (wikiDataFunctions.deleteCategory(wikiId, categoryName)));
+			let updatedWiki = await (wikiDataFunctions.deleteCategory(wikiId, categoryName));
+
+			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+
+			return res.json(updatedWiki);
 
 		} catch (e) {
 
@@ -420,20 +490,37 @@ router
 		let wikiId = req.params.id;
 		let { pageName, category } = req.body;
 
+		// 400: Input validation
 		try {
+			wikiId = checkId(wikiId, "Wiki");
 			pageName = checkWikiOrPageName(pageName, "POST :/id/pages");
 			category = checkCategory(category, "POST :/id/pages");
 		} catch (e) {
 			return res.status(400).json({ error: e });
 		}
 
+		// 404: Check if wiki exists.
+		let wiki;
 		try {
-			const newPage = await pageDataFunctions.createPage(
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: e});
+		}
+
+
+		try {
+			let updatedWiki = await pageDataFunctions.createPage(
 				wikiId,
 				pageName,
 				category
 			);
-			return res.json({ pageId: newPage._id.toString(), page: newPage });
+
+			await redisFunctions.set_json(wiki.urlName, updatedWiki);
+
+			return res.json(updatedWiki);
+
+			//return res.json({ pageId: newPage._id.toString(), page: newPage });
+
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
@@ -442,6 +529,9 @@ router
 router
 	.route("/:wikiUrlName/pages/:pageUrlName")
 
+	/**
+	 * TODO: THIS ROUTE IS MARKED FOR DELETION
+	 */
 	.get(async (req: any, res) => {
 		if (!req.user) {
 			return res
@@ -478,56 +568,57 @@ router
 		}
 	});
 
-/* router
-	.route("/:id/pages/:pageId")
-
-	//! Gets a specific page by ID
-	.get(async (req: any, res) => {
-		if (!req.user) {
-			return res
-				.status(401)
-				.json({ error: "You must be logged in to perform this action." });
-		}
-
-		try {
-			// console.log("Fetching page with urlName:", req.params.urlName, "pageId:", req.params.pageId);
-
-			// Get wiki by urlName to get the ID
-			const wiki = await wikiDataFunctions.getWikiByUrlName(req.params.urlName);
-			// console.log("Found wiki with ID:", wiki._id);
-
-			const page = await pageDataFunctions.getPageById(
-				wiki._id.toString(),
-				req.params.pageId
-			);
-			return res.json(page);
-		} catch (e) {
-			return res.status(500).json({ error: e });
-		}
-	}); */
-
 router
 	.route("/:urlName/pages/:pageId/content")
+
 	/**
-	 * Updates page content
+	 * ! Updates page content
 	 */
 	.post(async (req: any, res) => {
+		
 		if (!req.user) {
 			return res
 				.status(401)
 				.json({ error: "You must be logged in to perform this action." });
 		}
 
-		try {
-			// Get wiki by urlName to get the ID
-			const wiki = await wikiDataFunctions.getWikiByUrlName(req.params.urlName);
+		// Get path and request body parameters.
+		let urlName = req.params.urlName;
+		let pageId = req.params.pageId;
+		let {content} = req.body;
 
-			const updatedPage = await pageDataFunctions.changePageContent(
+		// 400: Input validation
+		try {
+			urlName = checkUrlName(urlName);
+			pageId = checkId(pageId, "Page");
+			content = checkContentArray(content);
+		} catch (e) {
+			return res.status(400).json({error: e});
+		}
+
+		// 404: Check if wiki exists.
+		let wiki;
+		try {
+
+			// Get wiki by urlName to get the ID
+			wiki = await wikiDataFunctions.getWikiByUrlName(urlName);
+
+		} catch (e) {
+			return res.status(404).json({error: e});
+		}
+
+		try {
+			const updatedWiki = await pageDataFunctions.changePageContent(
 				wiki._id.toString(),
-				req.params.pageId,
-				req.body.content
+				pageId,
+				content
 			);
-			return res.json(updatedPage);
+
+			//return res.json(updatedPage);
+
+			await redisFunctions.set_json(urlName, updatedWiki);
+			return res.json(updatedWiki);
+
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}

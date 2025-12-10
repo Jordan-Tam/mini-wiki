@@ -14,8 +14,8 @@ function Home() {
 
 	// Fetch
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(undefined);
 	const [wikisData, setWikisData] = useState(undefined);
-	const [favorites, setFavorites] = useState([]);
 
 	// Modal
 	const [showCreateWikiModal, setShowCreateWikiModal] = useState(false);
@@ -30,23 +30,12 @@ function Home() {
 					}
 				});
 				const result = await response.json();
-
-				setWikisData(result.wikis);
-
-				const favoriteResponse = await fetch(`/api/users/favorites`, {
-					method: "GET",
-					headers: { Authorization: "Bearer " + token }
-				});
-	
-				const favoriteResult = await favoriteResponse.json();
-				
-				//console.log(favoriteResult)
-
-				setFavorites(favoriteResult);
-
+				setWikisData(result);
 				setLoading(false);
 			} catch (e) {
+				console.log(e);
 				setLoading(false);
+				setError(`${e}`)
 				return;
 			}
 		}
@@ -74,22 +63,58 @@ function Home() {
 	} else if (!wikisData) {
 		return (
 			<div className="container-fluid">
-				<h1>Error</h1>
+				<h1>{error}</h1>
 			</div>
 		);
 	} else {
 		return (
 			<div className="container-fluid">
+				<div className="p-3 mb-3 bg-primary-subtle">
 				<h4 id="owner">OWNER</h4>
 				<p className="small text-muted">Public and private wikis you have ownership of.</p>
-				{wikisData && wikisData.map((wiki) => <WikiCard wiki={wiki} />)}
+				{
+					(wikisData && wikisData.OWNER)
+					&&
+					(
+						wikisData.OWNER.length === 0
+						?
+						<p>You don't own any wikis. Click here to create one.</p>
+						:
+						wikisData.OWNER.map((wiki) => <WikiCard wiki={wiki} />)
+					)	
+				}
+				</div>
+				<div className="p-3 mb-3 bg-danger-subtle">
 				<h4 id="collaborator">COLLABORATOR </h4>
 				<p className="small text-muted">Public and private wikis where you aren't the owner but have been granted exclusive editing permissions.</p>
 				<p className="small text-muted">Does not include public wikis where editing is available to all users.</p>
-				<p>...</p>
+				{
+					(wikisData && wikisData.COLLABORATOR)
+					&&
+					(
+						wikisData.COLLABORATOR.length === 0
+						?
+						<p>You are not a collaborator for any wikis.</p>
+						:
+						wikisData.COLLABORATOR.map((wiki) => <WikiCard wiki={wiki} />)
+					)	
+				}
+				</div>
+				<div className="p-3 bg-warning-subtle">
 				<h4 id="viewer">PRIVATE VIEWER</h4>
 				<p className="small text-muted">Private wikis where you aren't the owner but have been granted view-only permissions.</p>
-				<p>...</p>
+				{
+					(wikisData && wikisData.PRIVATE_VIEWER)
+					&&
+					(
+						wikisData.PRIVATE_VIEWER.length === 0
+						?
+						<p>You are not a private viewer for any wikis.</p>
+						:
+						wikisData.PRIVATE_VIEWER.map((wiki) => <WikiCard wiki={wiki} />)
+					)	
+				}
+				</div>
 			</div>
 		)
 	}

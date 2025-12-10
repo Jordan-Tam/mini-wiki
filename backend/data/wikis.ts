@@ -27,6 +27,17 @@ const wiki_data_functions = {
 	},
 
 	/**
+	 * Returns an array of every public wiki.
+	 */
+	async getAllPublicWikis() {
+		const wikisCollection = await wikis();
+		const wikisList = await wikisCollection.find({
+			access: {$in: ["public-edit", "public-view"]}
+		}).toArray();
+		return wikisList;
+	},
+
+	/**
 	 * Returns an array of every taken wiki URL name.
 	 */
 	async getAllWikiUrlNames() {

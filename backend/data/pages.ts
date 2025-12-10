@@ -46,19 +46,15 @@ const page_data_functions = {
 	},
 
 	async getPagesByCategory(wikiId: string, category: string) {
+		
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createPage");
 		category = checkCategory(category, "getPagesByCategory");
 
-		console.log(1);
-
 		await wikiDataFunctions.doesCategoryExist(wikiId, category);
-
-		console.log(2);
 
 		let wiki: any = await wikiDataFunctions.getWikiById(wikiId);
 
-		console.log(3);
 
 		let returnedPages = [];
 
@@ -68,12 +64,11 @@ const page_data_functions = {
 			}
 		}
 
-		console.log(4);
-
 		return returnedPages;
 	},
 
 	async createPage(wikiId: string, name: string, category: string) {
+
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createPage");
 		name = checkWikiOrPageName(name, "createPage");
@@ -117,7 +112,10 @@ const page_data_functions = {
 		// Index the new page in Elasticsearch
 		await indexPage(wikiId, newPage);
 
-		return newPage;
+		//return newPage;
+
+		return (await wikiDataFunctions.getWikiById(wikiId.toString()));
+
 	},
 
 	async deletePage(wikiId: string, pageId: string) {},
@@ -162,7 +160,10 @@ const page_data_functions = {
 		// Re-index the page with updated content
 		await indexPage(wikiId, updatedPage);
 
-		return updatedPage;
+		// return updatedPage;
+		
+		return await wikiDataFunctions.getWikiById(wikiId.toString());
+
 	},
 
 	async changePageCategory(
@@ -203,7 +204,10 @@ const page_data_functions = {
 		// Re-index the page with updated category
 		await indexPage(wikiId, updatedPage);
 
-		return updatedPage;
+		// return updatedPage;
+
+		return await wikiDataFunctions.getWikiById(wikiId.toString());
+
 	}
 };
 

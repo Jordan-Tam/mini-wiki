@@ -6,7 +6,7 @@ export const ServerConfig = {
 
 // Redis
 export const RedisConfig = {
-    server: "redis://localhost:6379/",
+    server: "redis://redis:6379",
     scope: "simple",
     scoreboard: "scoreboard"
 }

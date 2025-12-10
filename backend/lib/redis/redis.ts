@@ -51,7 +51,7 @@ const redis_functions = {
 
     async get(key: string) {
 
-        await (await this.redis_client()).get(key);
+        return(await (await this.redis_client()).get(key));
 
     },
 
@@ -69,19 +69,19 @@ const redis_functions = {
 
     async get_json(key: string) {
 
-        await (await this.redis_client()).json.get(key);
+        return(JSON.parse(await (await this.redis_client()).get(key)));
 
     },
 
     async set_json(key: string, value: object) {
 
-        await (await this.redis_client()).json.set(key, "$", value);
+        await (await this.redis_client()).set(key, JSON.stringify(value));
 
     },
 
     async del_json(key: string) {
 
-        await (await this.redis_client()).json.del(key, "$");
+        await (await this.redis_client()).del(key);
 
     }
 
