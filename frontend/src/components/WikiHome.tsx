@@ -178,20 +178,24 @@ function WikiHome() {
 							<p>
 								<span style={{fontWeight: "bold"}}>Number of Pages:</span> {wiki.pages.filter((p) => p.category === category).length}
 							</p>
-							<button
-								className="btn btn-warning me-3"
-								onClick={() => {
-									setCategory(category);
-									setShowEditCategoryModal(true);
-								}}
-							>Edit</button>
-							<button
-								className="btn btn-danger"
-								onClick={() => {
-									setCategory(category);
-									setShowDeleteCategoryModal(true);
-								}}
-							>Delete</button>
+							{category !== "UNCATEGORIZED" && (
+								<>
+									<button
+										className="btn btn-warning me-3"
+										onClick={() => {
+											setCategory(category);
+											setShowEditCategoryModal(true);
+										}}
+									>Edit</button>
+									<button
+										className="btn btn-danger"
+										onClick={() => {
+											setCategory(category);
+											setShowDeleteCategoryModal(true);
+										}}
+									>Delete</button>
+								</>
+							)}
 						</div>
 					</div>
 				))}
