@@ -53,6 +53,7 @@ function AddCollaboratorModal({ isOpen, handleClose, setWiki, wikiId }) {
             setSuccess(true);
             setWiki(data);
             handleClose();
+            alert("Collaborator successfully added!")
         } catch (err) {
             setError("Server error.");
         } finally {

@@ -65,7 +65,11 @@ const user_data_functions = {
 
     const userCollection = await users();
 
-    const user = await userCollection.findOne({ username: username });
+    //case insensitive search
+    const user = await userCollection.findOne({
+      username: { $regex: `^${username}$`, $options: "i" }
+    });
+    
 
     if (!user) {
       throw `User Not Found.`;

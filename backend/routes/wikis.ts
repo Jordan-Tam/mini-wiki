@@ -588,7 +588,7 @@ router
 router
 	.route("/:id/collaborators")
 	/**
-	 * List collabortors on wiki
+	 * List collaborators on wiki
 	 */
 	.get(async (req:any, res) => {
 

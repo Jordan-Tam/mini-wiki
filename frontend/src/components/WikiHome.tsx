@@ -7,6 +7,7 @@ import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
 import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
 import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx"
+let key_val = 0;
 function WikiHome() {
 
 	const { wikiUrlName } = useParams();
@@ -165,8 +166,8 @@ function WikiHome() {
 
 			<div className="mb-3">
 				{wiki?.categories?.map((category) => (
-					<div className="card mb-3">
-						<div className="card-body">
+					<div className="card mb-3" key={key_val++}>
+						<div className="card-body" key={key_val++}>
 							<Link
 								to={`/${wikiUrlName}/category/${category}`}
 								style={{textDecoration: "none"}}
