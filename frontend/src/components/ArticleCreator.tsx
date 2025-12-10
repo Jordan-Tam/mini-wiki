@@ -3,9 +3,10 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import TextEditor from "./editors/TextEditor";
 import TableEditor from "./editors/TableEditor";
+import ImageEditor from "./editors/ImageEditor";
 
 // Types for editor components
-type EditorType = "text" | "table";
+type EditorType = "text" | "table" | "image";
 interface EditorItem {
 	id: number;
 	type: EditorType;
@@ -60,9 +61,14 @@ function ArticleCreator() {
 							// Detect if content is a table (starts with | or has table markdown syntax)
 							const isTable =
 								content.trim().startsWith("|") || content.includes("|---|");
+							// Detect if content is ONLY an image (markdown image syntax with nothing else)
+							// This should be just a single line with only image markdown
+							const isImage =
+								content.trim().match(/^!\[.*?\]\(.*?\)$/) &&
+								!content.includes("\n");
 							return {
 								id: index,
-								type: isTable ? "table" : "text",
+								type: isTable ? "table" : isImage ? "image" : "text",
 								content: content
 							};
 						}
@@ -94,6 +100,16 @@ function ArticleCreator() {
 |----------|----------|----------|
 | Cell 1   | Cell 2   | Cell 3   |
 | Cell 4   | Cell 5   | Cell 6   |`
+		};
+		setEditors([...editors, newEditor]);
+		setNextId(nextId + 1);
+	};
+
+	const addImageEditor = () => {
+		const newEditor: EditorItem = {
+			id: nextId,
+			type: "image",
+			content: ""
 		};
 		setEditors([...editors, newEditor]);
 		setNextId(nextId + 1);
@@ -132,6 +148,18 @@ function ArticleCreator() {
 	};
 
 	const createPage = async () => {
+		// Validate that all image editors have valid content
+		const hasInvalidImageEditor = editors.some(
+			(editor) => editor.type === "image" && !editor.content
+		);
+
+		if (hasInvalidImageEditor) {
+			alert(
+				"Please ensure all image editors have a valid URL and alt text before saving."
+			);
+			return;
+		}
+
 		const markdownArray: string[] = editors.map((editor) => editor.content);
 
 		// Validate that we have the required IDs
@@ -200,6 +228,9 @@ function ArticleCreator() {
 							<button onClick={addTableEditor} className="btn-add-table">
 								+ Add Table Editor
 							</button>
+							<button onClick={addImageEditor} className="btn-add-image">
+								+ Add Image Editor
+							</button>
 						</div>
 					</div>
 					<div className="editors-container">
@@ -215,7 +246,11 @@ function ArticleCreator() {
 								<div key={editor.id} className="editor-item">
 									<div className="editor-controls">
 										<span className="editor-label">
-											{editor.type === "text" ? "Text Editor" : "Table Editor"}{" "}
+											{editor.type === "text"
+												? "Text Editor"
+												: editor.type === "table"
+												? "Table Editor"
+												: "Image Editor"}{" "}
 											#{index + 1}
 										</span>
 										<div className="control-buttons">
@@ -254,7 +289,7 @@ function ArticleCreator() {
 												showPreview={true}
 												inputId={`article-text-${editor.id}`}
 											/>
-										) : (
+										) : editor.type === "table" ? (
 											<TableEditor
 												defaultValue={editor.content}
 												onChange={(content: string) =>
@@ -262,6 +297,15 @@ function ArticleCreator() {
 												}
 												showPreview={true}
 												inputId={`article-table-${editor.id}`}
+											/>
+										) : (
+											<ImageEditor
+												defaultValue={editor.content}
+												onChange={(content: string) =>
+													updateEditorContent(editor.id, content)
+												}
+												showPreview={true}
+												inputId={`article-image-${editor.id}`}
 											/>
 										)}
 									</div>
