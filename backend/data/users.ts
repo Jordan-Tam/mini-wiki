@@ -61,6 +61,20 @@ const user_data_functions = {
 
   },
 
+  async getUserIdByUsername(username: string) {
+
+    const userCollection = await users();
+
+    const user = await userCollection.findOne({ username: username });
+
+    if (!user) {
+      throw `User Not Found.`;
+    }
+
+    return user.firebaseUID;
+
+  },
+
   async getUsers() {
 
     const userCollection = await users();
@@ -122,7 +136,7 @@ const user_data_functions = {
     userId: string) {
 
         //Input validation
-        wikiId = checkId(wikiId, "Wiki", "addCollaborator");
+        wikiId = checkId(wikiId, "Wiki", "addFavorite");
 
         //throws if wiki doesnt exist
         const wiki = await wikiDataFunctions.getWikiById(wikiId);

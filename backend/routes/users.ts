@@ -192,6 +192,7 @@ router
       return res.json({ error: e });
     }
   })
+
   /**
    * update username
    */
@@ -270,5 +271,35 @@ router
 		
     }
   });
+
+  router
+    .route("/:id/collaborator")
+    /** 
+     * List wikis that user is a collaborator of
+     */
+    .get(async (req: any, res) => {
+      
+      if (!req.user){
+        return res
+          .status(401)
+          .json({ error: "You must be logged in to perform this action." })
+      }
+
+      try{
+
+        const wikis = await wiki_data_functions.getWikisByUser(req.params.id)
+        const collaborateStatus = [];
+        for (let wiki of wikis){
+          if (wiki.owner !== req.params.id){
+            collaborateStatus.push(wiki)
+          }
+        }
+        //console.log(collaborateStatus[0])
+        return res.json(collaborateStatus);
+      } catch (e) {
+        return res.status(500).json({error: e})
+      }
+
+    })
 
 export default router;

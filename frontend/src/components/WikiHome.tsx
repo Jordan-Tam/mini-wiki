@@ -5,7 +5,8 @@ import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
-
+import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
+import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx"
 function WikiHome() {
 
 	const { wikiUrlName } = useParams();
@@ -22,7 +23,12 @@ function WikiHome() {
 	const [showNewPageModal, setShowNewPageModal] = useState(false);
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
-
+	const [showAddCollabModal, setShowAddCollabModal] = useState(false);
+	const [collaborators, setCollaborators] = useState(undefined);
+	const [showCollaborators, setShowCollaborators] = useState(false)
+	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
+	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] = useState(false)
+	
 	useEffect(() => {
 		const fetchWiki = async () => {
 			try {
@@ -38,15 +44,47 @@ function WikiHome() {
 				//throw new Error("Failed to fetch wiki");
 				const data = await response.json();
 				setWiki(data);
-			} catch (e: any) {
+
+			} catch (e) {
+				setError(e);
+			} 
+		};
+
+		if (wikiUrlName && currentUser) fetchWiki();
+
+	}, [wikiUrlName, currentUser]);
+
+	useEffect(() => {
+		const fetchCollaborators = async () => {
+			try {
+				const response = await fetch(`/api/wiki/${wiki._id}/collaborators`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+
+				const data = await response.json();
+
+				if (!response.ok) {
+					throw (await response.json()).error;
+				}
+
+				//throw new Error("Failed to fetch wiki");
+				setCollaborators(data);
+
+			} catch (e) {
 				setError(e);
 			} finally {
 				setLoading(false);
 			}
-		};
+		}
 
-		if (wikiUrlName && currentUser) fetchWiki();
-	}, [wikiUrlName, currentUser]);
+		if (wiki && currentUser) {
+			fetchCollaborators();
+		}
+		
+	}, [wiki, currentUser])
 
 	const handleCloseModals = () => {
 		setCategory(undefined);
@@ -54,6 +92,8 @@ function WikiHome() {
 		setShowNewPageModal(false);
 		setShowEditCategoryModal(false);
 		setShowDeleteCategoryModal(false);
+		setShowAddCollabModal(false);
+		setShowDeleteCollaboratorModal(false);
 	};
 
 	/* const handleCategoryCreated = (newCategory: any) => {
@@ -66,13 +106,50 @@ function WikiHome() {
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
-
+	//console.log(collaborators);
 	return (
 		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
 			<div className="mt-3 mb-3">
-				{(wiki.access === "private" || wiki.access === "public-view") && <button className="btn btn-success me-3">View Collaborators</button>}
+				{(wiki?.access === "private" || wiki?.access === "public-view") && 
+					<>
+						<button className="btn btn-success me-3" onClick={() => setShowAddCollabModal(true)} >Add a collaborator</button>
+						{!showCollaborators && 
+							<button className="btn btn-success me-3" onClick={() => setShowCollaborators(true)}>View Collaborators</button>
+						}
+						{showCollaborators && (
+							<>
+							<button className="btn btn-success ms-3" onClick={() => setShowCollaborators(false)}>Hide Collaborators</button>
+							<ul className="list-group mt-2">
+							{collaborators && collaborators.length === 0 && (
+								<li className="list-group-item text-muted">
+									This wiki currently has no collaborators!s
+								</li>
+							)}
+								
+								{collaborators?.map((username) => (
+									<>
+										<li key={username} className="list-group-item d-flex justify-content-between align-items-center">
+											<p>{username}</p>
+											<button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeleteCollaborator(username);
+													setShowDeleteCollaboratorModal(true);
+												}}
+											>
+												Remove Collaborator
+											</button>
+										</li>
+
+									</>
+								))}
+							</ul>
+							</>
+						)}
+					</>
+				}
 				{wiki.access === "private" && <button className="btn btn-success me-3">View Private Viewers</button>}
 				<button className="btn btn-warning me-3">Edit Wiki</button>
 				<button className="btn btn-secondary me-3" onClick={() => setShowNewCategoryModal(true)}>
@@ -154,6 +231,25 @@ function WikiHome() {
 					categoryName={category}
 					setWiki={setWiki}
 					handleClose={handleCloseModals}
+				/>
+			)}
+
+			{showAddCollabModal && (
+				<AddCollaboratorModal
+					isOpen={showAddCollabModal}
+					wikiId={wiki._id}
+					handleClose={handleCloseModals}
+					setWiki={setWiki}
+				/>
+			)}
+
+			{showDeleteCollaboratorModal && (
+				<DeleteCollaboratorModal
+					isOpen={showDeleteCollaboratorModal}
+					handleClose={handleCloseModals}
+					username={deleteCollaborator}
+					setWiki={setWiki}
+					wikiId={wiki._id}
 				/>
 			)}
 

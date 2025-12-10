@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import Header from "./components/Header.tsx";
 import Landing from "./components/Landing.tsx";
-import Home from "./components/Home.jsx";
+import Home from "./components/Home.js";
 import SignIn from "./components/SignIn.jsx";
 import SignUp from "./components/SignUp.jsx";
 import Profile from "./components/Profile.js";

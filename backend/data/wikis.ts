@@ -448,7 +448,10 @@ const wiki_data_functions = {
 			throw "User is already a collaborator.";
 		}
 
-		// TODO: Check if user is already a private_viewer. What to do in that case?
+		// Check if user is already the owner
+		if(wiki.owner === userFirebaseUID){
+			throw "Owner cannot add themself as a collaborator!"
+		}
 
 		const wikisCollection = await wikis();
 
@@ -476,7 +479,7 @@ const wiki_data_functions = {
 		await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
 
 		// Check if user already wasn't a collaborator.
-		if (wiki.collaborators.includes(userFirebaseUID)) {
+		if (!wiki.collaborators.includes(userFirebaseUID)) {
 			throw "User isn't a collaborator.";
 		}
 
@@ -613,5 +616,6 @@ const wiki_data_functions = {
 		return accessibleWikis.map((wiki: any) => wiki._id.toString());
 	}
 };
+
 
 export default wiki_data_functions;
