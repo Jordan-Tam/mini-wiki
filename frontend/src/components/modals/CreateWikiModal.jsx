@@ -1,5 +1,6 @@
 import {useContext, useState} from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import TakenCheck from "../TakenCheck";
 import { checkUrlName } from "../../../helpers.ts";
@@ -37,6 +38,9 @@ function CreateWikiModal(props) {
     const [error, setError] = useState("");
     const [disableSubmit, setDisableSubmit] = useState(false);
     const [URLOK, setURLOK] = useState(null); 
+
+    // To go to the wiki's page after it is made
+    let navigate = useNavigate();
 
     const FORBIDDEN_WIKI_URL_NAMES = [
       "browse",
@@ -88,6 +92,7 @@ function CreateWikiModal(props) {
                 setDisableSubmit(false);
                 throw (await response.json()).error;
             }
+            
             //const result = await response.json();
             //props.setWikisData(prev => [...prev, result])
         } catch (e) {
@@ -99,6 +104,7 @@ function CreateWikiModal(props) {
         // Close the modal.
         setShowCreateWikiModal(false);
         alert(`Wiki Created`);
+        navigate(`/${urlName}`);
         props.handleClose();
 
     }
