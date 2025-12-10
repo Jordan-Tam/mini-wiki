@@ -7,6 +7,9 @@ import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
 import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
 import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx"
+import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
+import AddPrivateViewerModal from "./modals/AddPrivateViewerModal.jsx"
+
 let key_val = 0;
 function WikiHome() {
 
