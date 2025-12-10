@@ -98,7 +98,7 @@ router
 				(req as any).user.uid
 			);
 
-			await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser(req.user.uid)); // REDIS
+			await redisFunctions.set_json(`${(req as any).user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser((req as any).user.uid)); // REDIS
 
 			if (wiki.access === "public-edit" || wiki.access === "public-view") {
 				await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
