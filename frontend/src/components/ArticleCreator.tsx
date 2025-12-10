@@ -197,7 +197,8 @@ function ArticleCreator() {
 			}
 
 			// Get the updated page data which includes the URL
-			const updatedPage = await response.json();
+			const result = await response.json();
+			const updatedPage = result.pages[result.pages.length - 1];
 
 			// In edit mode, use the existing pageUrlName; in create mode, use the returned one
 			const urlToNavigate =

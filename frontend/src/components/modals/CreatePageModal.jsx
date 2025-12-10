@@ -69,7 +69,9 @@ function CreatePageModal(props) {
 			setError("");
 			props.handleClose();
 			// Navigate to the article editor for this page
-			navigate(`/${props.wikiUrlName}/${result.pageId}/create`);
+			navigate(
+        `/${props.wikiUrlName}/${result.pages[result.pages.length - 1]._id}/create`
+      );
 			// console.log(`Navigating to: /${props.wikiUrlName}/${result.pageId}/create`);
 		} catch (e) {
 			setDisableSubmit(false);
