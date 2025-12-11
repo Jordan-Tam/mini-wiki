@@ -68,7 +68,12 @@ const page_data_functions = {
 		return returnedPages;
 	},
 
-	async createPage(wikiId: string, name: string, category: string) {
+	async createPage(
+		wikiId: string,
+		name: string,
+		category: string,
+		userFirebaseUID?: string
+	) {
 
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "createPage");
@@ -85,8 +90,8 @@ const page_data_functions = {
 			content: [],
 			first_created: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
 			last_edited: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
-			first_created_by: "TO BE IMPLEMENTED",
-			last_edited_by: "TO BE IMPLEMENTED"
+			first_created_by: (userFirebaseUID ? await user_data_functions.getUserByFirebaseUID(userFirebaseUID) : "N/A"),
+			last_edited_by: (userFirebaseUID ? await user_data_functions.getUserByFirebaseUID(userFirebaseUID) : "N/A")
 		};
 
 		const wikisCollection = await wikis();
@@ -119,14 +124,79 @@ const page_data_functions = {
 
 	},
 
-	async deletePage(wikiId: string, pageId: string) {},
+	async deletePage(
+		wikiId: string,
+		pageId: string
+	) {
+		
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki");
+		pageId = checkId(pageId, "Page");
 
-	async changePageName(wikiId: string, pageId: string, newName: string) {},
+		// Check if wiki exists.
+		const wiki = await wikiDataFunctions.getWikiById(wikiId);
+
+		const wikisCollection = await wikis();
+		const deleteInfo = await wikisCollection.findOneAndUpdate(
+			{_id: wiki._id},
+			{$pull: {pages: {"_id": new ObjectId(pageId)}}},
+			{returnDocument: "after"}
+		);
+
+		if (!deleteInfo) {
+			throw "Page could not be deleted.";
+		}
+
+		// TODO: Elasticsearch indexing!!!
+
+		return await wikiDataFunctions.getWikiById(wikiId.toString());
+
+	},
+
+	async changePageName(
+		wikiId: string,
+		pageId: string,
+		newName: string
+	) {
+
+		// Input validation.
+		wikiId = checkId(wikiId, "Wiki");
+		pageId = checkId(pageId, "Page");
+		newName = checkWikiOrPageName(newName);
+
+		// Check if wiki exists.
+		let wiki = await wikiDataFunctions.getWikiById(wikiId);
+
+		for (let i = 0; i < wiki.pages.length; i++) {
+			if (wiki.pages[i]._id === pageId) {
+				wiki.pages[i].name = newName;
+				wiki.pages[i].urlName = slugify(newName, {replacement: "_"});
+			}
+
+			const wikisCollection = await wikis();
+			const updateInfo = await wikisCollection.findOneAndUpdate(
+				{_id: wikiId},
+				{$set: {pages: wiki.pages}},
+				{returnDocument: "after"}
+			);
+
+			if (!updateInfo) {
+				throw "Page name could not be updated.";
+			}
+
+			return await wikiDataFunctions.getWikiById(wikiId.toString());
+
+		}
+
+		throw "Page not found.";
+
+	},
 
 	async changePageContent(
 		wikiId: string,
 		pageId: string,
-		newContent: string[]
+		newContent: string[],
+		userFirebaseUID?: string
 	) {
 		/**
 		 * Creates the contnet of a given page in a wiki. NOTE: IS USED IN INITIAL PAGE CREATION
@@ -150,7 +220,8 @@ const page_data_functions = {
 			{
 				$set: {
 					"pages.$.content": newContent,
-					"pages.$.last_edited": new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
+					"pages.$.last_edited": new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
+					"pages.$.last_edited_by": (userFirebaseUID ? await user_data_functions.getUserByFirebaseUID(userFirebaseUID) : "N/A")
 				}
 			},
 			{ returnDocument: "after" }
