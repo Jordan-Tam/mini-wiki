@@ -69,7 +69,7 @@ export function pad_left(str:string, char:string, length:number): string {
  */
 export function get_current_date(): string {
     //@ts-ignore
-    let date:Array<string> = new Date(Date.now()).toLocaleString().split(",")[0].split("/");
+    let date:Array<string> = new Date(Date.now()).toLocaleString("en-US", { timeZone: "America/New_York" }).split(",")[0].split("/");
 
     if(date.length < 3) {
         throw new Error(`Bad date returned`);

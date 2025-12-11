@@ -83,8 +83,8 @@ const page_data_functions = {
 			category,
 			category_slugified: slugify(category, { replacement: "_" }),
 			content: [],
-			first_created: new Date().toLocaleString(),
-			last_edited: new Date().toLocaleString(),
+			first_created: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
+			last_edited: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
 			first_created_by: "TO BE IMPLEMENTED",
 			last_edited_by: "TO BE IMPLEMENTED"
 		};
@@ -150,7 +150,7 @@ const page_data_functions = {
 			{
 				$set: {
 					"pages.$.content": newContent,
-					"pages.$.last_edited": new Date().toLocaleString()
+					"pages.$.last_edited": new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
 				}
 			},
 			{ returnDocument: "after" }

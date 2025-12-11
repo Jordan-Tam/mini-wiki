@@ -33,6 +33,24 @@ const checkId = (id: string, id_of_what: string, funcName?: string): string => {
 	return id;
 };
 
+/**
+ * Checks if the string can be converted into a valid date.
+ * Returns a locale string version of it (to make sure all dates stored in the database have the same format)
+ */
+const checkDate = (date: string): string => {
+	
+	// Basic string validation.
+	date = checkString(date, "Date");
+
+	// Check if the string is a valid date.
+	if (new Date(date).toString() === "Invalid Date") {
+		throw "Invalid date";
+	}
+
+	return new Date(date).toLocaleString("en-US", { timeZone: "America/New_York" });
+
+}
+
 const checkWikiOrPageName = (name: string, funcName?: string): string => {
 	// Basic string validation.
 	name = checkString(name, "Wiki/Page Name", funcName);
@@ -225,6 +243,7 @@ const checkContentArray = (content: any): string[] => {
 export {
 	checkString,
 	checkId,
+	checkDate,
 	checkUrlName,
 	checkUsername,
 	checkAccess,
