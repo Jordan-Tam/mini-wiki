@@ -60,7 +60,7 @@ function CreatePageModal(props) {
 
 			if (!response.ok) {
 				setDisableSubmit(false);
-				throw response.statusText;
+				throw (await response.json()).error;
 			}
 
 			// Success - navigate to article editor
@@ -75,7 +75,7 @@ function CreatePageModal(props) {
 			// console.log(`Navigating to: /${props.wikiUrlName}/${result.pageId}/create`);
 		} catch (e) {
 			setDisableSubmit(false);
-			setError(`Error creating page: ${e}`);
+			setError(`${e}`);
 		}
 	};
 
