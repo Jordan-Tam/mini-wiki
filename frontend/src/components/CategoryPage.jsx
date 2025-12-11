@@ -6,9 +6,10 @@ function CategoryPage() {
 
     const { currentUser } = useContext(AuthContext);
 
-    const {wikiUrlName, category} = useParams();
+    const {wikiUrlName, categoryUrlName} = useParams();
 
     const [wiki, setWiki] = useState(undefined);
+    const [categoryName, setCategoryName] = useState(undefined);
     const [filteredPages, setFilteredPages] = useState(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
@@ -53,9 +54,16 @@ function CategoryPage() {
                 // Set wiki to be the wiki object.
                 setWiki(result);
 
+                // Set categoryName to be non-slugified category name.
+                for (let i = 0; i < result.categories_slugified.length; i++) {
+                    if (result.categories_slugified[i] === categoryUrlName) {
+                        setCategoryName(result.categories[i]);
+                    }
+                }
+
                 // Filter pages by the current category.
                 setFilteredPages(result.pages.filter((p) => {
-                    return p.category === category
+                    return p.category_slugified === categoryUrlName
                 }));
 
             } catch (e) {
@@ -250,9 +258,13 @@ function CategoryPage() {
             <>
             <div className="container-fluid">
                 <h4>
-                    <Link to={`/${wikiUrlName}`}>
-                        {wiki.name}
-                    </Link> / {category}
+                    <p>
+                        <span style={{fontWeight: "bold"}}>Wiki: </span>
+                        <Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
+                        <span> / </span>				
+                        <span style={{fontWeight: "bold"}}>Category: </span>
+                        {categoryName}
+                    </p>
                 </h4>
                 <table className="table table-striped table-hover table-bordered" style={{tableLayout: "fixed"}}>
                     <thead>

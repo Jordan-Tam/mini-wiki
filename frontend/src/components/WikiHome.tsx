@@ -98,14 +98,6 @@ function WikiHome() {
 		setShowDeleteCollaboratorModal(false);
 	};
 
-	/* const handleCategoryCreated = (newCategory: any) => {
-		// Update wiki state with the new category
-		setWiki((prev: any) => ({
-			...prev,
-			categories: [...prev.categories, newCategory.name || newCategory]
-		}));
-	}; */
-
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
 	//console.log(collaborators);
@@ -166,11 +158,11 @@ function WikiHome() {
 			</div>
 
 			<div className="mb-3">
-				{wiki?.categories?.map((category) => (
+				{wiki?.categories?.map((category, index) => (
 					<div className="card mb-3" key={key_val++}>
 						<div className="card-body" key={key_val++}>
 							<Link
-								to={`/${wikiUrlName}/category/${category}`}
+								to={`/${wikiUrlName}/category/${wiki.categories_slugified[index]}`}
 								style={{textDecoration: "none"}}
 							>
 								<h3 className="card-title">{category}</h3>

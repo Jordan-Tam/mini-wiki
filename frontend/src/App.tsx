@@ -43,7 +43,7 @@ function App() {
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/testing" element={<TestingPage />} />
 					<Route path="/:wikiUrlName" element={<WikiHome />} />
-					<Route path="/:wikiUrlName/category/:category" element={<CategoryPage />} />
+					<Route path="/:wikiUrlName/category/:categoryUrlName" element={<CategoryPage />} />
 					{/* <Route path="/:wikiUrlName/chat" /> */}
 					{/* <Route path="/:wikiUrlName/search" /> */}
 					<Route path="/:wikiUrlName/:pageUrlName" element={<Article fetchFromUrl={true} editHref="/edit" />} />

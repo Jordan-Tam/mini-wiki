@@ -15,7 +15,7 @@ function TestingPage() {
 			<br />
 			<hr />
 			<h2>Article Component Test</h2>
-			<Article
+			{/* <Article
 				title="Sample Wiki Article"
 				markdown={[
 					"# Introduction\n\nThis is a **test** article with _markdown_ formatting.",
@@ -27,7 +27,7 @@ function TestingPage() {
 				onEdit={() => alert("Edit button clicked!")}
 				editHref="/edit"
 				className="article-test-container"
-			/>
+			/> */}
 			<br />
 			<br />
 			<br />

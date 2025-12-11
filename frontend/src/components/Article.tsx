@@ -50,8 +50,9 @@ const Article: React.FC<ArticleProps> = ({
 
 	const location = useLocation();
 	const { wikiUrlName, pageUrlName } = useParams();
-	//TODO: const { wikiUrlName, pageUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
+
+	const [wiki, setWiki] = useState(null);
 	const [fetchedPage, setFetchedPage] = useState(null);
 	const [loading, setLoading] = useState(fetchFromUrl);
 	const [error, setError] = useState(null);
@@ -61,7 +62,7 @@ const Article: React.FC<ArticleProps> = ({
 
 		const fetchPage = async () => {
 			try {
-				const response = await fetch(`/api/wiki/${wikiUrlName}/pages/${pageUrlName}`, {
+				const response = await fetch(`/api/wiki/${wikiUrlName}`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
@@ -73,7 +74,15 @@ const Article: React.FC<ArticleProps> = ({
 				}
 
 				const data = await response.json();
-				setFetchedPage(data);
+
+				setWiki(data);
+
+				for (let page of data.pages) {
+					if (page.urlName === pageUrlName) {
+						setFetchedPage(page);
+					}
+				}
+
 				setLoading(false);
 				
 			} catch (e: any) {
@@ -117,9 +126,15 @@ const Article: React.FC<ArticleProps> = ({
 	return (
 		<article className={`${className} container-fluid`}>
 			<div>
-				{/* <p><span style={{fontWeight: "bold"}}>Category: </span><Link to={`/${wikiUrlName}/category/${fetchedPage.category}`}>{fetchedPage.category}</Link></p>
-				{editButton} */}
-				<h1 className="mb-3">{displayTitle ?? "Article"}</h1>
+				<p>
+					<span style={{fontWeight: "bold"}}>Wiki: </span>
+					<Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
+					<span> / </span>				
+					<span style={{fontWeight: "bold"}}>Category: </span>
+					<Link to={`/${wikiUrlName}/category/${fetchedPage.category}`}>{fetchedPage.category}</Link>
+				</p>
+				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
+				{editButton}
 			</div>
 
 			<div>
