@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import TextEditor from "./editors/TextEditor";
 import TableEditor from "./editors/TableEditor";
@@ -21,7 +21,9 @@ function ArticleCreator() {
 	const [editors, setEditors] = useState<EditorItem[]>([]);
 	const [nextId, setNextId] = useState(0);
 	const [isSaving, setIsSaving] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [wiki, setWiki] = useState<any>(undefined);
+	const [page, setPage] = useState<any>(undefined);
 	const [pageUrlName, setPageUrlName] = useState<string | null>(null);
 	const [actualPageId, setActualPageId] = useState<string | null>(null);
 
@@ -33,11 +35,10 @@ function ArticleCreator() {
 		const fetchPageContent = async () => {
 			if (!isEditMode || !wikiUrlName || !pageId || !currentUser) return;
 
-			setIsLoading(true);
 			try {
 				// In edit mode, pageId is actually the pageUrlName, so we need to fetch by URL name
 				const response = await fetch(
-					`/api/wiki/${wikiUrlName}/pages/${pageId}`,
+					`/api/wiki/${wikiUrlName}`,
 					{
 						method: "GET",
 						headers: {
@@ -50,7 +51,18 @@ function ArticleCreator() {
 					throw new Error("Failed to fetch page");
 				}
 
-				const pageData = await response.json();
+				let wikiData = await response.json();
+
+				setWiki(wikiData);
+
+				let pageData;
+				for (let page of wikiData.pages) {
+					if (page.urlName === pageId) {
+						pageData = page;
+					}
+				}
+
+				setPage(pageData);
 				setPageUrlName(pageData.urlName);
 				setActualPageId(pageData._id); // Store the actual MongoDB ObjectId
 
@@ -214,24 +226,23 @@ function ArticleCreator() {
 
 	return (
 		<div className="container-fluid article-creator">
-			{isLoading ? (
+			{(isLoading) ? (
 				<div className="loading-state">
 					<p>Loading page content...</p>
 				</div>
 			) : (
 				<>
-					<div className="article-creator-header">
-						<h2>{isEditMode ? "Edit Article" : "Create New Article"}</h2>
-						<div className="add-editor-buttons">
-							<button onClick={addTextEditor} className="btn-add-text">
-								+ Add Text Editor
-							</button>
-							<button onClick={addTableEditor} className="btn-add-table">
-								+ Add Table Editor
-							</button>
-							<button onClick={addImageEditor} className="btn-add-image">
-								+ Add Image Editor
-							</button>
+					<div className="mb-3 article-creator-header">
+						<p className="mb-3">
+							<span style={{fontWeight: "bold"}}>Wiki: </span>
+							<Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
+							<span> / </span>				
+							<span style={{fontWeight: "bold"}}>Category: </span>
+							<Link to={`/${wikiUrlName}/category/${page.category_slugified}`}>{page.category}</Link>
+						</p>
+						<h2>Editing <span style={{fontWeight: "bold"}}>{`${page.name}`}</span></h2> {/* TODO */}
+						<div>
+							<Link to={`/${wikiUrlName}/${pageId}`} className="btn btn-warning">Cancel</Link>
 						</div>
 					</div>
 					<div className="editors-container">
@@ -244,36 +255,40 @@ function ArticleCreator() {
 							</div>
 						) : (
 							editors.map((editor, index) => (
-								<div key={editor.id} className="editor-item">
+								<div key={editor.id} className="mb-5 editor-item">
 									<div className="editor-controls">
-										<span className="editor-label">
+										<h5 className="editor-label" style={{fontWeight: "bold"}}>
 											{editor.type === "text"
 												? "Text Editor"
 												: editor.type === "table"
 												? "Table Editor"
 												: "Image Editor"}{" "}
 											#{index + 1}
-										</span>
-										<div className="control-buttons">
+										</h5>
+										<div className="control-buttons mb-2">
 											<button
 												onClick={() => moveEditorUp(index)}
 												disabled={index === 0}
-												className="btn-move"
+												className="btn btn-secondary me-2 btn-move"
 												title="Move up"
 											>
-												^
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-up" viewBox="0 0 16 16">
+												<path fillRule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+												</svg>
 											</button>
 											<button
 												onClick={() => moveEditorDown(index)}
 												disabled={index === editors.length - 1}
-												className="btn-move"
+												className="btn btn-secondary me-2 btn-move"
 												title="Move down"
 											>
-												⌄
+												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-down" viewBox="0 0 16 16">
+												<path fillRule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+												</svg>
 											</button>
 											<button
 												onClick={() => removeEditor(editor.id)}
-												className="btn-remove"
+												className="btn btn-danger btn-remove"
 												title="Remove"
 											>
 												Delete
@@ -314,21 +329,36 @@ function ArticleCreator() {
 							))
 						)}
 					</div>
+					<div className="bg-info-subtle p-3 rounded-3 mb-5 add-editor-buttons">
+						<p>Insert a New Editor:</p>
+						<button onClick={addTextEditor} className="btn btn-success me-2 btn-add-text">
+							+ Add Text Editor
+						</button>
+						<button onClick={addTableEditor} className="btn btn-success me-2 btn-add-table">
+							+ Add Table Editor
+						</button>
+						<button onClick={addImageEditor} className="btn btn-success btn-add-image">
+							+ Add Image Editor
+						</button>
+					</div>
 					{editors.length > 0 && (
-						<div className="create-page-section">
+						<div className="row p-3 create-page-section">
 							<button
 								onClick={createPage}
-								className="btn-create-page"
+								className="btn btn-primary btn-create-page"
 								disabled={isSaving}
+								style={{fontSize: "30px", fontWeight: "bold", height: "100px", border: "7px solid black"}}
 							>
 								{isSaving
 									? "Saving..."
 									: isEditMode
-									? "Save Changes"
-									: "Create Page"}
+									? "SAVE CHANGES"
+									: "CREATE PAGE"}
 							</button>
 						</div>
 					)}
+					<br/>
+					<br/>
 				</>
 			)}
 		</div>

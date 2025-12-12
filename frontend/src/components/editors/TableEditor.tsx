@@ -268,36 +268,43 @@ function TableEditor({
 
 	return (
 		<div className="tableEditor">
-			<div className="userSide">
-				<div className="toolbar">
-					<button onClick={insertRowAbove}>Insert Row Above</button>
-					<button onClick={insertRowBelow}>Insert Row Below</button>
-					<button onClick={insertColumnLeft}>Insert Column Left</button>
-					<button onClick={insertColumnRight}>Insert Column Right</button>
-					<button onClick={addRowsAtEnd}>Add Rows (Bulk)</button>
-					<button onClick={addColumnsAtEnd}>Add Columns (Bulk)</button>
+			<div className="row">
+				<div className="userSide col-6">
+					<div className="toolbar mb-2">
+						<button className="btn btn-info me-2" onClick={insertRowAbove}>Insert Row Above</button>
+						<button className="btn btn-info me-2" onClick={insertRowBelow}>Insert Row Below</button>
+					</div>
+					<div className="toolbar mb-2">
+						<button className="btn btn-info me-2" onClick={insertColumnLeft}>Insert Column Left</button>
+						<button className="btn btn-info me-2" onClick={insertColumnRight}>Insert Column Right</button>
+					</div>
+					<div className="toolbar mb-2">
+						<button className="btn btn-info me-2" onClick={addRowsAtEnd}>Add Rows (Bulk)</button>
+						<button className="btn btn-info me-2" onClick={addColumnsAtEnd}>Add Columns (Bulk)</button>
+					</div>
+					<textarea
+						className="w-100"
+						ref={textareaRef}
+						name="userTextArea"
+						id={textareaId}
+						value={text}
+						rows={10}
+						cols={20}
+						onChange={(e) => {
+							setText(e.target.value);
+							if (onChange) onChange(e.target.value);
+						}}
+						onClick={updateCurrentCellFromCursor}
+						onKeyUp={updateCurrentCellFromCursor}
+						style={{resize: "both"}}
+					></textarea>
 				</div>
-				<textarea
-					ref={textareaRef}
-					name="userTextArea"
-					id={textareaId}
-					value={text}
-					rows={10}
-					cols={20}
-					onChange={(e) => {
-						setText(e.target.value);
-						if (onChange) onChange(e.target.value);
-					}}
-					onClick={updateCurrentCellFromCursor}
-					onKeyUp={updateCurrentCellFromCursor}
-					style={{resize: "both"}}
-				></textarea>
+				{showPreview && (
+					<div className="previewArea col-6 mt-4">
+						<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
+					</div>
+				)}
 			</div>
-			{showPreview && (
-				<div className="previewArea">
-					<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
-				</div>
-			)}
 		</div>
 	);
 }
