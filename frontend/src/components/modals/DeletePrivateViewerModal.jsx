@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 
@@ -19,29 +18,84 @@ const customStyles = {
 	}
 };
 
-function deletePrivateViewerModal(props){
-    // Auth
-	const { currentUser } = useContext(AuthContext);
-	const navigate = useNavigate();
+function DeletePrivateViewerModal(props) {
 
-
-    const submitForm = async (e) => {
     
-    }
+    const { currentUser } = useContext(AuthContext);
+
+    const [username, setUsername] = useState(props.username);
+    const [error, setError] = useState("");
+    const [disableSubmit, setDisableSubmit] = useState(false);
+    
+    const submitForm = async (e) => {
+
+        e.preventDefault();
+
+        try {
+            setDisableSubmit(true);
+            let response = await fetch(
+                `/api/wiki/${props.wikiId}/private_viewer`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: "Bearer " + currentUser.accessToken,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username: props.username })
+                }
+            );
+            
+            if (!response.ok) {
+                setDisableSubmit(false);
+                throw (await response.json()).error;
+            }
+
+            const result = await response.json();
+            props.setWiki(result);
+            setUsername("");
+            setError("");
+            alert("Private Viewer successfully removed!");
+            props.handleClose();
+
+        } catch (e) {
+            setDisableSubmit(false);
+            setError(`${e}`);
+        }
+    };
+
     return (
         <div>
             <Modal
-				isOpen={props.isOpen}
-				onRequestClose={props.handleClose}
-				style={customStyles}
-				contentLabel="Create Page Modal"
-			>
-                <p> DELETE PRIVATE VIEWER MODAL </p>
-            
+                isOpen={props.isOpen}
+                onRequestClose={props.handleClose}
+                style={customStyles}
+
+                contentLabel="Delete Private Viewer Modal"
+            >
+                <div>
+                    <p>Are you sure you want to remove <span style={{fontWeight: "bold"}}>{props.username}</span></p>
+                    <form
+                        className="form"
+                        id="delete-private_viewer"
+                        onSubmit={(e) => submitForm(e)}
+                    >
+                        <button
+                            className="btn btn-danger"
+                        >
+                            Yes
+                        </button>
+                    </form>
+                    <br/>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={props.handleClose}
+                    >
+                        No
+                    </button>
+                </div>
             </Modal>
         </div>
-    )
-
+    );
 }
 
-export default deletePrivateViewerModal;
+export default DeletePrivateViewerModal;

@@ -33,6 +33,8 @@ function WikiHome() {
 	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
 	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] = useState(false)
 	const [showAddPrivateViewerModal, setShowAddPrivateViewerModal] = useState(false);
+	const [showDeletePrivateViewerModal, setShowDeletePrivateViewerModal] = useState(false);
+	const [deletePrivateViewer, setDeletePrivateViewer] = useState(false);
 	const [private_viewers, setPrivateViewers] = useState(undefined);
 	const [showPVs, setShowPVs] = useState(false);
 
@@ -132,6 +134,7 @@ function WikiHome() {
 		setShowAddCollabModal(false);
 		setShowDeleteCollaboratorModal(false);
 		setShowAddPrivateViewerModal(false);
+		setShowDeletePrivateViewerModal(false);
 	};
 
 	if (loading) return <p>Loading...</p>;
@@ -202,15 +205,15 @@ function WikiHome() {
 									<>
 										<li key={username} className="list-group-item d-flex justify-content-between align-items-center">
 											<p>{username}</p>
-											{/* <button
+											<button
 												className="btn btn-danger btn-sm"
 												onClick={() => {
-													setDeleteCollaborator(username);
-													setShowDeleteCollaboratorModal(true);
+													setDeletePrivateViewer(username);
+													setShowDeletePrivateViewerModal(true);
 												}}
 											>
-												Remove Collaborator
-											</button> */}
+												Remove from Private Viewers
+											</button>
 										</li>
 
 									</>
@@ -334,6 +337,16 @@ function WikiHome() {
 					wikiId={wiki._id}
 					handleClose={handleCloseModals}
 					setWiki={setWiki}
+				/>
+			)}
+
+			{showDeletePrivateViewerModal && (
+				<DeletePrivateViewerModal
+					isOpen={showDeletePrivateViewerModal}
+					handleClose={handleCloseModals}
+					username={deletePrivateViewer}
+					setWiki={setWiki}
+					wikiId={wiki._id}
 				/>
 			)}
 

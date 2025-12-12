@@ -532,6 +532,7 @@ const wiki_data_functions = {
 
 	async removePrivateViewer(wikiId: string, userFirebaseUID: string) {
 		// Input validation.
+
 		wikiId = checkId(wikiId, "Wiki", "removePrivateViewer");
 
 		// Check if wiki exists.
@@ -540,10 +541,11 @@ const wiki_data_functions = {
 		// Check if user exists.
 		await userDataFunctions.getUserByFirebaseUID(userFirebaseUID);
 
-		// Check if user already wasn't a collaborator.
-		if (wiki.private_viewers.includes(userFirebaseUID)) {
+		// Check if user already wasn't a private viewer already.
+		if (!wiki.private_viewers.includes(userFirebaseUID)) {
 			throw "User isn't a private viewer.";
 		}
+
 
 		const wikisCollection = await wikis();
 
@@ -554,10 +556,12 @@ const wiki_data_functions = {
 				{ returnDocument: "after" }
 			);
 
+		console.log("POOP7")
 		if (!removePrivateViewerFromWikiInfo) {
 			throw "Private viewer could not be removed.";
 		}
 
+		console.log("POOP8")
 		return await this.getWikiById(wikiId.toString());
 	},
 

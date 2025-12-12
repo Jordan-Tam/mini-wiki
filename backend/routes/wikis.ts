@@ -540,6 +540,38 @@ router
 		
 	})
 
+	.delete(async (req:any, res) => {
+
+		let username = ""
+		const wikiId = req.params.id.trim();
+		try {
+			checkId(wikiId, "wiki", "DELETE /:id/private_viewers");
+			username = checkUsername(req.body.username, "POST");
+		} catch (e){
+			return res.status(400).json({error: e})
+		}
+		let user = ""
+
+		//console.log("try1");
+		try {
+			user = await userDataFunctions.getUserIdByUsername(username)
+		} catch (e){
+			return res.status(404).json({error: "User not found"})
+		}
+		//console.log("try2")
+		try {
+
+			//console.log(user)
+			const retVal = await wikiDataFunctions.removePrivateViewer(wikiId, user);
+			return res.json(retVal);
+		} catch (e) {
+
+			return res 
+				.status(500)
+				.json({error: e})
+		}
+	});
+
 router
 	.route("/:wikiUrlName/pages/:pageUrlName")
 
