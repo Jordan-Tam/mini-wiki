@@ -1,15 +1,17 @@
 import SignOutButton from "./SignOut";
 import ChangePasswordModal from "./modals/ChangePasswordModal";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
 import TakenCheck from "./TakenCheck";
+import { FaPlus } from 'react-icons/fa';
 
 function Profile() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [username, setUsername] = useState(null);
   const [changeUsernameOK, setChangeUsernameOK] = useState(null);
+  const [user, setUser] = useState(null);
 
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
@@ -17,7 +19,6 @@ function Profile() {
   if (currentUser) {
     token = currentUser.accessToken;
   }
-
   const handleOpenDeleteUserModal = () => {
     setShowDeleteUserModal(true);
   };
@@ -63,9 +64,61 @@ function Profile() {
     }
   };
 
+  
+
+  useEffect(() => {
+		const fetchUser = async () => {
+			
+				const response = await fetch(`/api/users/${currentUser.uid}`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+				if (!response.ok) {
+					throw (await response.json()).error;
+				}
+        
+				const data = await response.json();
+
+				setUser(data);
+
+		};
+
+		if (currentUser) fetchUser();
+
+	}, [currentUser]);
+
+  console.log(user)
+
   return (
     <div className="container-fluid">
       <h2>{currentUser.username}'s Account Page</h2>
+      
+      {user !== null && (
+        user.bio === "" ? (
+          <>
+    
+            <button
+              className="btn btn-primary"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+              }}
+
+            >
+              <FaPlus />
+              Add a bio!
+            </button>
+
+              
+          </>
+        ) : (
+          <p>{user.bio}</p>
+        )
+      )}
+
       <div className="form-floating mb-3" style={{ width: "500px" }}>
         <input
           className="form-control"
