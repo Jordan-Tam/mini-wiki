@@ -258,13 +258,11 @@ function CategoryPage() {
             <>
             <div className="container-fluid">
                 <h4>
-                    <p>
-                        <span style={{fontWeight: "bold"}}>Wiki: </span>
-                        <Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
-                        <span> / </span>				
-                        <span style={{fontWeight: "bold"}}>Category: </span>
-                        {categoryName}
-                    </p>
+                    <span style={{fontWeight: "bold"}}>Wiki: </span>
+                    <Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
+                    <span> / </span>				
+                    <span style={{fontWeight: "bold"}}>Category: </span>
+                    {categoryName}
                 </h4>
                 <table className="table table-striped table-hover table-bordered" style={{tableLayout: "fixed"}}>
                     <thead>
