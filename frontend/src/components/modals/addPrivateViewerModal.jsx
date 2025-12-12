@@ -1,5 +1,4 @@
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 
@@ -19,29 +18,95 @@ const customStyles = {
 	}
 };
 
-function addPrivateViewerModal(props){
-    // Auth
-	const { currentUser } = useContext(AuthContext);
-	const navigate = useNavigate();
+function AddPrivateViewerModal({ isOpen, handleClose, setWiki, wikiId }) {
+    const { currentUser } = useContext(AuthContext);
 
+    const [username, setUsername] = useState("");
+    const [error, setError] = useState("");
+    const [disableSubmit, setDisableSubmit] = useState(false);
+    const [success, setSuccess] = useState(false);
 
-    const submitForm = async (e) => {
-    
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setDisableSubmit(true);
+        setError("");
+        setSuccess(false);
+
+        try {
+            const response = await fetch(`/api/wiki/${wikiId}/private_viewer`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + currentUser.accessToken
+                },
+                body: JSON.stringify({ username: username })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || "Failed to add private viewer.");
+                setDisableSubmit(false);
+                return;
+            }
+
+            setSuccess(true);
+            setWiki(data);
+            handleClose();
+            alert("Private Viewer successfully added!")
+        } catch (err) {
+            setError("Server error.");
+        } finally {
+            setDisableSubmit(false);
+        }
+    };
+
     return (
-        <div>
-            <Modal
-				isOpen={props.isOpen}
-				onRequestClose={props.handleClose}
-				style={customStyles}
-				contentLabel="Create Page Modal"
-			>
-                <p> HELLO!!!!!!!!!!! </p>
-            
-            </Modal>
-        </div>
-    )
+        <Modal
+            isOpen={isOpen}
+            onRequestClose={handleClose}
+            style={customStyles}
+            contentLabel="Add Private Viewer Modal"
+        >
+            <h2>Add Private Viewer</h2>
 
+            <form onSubmit={handleSubmit}>
+                <label>User to grant private viewer status</label>
+                <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Enter username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+
+                {error && (
+                    <p style={{ color: "red" }}>{error}</p>
+                )}
+
+                {success && (
+                    <p style={{ color: "green" }}>Private Viewer added!</p>
+                )}
+
+                <button
+                    type="submit"
+                    className="btn btn-success me-3"
+                    disabled={disableSubmit}
+                >
+                    Add
+                </button>
+
+                <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleClose}
+                >
+                    Cancel
+                </button>
+            </form>
+        </Modal>
+    );
 }
 
-export default addPrivateViewerModal;
+export default AddPrivateViewerModal;

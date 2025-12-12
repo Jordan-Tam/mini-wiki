@@ -469,6 +469,77 @@ router
 		}
 	});
 
+router 
+	.route("/:id/private_viewer")
+
+	.get(async (req:any, res) => {
+
+		const wikiId = req.params.id.trim();
+		try {
+			checkId(wikiId, "wiki", "GET /:id/private_viewer");
+		} catch (e){
+			return res.status(400).json({error: e})
+		}
+
+		try {
+			
+			const wiki = await wikiDataFunctions.getWikiById(wikiId);
+
+			const private_viewers = wiki.private_viewers;
+
+			const usernames = [];
+			for (let account of private_viewers){
+				let user = await user_data_functions.getUserByFirebaseUID(account);
+				usernames.push(user.username)
+			}
+
+			return res.json(usernames);
+
+		} catch (e) {
+
+			return res 
+				.status(500)
+				.json({error: e})
+
+		}
+
+
+	})
+
+	.post(async (req: any, res) => {
+
+		let username = ""
+		const wikiId = req.params.id.trim();
+		try {
+
+			checkId(wikiId, "wiki", "POST /:id/private_viewer");
+			username = checkUsername(req.body.username, "POST");
+
+		} catch (e){
+			return res.status(400).json({error: e})
+		}
+		let user = ""
+
+		try {
+			user = await userDataFunctions.getUserIdByUsername(username)
+		} catch (e){
+			return res.status(404).json({error: "User not found"})
+		}
+
+		try {
+			//console.log(user)
+			const retVal = await wikiDataFunctions.addPrivateViewer(wikiId, user)
+			//console.log(retVal)
+			return res.json(retVal);
+
+		} catch (e) {
+			return res 
+				.status(500)
+				.json({error: e})
+		}
+		
+	})
+
 router
 	.route("/:wikiUrlName/pages/:pageUrlName")
 
@@ -554,32 +625,6 @@ router
 		} catch (e) {
 			return res.status(500).json({ error: e });
 		}
-	});
-
-//! IGNORE EVERYTHING BELOW THIS LINE
-
-/**
- * Spesific wiki (actions) By id
- */
-router
-	.route("/:id/save")
-	/**
-	 * Save changes to wiki
-	 * Requires wiki content in body
-	 */
-	.post(async (req, res) => {
-		
-		return;
-	});
-
-router
-	.route("/:id/publish")
-	/**
-	 * Publish changes publicly
-	 */
-	.post(async (req, res) => {
-		
-		return;
 	});
 
 /**
@@ -695,5 +740,34 @@ router
 				.json({error: e})
 		}
 	});
+
+
+//! IGNORE EVERYTHING BELOW THIS LINE
+
+/**
+ * Spesific wiki (actions) By id
+ */
+router
+	.route("/:id/save")
+	/**
+	 * Save changes to wiki
+	 * Requires wiki content in body
+	 */
+	.post(async (req, res) => {
+		
+		return;
+	});
+
+router
+	.route("/:id/publish")
+	/**
+	 * Publish changes publicly
+	 */
+	.post(async (req, res) => {
+		
+		return;
+	});
+
+
 
 export default router;

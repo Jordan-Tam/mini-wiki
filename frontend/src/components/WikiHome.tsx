@@ -32,7 +32,10 @@ function WikiHome() {
 	const [showCollaborators, setShowCollaborators] = useState(false)
 	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
 	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] = useState(false)
-	
+	const [showAddPrivateViewerModal, setShowAddPrivateViewerModal] = useState(false);
+	const [private_viewers, setPrivateViewers] = useState(undefined);
+	const [showPVs, setShowPVs] = useState(false);
+
 	useEffect(() => {
 		const fetchWiki = async () => {
 			try {
@@ -59,7 +62,7 @@ function WikiHome() {
 	useEffect(() => {
 		const fetchCollaborators = async () => {
 			try {
-				const response = await fetch(`/api/wiki/${wiki._id}/collaborators`, {
+				const response = await fetch(`/api/wiki/${wiki?._id}/collaborators`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
@@ -88,6 +91,38 @@ function WikiHome() {
 		
 	}, [wiki, currentUser])
 
+
+	useEffect(() => {
+		const fetchPVs = async () => {
+			try {
+				const response = await fetch(`/api/wiki/${wiki?._id}/private_viewer`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+
+				const data = await response.json();
+
+				if (!response.ok) {
+					throw (await response.json()).error;
+				}
+
+				setPrivateViewers(data);
+
+			} catch (e) {
+				setError(e);
+			} finally {
+				setLoading(false);
+			}
+		}
+
+		if (wiki && currentUser) {
+			fetchPVs();
+		}
+		
+	}, [wiki, currentUser])
+
 	const handleCloseModals = () => {
 		setCategory(undefined);
 		setShowNewCategoryModal(false);
@@ -96,6 +131,7 @@ function WikiHome() {
 		setShowDeleteCategoryModal(false);
 		setShowAddCollabModal(false);
 		setShowDeleteCollaboratorModal(false);
+		setShowAddPrivateViewerModal(false);
 	};
 
 	if (loading) return <p>Loading...</p>;
@@ -144,7 +180,46 @@ function WikiHome() {
 						)}
 					</>
 				}
-				{wiki.access === "private" && <button className="btn btn-success me-3">View Private Viewers</button>}
+				{wiki.access === "private" && 
+				<>
+					<button className="btn btn-success me-3" onClick={() => setShowAddPrivateViewerModal(true)}> 
+						Add Private Viewer
+					</button>
+					{!showPVs && 
+							<button className="btn btn-success me-3" onClick={() => setShowPVs(true)}>View Private Viewers</button>
+						}
+						{showPVs && (
+							<>
+							<button className="btn btn-success ms-3" onClick={() => setShowPVs(false)}>Hide Private Viewers</button>
+							<ul className="list-group mt-2">
+							{private_viewers && private_viewers.length === 0 && (
+								<li className="list-group-item text-muted">
+									This wiki currently has no Private Viewers!
+								</li>
+							)}
+								
+								{private_viewers?.map((username) => (
+									<>
+										<li key={username} className="list-group-item d-flex justify-content-between align-items-center">
+											<p>{username}</p>
+											{/* <button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeleteCollaborator(username);
+													setShowDeleteCollaboratorModal(true);
+												}}
+											>
+												Remove Collaborator
+											</button> */}
+										</li>
+
+									</>
+								))}
+							</ul>
+							</>
+						)}
+				</>
+				}
 				<button className="btn btn-warning me-3">Edit Wiki</button>
 				<button className="btn btn-secondary me-3" onClick={() => setShowNewCategoryModal(true)}>
 					+ New Category
@@ -185,7 +260,9 @@ function WikiHome() {
 											setCategory(category);
 											setShowDeleteCategoryModal(true);
 										}}
-									>Delete</button>
+									>
+										Delete
+									</button>
 								</>
 							)}
 						</div>
@@ -248,6 +325,15 @@ function WikiHome() {
 					username={deleteCollaborator}
 					setWiki={setWiki}
 					wikiId={wiki._id}
+				/>
+			)}
+
+			{showAddPrivateViewerModal && (
+				<AddPrivateViewerModal
+					isOpen={showAddPrivateViewerModal}
+					wikiId={wiki._id}
+					handleClose={handleCloseModals}
+					setWiki={setWiki}
 				/>
 			)}
 
