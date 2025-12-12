@@ -18,6 +18,74 @@ import user_data_functions from "../data/users.ts";
 
 export const router = Router();
 
+/**
+ * This object will be used to manage how the routes responds to outdated information in the Redis cache.
+ * Options: ["UPDATE", "DELETE"]
+ * UPDATE: When an entry becomes outdated, immediately replace it with an up-to-date version of it.
+ * DELETE: When an entry becomes outdated, delete it (the entry will only be cached the next time the resource is accessed).
+ */
+const redis_policy = {
+
+	/**
+	 * KEY OF ENTRY: publicWikis
+	 * VALUE OF ENTRY: List of public-edit/public-view wikis.
+	 * 
+	 * EVENTS THAT CAUSE THE VALUE TO BECOME OUTDATED:
+	 	* A new public wiki is created.
+		* A public wiki is deleted.
+		* A public wiki's description is updated.
+		* A user favorites a public wiki.
+		* A user unfavorites a public wiki.
+	 */
+	publicWikis_policy: "UPDATE",
+
+	/**
+	 * KEY OF ENTRY: ${req.user.uid}/getWikisByUser
+	 * VALUE OF ENTRY: An object containing three array fields: OWNER, COLLABORATOR, and PRIVATE VIEWER.
+	 * 
+	 * EVENTS THAT CAUSE THE VALUE TO BECOME OUTDATED:
+	 	* The user creates a new wiki.
+		* The user deletes a wiki they own.
+		* The user is added as a collaborator to a wiki.
+		* The user is removed as a collaborator a wiki.
+		* A wiki they are a collaborator of is deleted.
+		* The user is added as a private viewer to a wiki.
+		* A wiki they are a private viewer of is deleted.
+		* The description of any of the above wikis is updated.
+	 */
+	getWikisByUser_policy: "UPDATE",
+
+	/**
+	 * KEY OF ENTRY: ${wiki.urlName}
+	 * VALUE OF ENTRY: Wiki object.
+	 * 
+	 * EVENTS THAT CAUSE THE VALUE TO BECOME OUTDATED:
+	 	* The description is updated.
+		* A new category is created. 
+		* A category's name is updated.
+		* A category is deleted.
+		* A page is created.
+		* A page is moved to another category.
+		* A collaborator is added.
+		* A collaborator is removed.
+		* A private viewer is added.
+		* A private viewer is removed.
+		* The wiki is deleted.
+	 */
+	wiki_policy: "UPDATE",
+
+	/**
+	 * KEY OF ENTRY: ${req.user.uid}
+	 * VALUE OF ENTRY: User object.
+	 * 
+	 * EVENTS THAT CAUSE THE VALUE TO BECOME OUTDATED:
+	 	* The user changes their username.
+		* The user favorites a wiki.
+		* The user unfavorites a wiki.
+	 */
+	user_policy: "UPDATE"
+}
+
 router
 	.route("/")
 
@@ -87,10 +155,11 @@ router
 				(req as any).user.uid
 			);
 
-			await redisFunctions.set_json(`${(req as any).user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser((req as any).user.uid)); // REDIS
+			await redisFunctions.set_json(`${(req as any).user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser((req as any).user.uid)); // REDIS (THIS VERSION IMMEDIATELY UPDATES ENTRY IN CACHE SO IT IS UP TO DATE THE NEXT TIME THE USER VISITS THE HOME PAGE)
+			//await redisFunctions.del_json(`${(req as any).user.uid}/getWikisByUser`); // REDIS (THIS VERSION DELETES THE ENTRY FROM THE CACHE SO THE USER HAS TO VISIT THE HOME PAGE FIRST BEFORE IT IS READDED)
 
 			if (wiki.access === "public-edit" || wiki.access === "public-view") {
-				await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
+				await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis()); // REDIS
 			}
 
 			return res.json(wiki);

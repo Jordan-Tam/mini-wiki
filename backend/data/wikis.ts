@@ -14,6 +14,14 @@ import {
 } from "../helpers.ts";
 import { indexPage, deletePageFromIndex } from "../lib/search/indexer.ts";
 
+// This is only used for the authorized() function.
+type Wiki = {
+    owner: string,
+    access: string,
+    collaborators: string[],
+    private_viewers: string[],
+};
+
 const wiki_data_functions = {
 	/**
 	 * Returns an array of every wiki in existence.
@@ -105,6 +113,25 @@ const wiki_data_functions = {
 			PRIVATE_VIEWER: wikisList.filter((wiki:any) => wiki.owner !== userFirebaseUID && wiki.private_viewers.includes(userFirebaseUID))
 		};
 
+	},
+
+	authorized(
+		wiki: Wiki,
+		firebaseUID: string
+	) {
+        if (wiki.access === "public-edit" || wiki.access === "public-view") {
+            return true;
+        } else {
+            if (wiki.owner === firebaseUID) {
+                return true;
+            } else if (wiki.collaborators.includes(firebaseUID)) {
+                return true;
+            } else if (wiki.private_viewers.includes(firebaseUID)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 	},
 
 	/**
