@@ -55,6 +55,11 @@ function Header() {
 											Create
 										</Link>
 									</li>
+									<li className="nav-item px-2">
+										<Link className="nav-link" to="/settings">
+											Settings
+										</Link>
+									</li>
 								</>
 							)}
 							{!currentUser && (

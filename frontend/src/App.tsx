@@ -14,6 +14,7 @@ import Article from "./components/Article.tsx";
 import Browse from "./components/Browse.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
 import CategoryPage from "./components/CategoryPage.jsx";
+import Settings from "./components/Settings.tsx"
 
 /**
  * FORBIDDEN WIKI URL NAMES:
@@ -34,6 +35,9 @@ function App() {
 					<Route path="/create" element={<CreateWiki />} />
 					<Route path="/home" element={<PrivateRoute />}>
 						<Route path="/home" element={<Home />} />
+					</Route>
+					<Route path="/settings" element={<PrivateRoute />}>
+						<Route path="/settings" element={<Settings />} />
 					</Route>
 					<Route path="/profile" element={<PrivateRoute />}>
 						<Route path="/profile" element={<Profile />} />
