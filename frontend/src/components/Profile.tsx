@@ -5,6 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
 import TakenCheck from "./TakenCheck";
 import { FaPlus } from 'react-icons/fa';
+import ChangeBioModal from "./modals/ChangeBioModal"
 
 function Profile() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
@@ -12,6 +13,7 @@ function Profile() {
   const [username, setUsername] = useState(null);
   const [changeUsernameOK, setChangeUsernameOK] = useState(null);
   const [user, setUser] = useState(null);
+  const [showChangeBioModal, setShowChangeBioModal] = useState(false)
 
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
@@ -39,6 +41,14 @@ function Profile() {
     setUsername(usernameInput);
   };
 
+  const handleCloseChangeBioModal = () => {
+    setShowChangeBioModal(false);
+  };
+
+  const handleOpenChangeBioModal = () => {
+    setShowChangeBioModal(true);
+  };
+
   const handleChangeUsername = async (usernameInput: any) => {
     const obj = { username: usernameInput };
     const response = await fetch(
@@ -64,7 +74,7 @@ function Profile() {
     }
   };
 
-  
+
 
   useEffect(() => {
 		const fetchUser = async () => {
@@ -104,9 +114,9 @@ function Profile() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.4rem",
+                gap: "6px",
               }}
-
+              onClick={() => handleOpenChangeBioModal()}
             >
               <FaPlus />
               Add a bio!
@@ -115,7 +125,20 @@ function Profile() {
               
           </>
         ) : (
-          <p>{user.bio}</p>
+          <>
+            <p>{user.bio}</p>
+            <button
+              className="btn btn-primary"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              onClick={() => handleOpenChangeBioModal()}
+            >
+              Edit Bio
+            </button>
+          </>
         )
       )}
 
@@ -191,6 +214,15 @@ function Profile() {
           handleClose={handleCloseChangePasswordModal}
         />
       )}
+      {showChangeBioModal && (
+        <ChangeBioModal
+          isOpen={showChangeBioModal}
+          handleClose={handleCloseChangeBioModal}
+          user={user}
+          setUser={setUser}
+        />
+      )}
+
     </div>
   );
 }

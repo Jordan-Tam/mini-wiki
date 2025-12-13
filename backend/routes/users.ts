@@ -275,7 +275,7 @@ router
     })
 
   router 
-    .route(":id/bio")
+    .route("/:id/bio")
     /** 
      * Edit user bio
      * New Bio provided in body
@@ -300,10 +300,10 @@ router
       try {
 
         await user_data_functions.changeBio(id, newBio);
+
         const user = await user_data_functions.getUserByFirebaseUID(id)
-        
-        return user.bio;
-        
+        return res.json(user);
+
       } catch (e) {
 
         return res.status(500).json({error: e})

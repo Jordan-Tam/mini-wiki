@@ -306,14 +306,15 @@ const user_data_functions = {
       throw 'Bio must be between 0 and 255 characters'
     }
 
-    const newUser = {
-      bio
-    }
+    // const newUser = {
+    //   bio
+    // }
+    
     const userCollection = await users();
 
-    const updateInfo = await userCollection.findOneAndReplace(
+    const updateInfo = await userCollection.findOneAndUpdate(
 			{ firebaseUID: firebaseUID },
-			newUser,
+			{ $set: { bio } },
 			{ returnDocument: "after" }
 		);
 
