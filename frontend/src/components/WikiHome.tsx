@@ -6,15 +6,89 @@ import CreatePageModal from "./modals/CreatePageModal.jsx";
 import EditCategoryModal from "./modals/EditCategoryModal.jsx";
 import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
 import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
-import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx"
+import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx";
 import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
-import AddPrivateViewerModal from "./modals/AddPrivateViewerModal.jsx"
+import AddPrivateViewerModal from "./modals/AddPrivateViewerModal.jsx";
 
 let key_val = 0;
 function WikiHome() {
-
 	const { wikiUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
+
+	// Helper function to strip markdown formatting for displaying highlights
+	const stripMarkdown = (text) => {
+		if (!text) return text;
+
+		return (
+			text
+				// Code blocks (must be before inline code)
+				.replace(/```[\s\S]*?```/g, "")
+				// Tables - remove entire table rows
+				// .replace(/\|[^\n]+\|/g, '')
+				// Table separators
+				// .replace(/\|[\s\-:]+\|/g, '')
+				// Headers
+				.replace(/^#{1,6}\s+/gm, "")
+				// Bold
+				.replace(/\*\*([^*]+)\*\*/g, "$1")
+				.replace(/__([^_]+)__/g, "$1")
+				// Italic
+				.replace(/\*([^*]+)\*/g, "$1")
+				.replace(/_([^_]+)_/g, "$1")
+				// Strikethrough
+				.replace(/~~([^~]+)~~/g, "$1")
+				// Links [text](url)
+				.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
+				// Images ![alt](url)
+				.replace(/!\[([^\]]*)\]\([^\)]+\)/g, "")
+				// Inline code
+				.replace(/`([^`]+)`/g, "$1")
+				// Blockquotes
+				.replace(/^>\s+/gm, "")
+				// Lists
+				.replace(/^[\*\-\+]\s+/gm, "")
+				.replace(/^\d+\.\s+/gm, "")
+				// Horizontal rules
+				.replace(/^[\-\*_]{3,}$/gm, "")
+				// Clean up extra whitespace
+				.replace(/\n{3,}/g, "\n\n")
+				.trim()
+		);
+	};
+
+	// Helper function to parse HTML highlights and return React elements
+	const parseHighlight = (htmlString) => {
+		if (!htmlString) return null;
+
+		// Strip markdown first
+		const cleaned = stripMarkdown(htmlString);
+
+		// Split by <em> tags to identify highlighted portions
+		const parts = cleaned.split(/(<em>|<\/em>)/);
+		const elements = [];
+		let isHighlighted = false;
+		let key = 0;
+
+		for (let part of parts) {
+			if (part === "<em>") {
+				isHighlighted = true;
+			} else if (part === "</em>") {
+				isHighlighted = false;
+			} else if (part) {
+				if (isHighlighted) {
+					elements.push(
+						<mark key={key++} style={{ backgroundColor: "#fff3cd" }}>
+							{part}
+						</mark>
+					);
+				} else {
+					elements.push(<span key={key++}>{part}</span>);
+				}
+			}
+		}
+
+		return elements;
+	};
 
 	// API call
 	const [wiki, setWiki] = useState(null);
@@ -29,14 +103,23 @@ function WikiHome() {
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
 	const [showAddCollabModal, setShowAddCollabModal] = useState(false);
 	const [collaborators, setCollaborators] = useState(undefined);
-	const [showCollaborators, setShowCollaborators] = useState(false)
+	const [showCollaborators, setShowCollaborators] = useState(false);
 	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
-	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] = useState(false)
-	const [showAddPrivateViewerModal, setShowAddPrivateViewerModal] = useState(false);
-	const [showDeletePrivateViewerModal, setShowDeletePrivateViewerModal] = useState(false);
+	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] =
+		useState(false);
+	const [showAddPrivateViewerModal, setShowAddPrivateViewerModal] =
+		useState(false);
+	const [showDeletePrivateViewerModal, setShowDeletePrivateViewerModal] =
+		useState(false);
 	const [deletePrivateViewer, setDeletePrivateViewer] = useState(false);
 	const [private_viewers, setPrivateViewers] = useState(undefined);
 	const [showPVs, setShowPVs] = useState(false);
+
+	// Search
+	const [searchTerm, setSearchTerm] = useState("");
+	const [searchResults, setSearchResults] = useState(null);
+	const [searching, setSearching] = useState(false);
+	const [searchError, setSearchError] = useState(null);
 
 	useEffect(() => {
 		const fetchWiki = async () => {
@@ -54,11 +137,10 @@ function WikiHome() {
 				setWiki(data);
 			} catch (e) {
 				setError(`${e}`);
-			} 
+			}
 		};
 
 		if (wikiUrlName && currentUser) fetchWiki();
-
 	}, [wikiUrlName, currentUser]);
 
 	useEffect(() => {
@@ -79,20 +161,17 @@ function WikiHome() {
 
 				//throw new Error("Failed to fetch wiki");
 				setCollaborators(data);
-
 			} catch (e) {
 				setError(e);
 			} finally {
 				setLoading(false);
 			}
-		}
+		};
 
 		if (wiki && currentUser) {
 			fetchCollaborators();
 		}
-		
-	}, [wiki, currentUser])
-
+	}, [wiki, currentUser]);
 
 	useEffect(() => {
 		const fetchPVs = async () => {
@@ -111,19 +190,17 @@ function WikiHome() {
 				}
 
 				setPrivateViewers(data);
-
 			} catch (e) {
 				setError(e);
 			} finally {
 				setLoading(false);
 			}
-		}
+		};
 
 		if (wiki && currentUser) {
 			fetchPVs();
 		}
-		
-	}, [wiki, currentUser])
+	}, [wiki, currentUser]);
 
 	const handleCloseModals = () => {
 		setCategory(undefined);
@@ -137,6 +214,47 @@ function WikiHome() {
 		setShowDeletePrivateViewerModal(false);
 	};
 
+	const handleSearch = async (e) => {
+		e.preventDefault();
+		if (!searchTerm.trim()) {
+			setSearchError("Please enter a search term");
+			return;
+		}
+
+		setSearching(true);
+		setSearchError(null);
+
+		try {
+			const response = await fetch(`/api/search/${wiki._id}`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: "Bearer " + currentUser?.accessToken
+				},
+				body: JSON.stringify({ searchTerm: searchTerm.trim() })
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "Failed to search");
+			}
+
+			const data = await response.json();
+			setSearchResults(data);
+		} catch (e) {
+			setSearchError(e.message);
+			setSearchResults(null);
+		} finally {
+			setSearching(false);
+		}
+	};
+
+	const handleClearSearch = () => {
+		setSearchTerm("");
+		setSearchResults(null);
+		setSearchError(null);
+	};
+
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error: {error}</p>;
 	//console.log(collaborators);
@@ -144,87 +262,215 @@ function WikiHome() {
 		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
 			<p>{wiki?.description}</p>
+
+			{/* Search Bar */}
+			<div className="card mb-4">
+				<div className="card-body">
+					<h5 className="card-title">Search Pages in this Wiki</h5>
+					<form onSubmit={handleSearch}>
+						<div className="input-group mb-2">
+							<input
+								type="text"
+								className="form-control"
+								placeholder="Enter search term..."
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+								disabled={searching}
+							/>
+							<button
+								className="btn btn-primary"
+								type="submit"
+								disabled={searching}
+							>
+								{searching ? "Searching..." : "Search"}
+							</button>
+							<button
+								className="btn btn-secondary"
+								type="button"
+								onClick={handleClearSearch}
+								disabled={searching}
+							>
+								Clear
+							</button>
+						</div>
+					</form>
+
+					{searchError && (
+						<div className="alert alert-danger" role="alert">
+							{searchError}
+						</div>
+					)}
+
+					{searchResults && (
+						<div className="mt-3">
+							<h6>Search Results ({searchResults.totalResults} found)</h6>
+							{searchResults.totalResults === 0 ? (
+								<p className="text-muted">
+									No pages found matching "{searchResults.searchTerm}"
+								</p>
+							) : (
+								<div className="list-group">
+									{searchResults.results.map((result) => (
+										<Link
+											key={result.pageId}
+											to={`/${wikiUrlName}/${result.pageUrlName}`}
+											className="list-group-item list-group-item-action"
+										>
+											<div className="d-flex w-100 justify-content-between">
+												<h6 className="mb-1">
+													{result.highlights?.pageTitle ? (
+														<>
+															{parseHighlight(result.highlights.pageTitle[0])}
+														</>
+													) : (
+														result.pageTitle
+													)}
+												</h6>
+												<small className="text-muted">
+													Score: {result.score.toFixed(2)}
+												</small>
+											</div>
+											<p className="mb-1">
+												<strong>Category:</strong> {result.category}
+											</p>
+											{result.highlights?.content && (
+												<small className="text-muted">
+													<div>
+														{result.highlights.content.map((snippet, idx) => (
+															<span key={idx}>
+																{parseHighlight(snippet)}
+																{idx < result.highlights.content.length - 1 &&
+																	" ... "}
+															</span>
+														))}
+													</div>
+												</small>
+											)}
+										</Link>
+									))}
+								</div>
+							)}
+						</div>
+					)}
+				</div>
+			</div>
+
 			<div className="mt-3 mb-3">
-				{(wiki?.access === "private" || wiki?.access === "public-view") && 
+				{(wiki?.access === "private" || wiki?.access === "public-view") && (
 					<>
-						<button className="btn btn-success me-3" onClick={() => setShowAddCollabModal(true)} >Add a collaborator</button>
-						{!showCollaborators && 
-							<button className="btn btn-success me-3" onClick={() => setShowCollaborators(true)}>View Collaborators</button>
-						}
+						<button
+							className="btn btn-success me-3"
+							onClick={() => setShowAddCollabModal(true)}
+						>
+							Add a collaborator
+						</button>
+						{!showCollaborators && (
+							<button
+								className="btn btn-success me-3"
+								onClick={() => setShowCollaborators(true)}
+							>
+								View Collaborators
+							</button>
+						)}
 						{showCollaborators && (
 							<>
-							<button className="btn btn-success ms-3" onClick={() => setShowCollaborators(false)}>Hide Collaborators</button>
-							<ul className="list-group mt-2">
-							{collaborators && collaborators.length === 0 && (
-								<li className="list-group-item text-muted">
-									This wiki currently has no collaborators!s
-								</li>
-							)}
-								
-								{collaborators?.map((username) => (
-									<>
-										<li key={username} className="list-group-item d-flex justify-content-between align-items-center">
-											<p>{username}</p>
-											<button
-												className="btn btn-danger btn-sm"
-												onClick={() => {
-													setDeleteCollaborator(username);
-													setShowDeleteCollaboratorModal(true);
-												}}
-											>
-												Remove Collaborator
-											</button>
+								<button
+									className="btn btn-success ms-3"
+									onClick={() => setShowCollaborators(false)}
+								>
+									Hide Collaborators
+								</button>
+								<ul className="list-group mt-2">
+									{collaborators && collaborators.length === 0 && (
+										<li className="list-group-item text-muted">
+											This wiki currently has no collaborators!s
 										</li>
+									)}
 
-									</>
-								))}
-							</ul>
+									{collaborators?.map((username) => (
+										<>
+											<li
+												key={username}
+												className="list-group-item d-flex justify-content-between align-items-center"
+											>
+												<p>{username}</p>
+												<button
+													className="btn btn-danger btn-sm"
+													onClick={() => {
+														setDeleteCollaborator(username);
+														setShowDeleteCollaboratorModal(true);
+													}}
+												>
+													Remove Collaborator
+												</button>
+											</li>
+										</>
+									))}
+								</ul>
 							</>
 						)}
 					</>
-				}
-				{wiki.access === "private" && 
-				<>
-					<button className="btn btn-success me-3" onClick={() => setShowAddPrivateViewerModal(true)}> 
-						Add Private Viewer
-					</button>
-					{!showPVs && 
-							<button className="btn btn-success me-3" onClick={() => setShowPVs(true)}>View Private Viewers</button>
-						}
+				)}
+				{wiki.access === "private" && (
+					<>
+						<button
+							className="btn btn-success me-3"
+							onClick={() => setShowAddPrivateViewerModal(true)}
+						>
+							Add Private Viewer
+						</button>
+						{!showPVs && (
+							<button
+								className="btn btn-success me-3"
+								onClick={() => setShowPVs(true)}
+							>
+								View Private Viewers
+							</button>
+						)}
 						{showPVs && (
 							<>
-							<button className="btn btn-success ms-3" onClick={() => setShowPVs(false)}>Hide Private Viewers</button>
-							<ul className="list-group mt-2">
-							{private_viewers && private_viewers.length === 0 && (
-								<li className="list-group-item text-muted">
-									This wiki currently has no Private Viewers!
-								</li>
-							)}
-								
-								{private_viewers?.map((username) => (
-									<>
-										<li key={username} className="list-group-item d-flex justify-content-between align-items-center">
-											<p>{username}</p>
-											<button
-												className="btn btn-danger btn-sm"
-												onClick={() => {
-													setDeletePrivateViewer(username);
-													setShowDeletePrivateViewerModal(true);
-												}}
-											>
-												Remove from Private Viewers
-											</button>
+								<button
+									className="btn btn-success ms-3"
+									onClick={() => setShowPVs(false)}
+								>
+									Hide Private Viewers
+								</button>
+								<ul className="list-group mt-2">
+									{private_viewers && private_viewers.length === 0 && (
+										<li className="list-group-item text-muted">
+											This wiki currently has no Private Viewers!
 										</li>
+									)}
 
-									</>
-								))}
-							</ul>
+									{private_viewers?.map((username) => (
+										<>
+											<li
+												key={username}
+												className="list-group-item d-flex justify-content-between align-items-center"
+											>
+												<p>{username}</p>
+												<button
+													className="btn btn-danger btn-sm"
+													onClick={() => {
+														setDeletePrivateViewer(username);
+														setShowDeletePrivateViewerModal(true);
+													}}
+												>
+													Remove from Private Viewers
+												</button>
+											</li>
+										</>
+									))}
+								</ul>
 							</>
 						)}
-				</>
-				}
+					</>
+				)}
 				<button className="btn btn-warning me-3">Edit Wiki</button>
-				<button className="btn btn-secondary me-3" onClick={() => setShowNewCategoryModal(true)}>
+				<button
+					className="btn btn-secondary me-3"
+					onClick={() => setShowNewCategoryModal(true)}
+				>
 					+ New Category
 				</button>
 				<button
@@ -241,12 +487,13 @@ function WikiHome() {
 						<div className="card-body" key={key_val++}>
 							<Link
 								to={`/${wikiUrlName}/category/${wiki.categories_slugified[index]}`}
-								style={{textDecoration: "none"}}
+								style={{ textDecoration: "none" }}
 							>
 								<h3 className="card-title">{category}</h3>
 							</Link>
 							<p>
-								<span style={{fontWeight: "bold"}}>Number of Pages:</span> {wiki.pages.filter((p) => p.category === category).length}
+								<span style={{ fontWeight: "bold" }}>Number of Pages:</span>{" "}
+								{wiki.pages.filter((p) => p.category === category).length}
 							</p>
 							{category !== "UNCATEGORIZED" && (
 								<>
@@ -256,7 +503,9 @@ function WikiHome() {
 											setCategory(category);
 											setShowEditCategoryModal(true);
 										}}
-									>Edit</button>
+									>
+										Edit
+									</button>
 									<button
 										className="btn btn-danger"
 										onClick={() => {
@@ -349,7 +598,6 @@ function WikiHome() {
 					wikiId={wiki._id}
 				/>
 			)}
-
 		</div>
 	);
 }

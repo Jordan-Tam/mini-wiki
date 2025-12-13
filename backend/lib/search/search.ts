@@ -15,6 +15,7 @@ export async function ensureIndex() {
 				properties: {
 					wikiId: { type: "keyword" },
 					pageId: { type: "keyword" },
+					pageUrlName: { type: "keyword" },
 					pageTitle: { type: "text" },
 					category: { type: "keyword" },
 					content: { type: "text" }
@@ -30,6 +31,7 @@ export async function ensureIndex() {
 export interface SearchResult {
 	wikiId: string;
 	pageId: string;
+	pageUrlName: string;
 	pageTitle: string;
 	category: string;
 	score: number;
@@ -91,15 +93,26 @@ export async function searchWikis(
 	const results: SearchResult[] = response.hits.hits.map((hit: any) => ({
 		wikiId: hit._source.wikiId,
 		pageId: hit._source.pageId,
+		pageUrlName: hit._source.pageUrlName,
 		pageTitle: hit._source.pageTitle,
 		category: hit._source.category,
 		score: hit._score,
 		highlights: hit.highlight || {}
 	}));
 
+	// Deduplicate by pageId as a safety measure
+	const seenPageIds = new Set<string>();
+	const uniqueResults = results.filter((result) => {
+		if (seenPageIds.has(result.pageId)) {
+			return false;
+		}
+		seenPageIds.add(result.pageId);
+		return true;
+	});
+
 	// Group by wiki
 	const groupedResults: Record<string, SearchResult[]> = {};
-	results.forEach((result: SearchResult) => {
+	uniqueResults.forEach((result: SearchResult) => {
 		if (!groupedResults[result.wikiId]) {
 			groupedResults[result.wikiId] = [];
 		}
@@ -107,4 +120,79 @@ export async function searchWikis(
 	});
 
 	return groupedResults;
+}
+
+export async function searchWiki(
+	searchTerm: string,
+	wikiId: string
+): Promise<SearchResult[]> {
+	/**
+	 * Search within a single wiki
+	 */
+
+	if (!searchTerm || searchTerm.trim() === "") {
+		throw new Error("Search term cannot be empty");
+	}
+
+	if (!wikiId || wikiId.trim() === "") {
+		throw new Error("Wiki ID is required");
+	}
+
+	const response = await esClient.search({
+		index: WIKI_INDEX,
+		query: {
+			bool: {
+				must: [
+					{
+						multi_match: {
+							query: searchTerm,
+							fields: ["pageTitle^2", "content"],
+							type: "best_fields",
+							fuzziness: "AUTO"
+						}
+					}
+				],
+				filter: [
+					{
+						term: {
+							wikiId: wikiId
+						}
+					}
+				]
+			}
+		},
+		highlight: {
+			fields: {
+				pageTitle: {},
+				content: {
+					fragment_size: 150,
+					number_of_fragments: 3
+				}
+			}
+		},
+		size: 100
+	} as any);
+
+	// Return results for this specific wiki
+	const results: SearchResult[] = response.hits.hits.map((hit: any) => ({
+		wikiId: hit._source.wikiId,
+		pageId: hit._source.pageId,
+		pageUrlName: hit._source.pageUrlName,
+		pageTitle: hit._source.pageTitle,
+		category: hit._source.category,
+		score: hit._score,
+		highlights: hit.highlight || {}
+	}));
+
+	// Deduplicate by pageId as a safety measure
+	const seenPageIds = new Set<string>();
+	const uniqueResults = results.filter((result) => {
+		if (seenPageIds.has(result.pageId)) {
+			return false;
+		}
+		seenPageIds.add(result.pageId);
+		return true;
+	});
+
+	return uniqueResults;
 }
