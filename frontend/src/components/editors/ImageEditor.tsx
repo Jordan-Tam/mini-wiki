@@ -77,11 +77,12 @@ function ImageEditor({
 
 	return (
 		<div className="imageEditor">
-			<div className="userSide">
+			<div className="row">
+			<div className="userSide col-6">
 				<div className="image-form">
 					<div className="form-group">
-						<label htmlFor={`${inputId}-url`}>
-							Image URL <span className="required">*</span>
+						<label className="mb-2 me-2" style={{fontWeight: "bold"}} htmlFor={`${inputId}-url`}>
+							Image URL
 						</label>
 						<input
 							type="url"
@@ -92,11 +93,11 @@ function ImageEditor({
 							required
 							className={urlError ? "error" : ""}
 						/>
-						{urlError && <span className="error-message">{urlError}</span>}
+						{urlError && <span style={{color: "red"}} className="error-message"> {urlError}</span>}
 					</div>
 					<div className="form-group">
-						<label htmlFor={`${inputId}-alt`}>
-							Alt Text <span className="required">*</span>
+						<label className="me-2" style={{fontWeight: "bold"}} htmlFor={`${inputId}-alt`}>
+							Alt Text
 						</label>
 						<input
 							type="text"
@@ -109,19 +110,20 @@ function ImageEditor({
 						/>
 						{altError && <span className="error-message">{altError}</span>}
 					</div>
-					<div className="markdown-output">
-						<label>Generated Markdown:</label>
-						<code>
-							{markdown || "Fill in both fields to generate markdown"}
-						</code>
-					</div>
 				</div>
 			</div>
-			{showPreview && markdown && (
-				<div className="previewArea">
-					<MarkdownPreview source={markdown} rehypePlugins={rehypePlugins} />
-				</div>
-			)}
+			<div className="markdown-output col-6">
+				<p>Preview:</p>
+				<code>
+					{markdown || "Fill in both fields to see preview"}
+				</code>
+				{showPreview && markdown && (
+					<div className="previewArea col-6">
+						<MarkdownPreview source={markdown} rehypePlugins={rehypePlugins} />
+					</div>
+				)}
+			</div>
+		</div>
 		</div>
 	);
 }
