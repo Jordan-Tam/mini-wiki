@@ -1,10 +1,3 @@
-/**
- * Added bio and made a user customized profile page,
- * I havent finished it so that anyone can view your profile
- * (or linked your profile where it is mentioned) but it will be done tn
- * or tomorrow morning for sure 
- */
-
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { FaPlus } from 'react-icons/fa';
