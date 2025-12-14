@@ -183,7 +183,7 @@ router
 		try {
 
 			if (await redisFunctions.exists_in_cache("publicWikis")) {
-				return res.json(await redisFunctions.get("publicWikis")); // REDIS
+				return res.json(await redisFunctions.get_json("publicWikis")); // REDIS
 			}
 
 			const public_wikis = await wikiDataFunctions.getAllPublicWikis();
