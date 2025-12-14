@@ -15,7 +15,8 @@ type User = {
   //wikis: string[];
   //wikis_given_access: string[];
   favorites: string[];
-  following: string[]
+  following: string[];
+  bio: string;
 };
 
 const user_data_functions = {
@@ -32,7 +33,8 @@ const user_data_functions = {
       email: email,
       firebaseUID,
       favorites: [],
-      following: []
+      following: [],
+      bio: ""
     };
 
     const userCollection = await users();
@@ -289,6 +291,38 @@ const user_data_functions = {
 
     return { userDeleted: true };
 
+  },
+
+  async changeBio(
+    firebaseUID: string,
+    bio: string
+  ){
+
+    const user = await this.getUserByFirebaseUID(firebaseUID);
+
+    if (!user) throw 'user with id does not exist'
+
+    if (bio.length > 255){
+      throw 'Bio must be between 0 and 255 characters'
+    }
+
+    // const newUser = {
+    //   bio
+    // }
+    
+    const userCollection = await users();
+
+    const updateInfo = await userCollection.findOneAndUpdate(
+			{ firebaseUID: firebaseUID },
+			{ $set: { bio } },
+			{ returnDocument: "after" }
+		);
+
+    if (!updateInfo){
+      throw 'Internal Server Error'
+    }
+
+    return updateInfo;
   }
 
 };

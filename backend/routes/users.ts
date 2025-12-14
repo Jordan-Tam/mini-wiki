@@ -274,4 +274,42 @@ router
 
     })
 
+  router 
+    .route("/:id/bio")
+    /** 
+     * Edit user bio
+     * New Bio provided in body
+     */
+    .post(async (req: any, res) => {
+      const id = req.params.id.trim();
+      const newBio = req.body.bio;
+
+      try {
+        
+        const user = await user_data_functions.getUserByFirebaseUID(id)
+        if (typeof newBio !== "string" || newBio.length > 255){
+          throw 'Invalid bio.'
+        }  
+
+      } catch (e) {
+
+        return res.status(400).json({error: e})
+
+      }
+
+      try {
+
+        await user_data_functions.changeBio(id, newBio);
+
+        const user = await user_data_functions.getUserByFirebaseUID(id)
+        return res.json(user);
+
+      } catch (e) {
+
+        return res.status(500).json({error: e})
+
+      }
+
+  });
+
 export default router;
