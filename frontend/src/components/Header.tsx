@@ -41,7 +41,7 @@ function Header() {
 							{currentUser && (
 								<>
 									<li className="nav-item px-2">
-										<Link className="nav-link" to="/profile">
+										<Link className="nav-link" to={`/profile/${currentUser.uid}`}>
 											Profile
 										</Link>
 									</li>

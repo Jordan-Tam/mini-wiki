@@ -10,8 +10,11 @@ import { AuthContext } from "../context/AuthContext";
 import { FaPlus } from 'react-icons/fa';
 import ChangeBioModal from "./modals/ChangeBioModal"
 import WikiCard from "./cards/WikiCard.jsx";
+import { useParams } from "react-router-dom"
 
 function Profile() {
+
+  const { id } = useParams();
   
   const [user, setUser] = useState(null);
   const [showChangeBioModal, setShowChangeBioModal] = useState(false)
@@ -28,6 +31,8 @@ function Profile() {
     token = currentUser.accessToken;
   }
 
+  const isUserProfile = (id === currentUser.uid);
+
   const handleCloseChangeBioModal = () => {
     setShowChangeBioModal(false);
   };
@@ -40,7 +45,7 @@ function Profile() {
   useEffect(() => {
 		const fetchData = async () => {
 			
-				const response = await fetch(`/api/users/${currentUser.uid}`, {
+				const response = await fetch(`/api/users/${id}`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
@@ -140,8 +145,10 @@ function Profile() {
         )
       )}
 
+      <br/>
 
-      <h3>{user.username}'s Wikis</h3>
+
+      <h3>Wikis</h3>
       {wikis.OWNER?.filter(wiki => wiki.access !== "private")
         .map(wiki => (
           <li
@@ -152,14 +159,7 @@ function Profile() {
           </li>
         ))}
       
-      <h3>{user.username}'s Favorites</h3>
-      {favorites?.map((wiki) => (
-        <>
-          <li key={wiki} className="list-group-item d-flex justify-content-between align-items-center">
-            <WikiCard wiki={wiki} />
-          </li>
-        </>
-      ))}
+
 
       {showChangeBioModal && (
         <ChangeBioModal
