@@ -312,4 +312,24 @@ router
 
   });
 
+// made this a new route instead of just 
+// removing the authentication check
+// i assume it may be needed somewhere else
+router
+  .route("/:id/profile")
+  .get(async (req, res) => {
+    try {
+      const user = await user_data_functions.getUserByFirebaseUID(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ error: "user not found" });
+      }
+  
+      return res.json({ user });
+    } catch (e) {
+      return res.status(500).json({ error: e });
+    }
+  });
+  
+
 export default router;
