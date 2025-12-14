@@ -22,7 +22,7 @@ function ArticleCreator() {
 	const [nextId, setNextId] = useState(0);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
-	const [wiki, setWiki] = useState<any>({name: "new"});
+	const [wiki, setWiki] = useState<any>(undefined);
 	const [page, setPage] = useState<any>(undefined);
 	const [pageUrlName, setPageUrlName] = useState<string | null>(null);
 	const [actualPageId, setActualPageId] = useState<string | null>(null);
