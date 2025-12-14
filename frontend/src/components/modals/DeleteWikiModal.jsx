@@ -20,14 +20,10 @@ const customStyles = {
 
 function DeleteWikiModal(props) {
   const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(props.isOpen);
+  const [error, setError] = useState("");
   const { currentUser } = useContext(AuthContext);
 
   let navigate = useNavigate();
-
-  const handleCloseDeleteWikiModal = () => {
-    setShowDeleteWikiModal(false);
-    props.handleClose();
-  };
 
   return (
     <div>
@@ -70,9 +66,10 @@ function DeleteWikiModal(props) {
                 },
               });
               if (!response.ok) {
-                alert((await response.json()).error);
+                setError((await response.json()).error);
                 return;
               }
+              setError("");
               alert("Wiki Deleted");
               setShowDeleteWikiModal(false);
               props.handleClose();
@@ -84,6 +81,7 @@ function DeleteWikiModal(props) {
             }
           }}
         >
+          {error && <span style={{ color: "red" }}>{error}</span>}
           <div>
             <button className="btn btn-danger me-3" type="submit">
               Delete

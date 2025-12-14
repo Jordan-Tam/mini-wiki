@@ -482,12 +482,13 @@ function WikiHome() {
 				>
 					+ New Page
 				</button>
+				{wiki.owner === currentUser.uid &&
 				<button 
 				className="btn btn-danger me-3"
 				onClick={() => setShowDeleteWikiModal(true)}
 				>
 					Delete Wiki
-				</button>
+				</button>}
 			</div>
 
 			<div className="mb-3">
