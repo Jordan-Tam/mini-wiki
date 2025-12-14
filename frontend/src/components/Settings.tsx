@@ -67,9 +67,7 @@ function Settings() {
 
   return (
     <div className="container-fluid">
-      <h2>{currentUser.username}'s Account Page</h2>
-      
-      
+      <h2>{currentUser.username}'s Account Page</h2>      
 
       <div className="form-floating mb-3" style={{ width: "500px" }}>
         <input

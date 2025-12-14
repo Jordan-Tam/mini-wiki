@@ -141,7 +141,7 @@ function Profile() {
       )}
 
 
-      <h3>{user.username}'s wikis</h3>
+      <h3>{user.username}'s Wikis</h3>
       {wikis.OWNER?.filter(wiki => wiki.access !== "private")
         .map(wiki => (
           <li
@@ -152,7 +152,7 @@ function Profile() {
           </li>
         ))}
       
-      <h3>{user.username}'s favorites</h3>
+      <h3>{user.username}'s Favorites</h3>
       {favorites?.map((wiki) => (
         <>
           <li key={wiki} className="list-group-item d-flex justify-content-between align-items-center">
