@@ -24,7 +24,6 @@ function Profile() {
   let token: any;
   
   const [loading, setLoading] = useState(true)
-  const [favorites, setFavorites] = useState([]);
   const [wikis, setWikis] = useState([]);
 
   if (currentUser) {
@@ -43,9 +42,10 @@ function Profile() {
 
 
   useEffect(() => {
+
 		const fetchData = async () => {
 			
-				const response = await fetch(`/api/users/${id}`, {
+				const response = await fetch(`/api/users/${id}/profile`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
@@ -57,20 +57,19 @@ function Profile() {
         
 				const data = await response.json();
 
-				setUser(data);
+				setUser(data.user);
 
-        const favoriteResponse = await fetch(`/api/users/favorites`, {
-          method: "GET",
-          headers: { Authorization: "Bearer " + token }
-        });
+        // const favoriteResponse = await fetch(`/api/users/favorites`, {
+        //   method: "GET",
+        //   headers: { Authorization: "Bearer " + token }
+        // });
 
-        if (!favoriteResponse.ok){ 
-            throw "failed to fetch favorites"
-        }
+        // if (!favoriteResponse.ok){ 
+        //     throw "failed to fetch favorites"
+        // }
         
-        const favoriteResult = await favoriteResponse.json();
-        
-        setFavorites(favoriteResult);
+        // const favoriteResult = await favoriteResponse.json();
+        // setFavorites(favoriteResult);
 
         const wikiRes = await fetch(`/api/wiki/`, {
           method: "GET",
@@ -84,7 +83,7 @@ function Profile() {
         const dataWikis = await wikiRes.json();
               // console.log(data);
 
-        console.log(dataWikis);
+        //console.log(dataWikis);
         setWikis(dataWikis);
 
         setLoading(false);
@@ -93,7 +92,7 @@ function Profile() {
 
 		if (currentUser) fetchData();
 
-	}, [currentUser]);
+	}, [currentUser, id]);
 
 
 
@@ -102,13 +101,14 @@ function Profile() {
       <h1>Loading...</h1>
     )
   }
-  //console.log(user)
-  console.log(wikis.OWNER)
+  //console.log(user.username)
+  //console.log(isUserProfile)
   return (
     <div className="container-fluid">
-      <h2>{currentUser.username}'s Account Page</h2>
+      <h2>{user.username}'s Profile</h2>
       
-      {user !== null && (
+      <hr/>
+      {isUserProfile && user !== null && (
         user.bio === "" ? (
           <>
     
@@ -129,6 +129,7 @@ function Profile() {
           </>
         ) : (
           <>
+            <h5>Bio</h5>
             <p>{user.bio}</p>
             <button
               className="btn btn-primary"
@@ -145,21 +146,30 @@ function Profile() {
         )
       )}
 
-      <br/>
+    {!isUserProfile && user !== null && (
+        user.bio === "" ? (
+          <>
+            <h5>Bio</h5>
+            <p> No bio yet! </p>
+          </>
+        ) : (
+          <>
+            <h5>Bio</h5>
+            <p>{user.bio}</p>
+          </>
+        )
+      )}
 
+      <hr/>
 
-      <h3>Wikis</h3>
+      <h3>Public Wikis</h3>
       {wikis.OWNER?.filter(wiki => wiki.access !== "private")
         .map(wiki => (
-          <li
-            key={wiki._id ?? wiki}
-            className="list-group-item d-flex justify-content-between align-items-center"
-          >
+          <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
             <WikiCard wiki={wiki} />
           </li>
         ))}
       
-
 
       {showChangeBioModal && (
         <ChangeBioModal

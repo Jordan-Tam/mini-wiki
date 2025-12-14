@@ -579,13 +579,13 @@ router
 
 			const private_viewers = wiki.private_viewers;
 
-			const usernames = [];
+			const user_list = [];
 			for (let account of private_viewers){
 				let user = await user_data_functions.getUserByFirebaseUID(account);
-				usernames.push(user.username)
+				user_list.push(user)
 			}
 
-			return res.json(usernames);
+			return res.json(user_list);
 
 		} catch (e) {
 
@@ -774,13 +774,13 @@ router
 
 			const collaborators = wiki.collaborators;
 
-			const usernames = [];
+			const user_list = [];
 			for (let account of collaborators){
 				let user = await user_data_functions.getUserByFirebaseUID(account);
-				usernames.push(user.username)
+				user_list.push(user)
 			}
 
-			return res.json(usernames);
+			return res.json(user_list);
 
 		} catch (e) {
 
