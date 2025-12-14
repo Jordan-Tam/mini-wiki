@@ -9,6 +9,7 @@ import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
 import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx";
 import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
 import AddPrivateViewerModal from "./modals/AddPrivateViewerModal.jsx";
+import DeleteWikiModal from "./modals/DeleteWikiModal.jsx";
 
 let key_val = 0;
 function WikiHome() {
@@ -114,6 +115,7 @@ function WikiHome() {
 	const [deletePrivateViewer, setDeletePrivateViewer] = useState(false);
 	const [private_viewers, setPrivateViewers] = useState(undefined);
 	const [showPVs, setShowPVs] = useState(false);
+	const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(false);
 
 	// Search
 	const [searchTerm, setSearchTerm] = useState("");
@@ -212,6 +214,7 @@ function WikiHome() {
 		setShowDeleteCollaboratorModal(false);
 		setShowAddPrivateViewerModal(false);
 		setShowDeletePrivateViewerModal(false);
+		setShowDeleteWikiModal(false);
 	};
 
 	const handleSearch = async (e) => {
@@ -479,6 +482,12 @@ function WikiHome() {
 				>
 					+ New Page
 				</button>
+				<button 
+				className="btn btn-danger me-3"
+				onClick={() => setShowDeleteWikiModal(true)}
+				>
+					Delete Wiki
+				</button>
 			</div>
 
 			<div className="mb-3">
@@ -595,6 +604,13 @@ function WikiHome() {
 					handleClose={handleCloseModals}
 					username={deletePrivateViewer}
 					setWiki={setWiki}
+					wikiId={wiki._id}
+				/>
+			)}
+			{showDeleteWikiModal && (
+				<DeleteWikiModal
+					isOpen={showDeleteWikiModal}
+					handleClose={handleCloseModals}
 					wikiId={wiki._id}
 				/>
 			)}

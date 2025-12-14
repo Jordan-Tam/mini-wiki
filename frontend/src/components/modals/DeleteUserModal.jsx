@@ -63,7 +63,8 @@ function DeleteUserModal(props) {
                   }
                 );
                 if (!response.ok) {
-                  console.log("Error adding account to database");
+                  alert((await response.json()).error);
+                  return;
                 }
               } else {
                 await doDeleteUserSocial();
@@ -78,7 +79,8 @@ function DeleteUserModal(props) {
                   }
                 );
                 if (!response.ok) {
-                  console.log("Error adding account to database");
+                  alert((await response.json()).error);
+                  return;
                 }
               }
               alert("Account Deleted");

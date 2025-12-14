@@ -136,7 +136,7 @@ router
 			name = checkWikiOrPageName(name);
 			urlName = checkUrlName(urlName);
 			if(FORBIDDEN_WIKI_URL_NAMES.includes(urlName)){
-				throw ``
+				throw `Cannot use this wiki name.`
 			}
 			description = checkDescription(description);
 			access = checkAccess(access);
@@ -296,7 +296,7 @@ router
 			return res.json(wiki);
 
 		} catch (e) {
-			return res.json(400).json({ error: e });
+			return res.status(400).json({ error: e });
 		}
 	})
 
@@ -310,8 +310,31 @@ router
 	/**
 	 * Deletes the wiki specified by "req.params.id".
 	 */
-	.delete(async (req, res) => {
-		return;
+	.delete(async (req: any, res) => {
+		console.log("deleting wiki route")
+		// I'm just sending the id over as urlName to make it easier.
+		let wikiId = req.params.urlName
+		try{
+			wikiId = checkId(wikiId, "wikiId", "Delete Wiki route")
+		}catch(e){
+			return res.status(400).json({error: e});
+		}try{
+			const wiki = await wikiDataFunctions.getWikiById(wikiId);
+			const user = req.user;
+			if(wiki.owner !== user.user_id){
+				return res.status(403).json({error: "You do not own this wiki"});
+			}
+			await wikiDataFunctions.deleteWiki(wikiId);
+			await redisFunctions.del_json(`${req.user.uid}/getWikisByUser`);
+			await redisFunctions.del_json(`${wiki.urlName}`);
+			if(wiki.access !== "private"){
+				await redisFunctions.del_json(`publicWikis`);
+			}
+		}catch(e){
+			return res.status(500).json({error: e})
+		}
+		return res.json({message: "Success"});
+
 	});
 
 router
