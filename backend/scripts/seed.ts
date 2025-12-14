@@ -1,7 +1,6 @@
 import userDataFunctions from "../data/users.ts";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
-import { indexPage } from "../lib/search/indexer.ts";
 import redisFunctions from "../lib/redis/redis.ts";
 import { ensureIndex, esClient, WIKI_INDEX } from "../lib/search/search.ts";
 import { databaseConnection } from "../config/mongoConnection.ts";
@@ -391,20 +390,12 @@ async function seedDatabase() {
 							pageData.category
 						);
 
-						// Update page content
-						await pageDataFunctions.changePageContent(
-							newWiki._id.toString(),
-							newPage.pages[newPage.pages.length - 1]._id.toString(),
-							pageData.content
-						);
-
-						// Index page in Elasticsearch
-						await indexPage(newWiki._id.toString(), {
-							_id: newPage._id,
-							name: pageData.name,
-							category: pageData.category,
-							content: pageData.content
-						});
+					// Update page content (this will also re-index the page in Elasticsearch)
+					await pageDataFunctions.changePageContent(
+						newWiki._id.toString(),
+						newPage.pages[newPage.pages.length - 1]._id.toString(),
+						pageData.content
+					);
 
 						console.log(`  Created and indexed page: ${pageData.name}`);
 					} catch (error) {

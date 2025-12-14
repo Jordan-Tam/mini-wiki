@@ -39,38 +39,42 @@ function TextEditor({
 	// Actual HTML
 	return (
 		<div className="textEditor">
-			<div className="userSide">
-				<div className="toolbar">
-					<button onClick={() => insertMarkdown("**")}>Bold</button>
-					<button onClick={() => insertMarkdown("*")}>Italic</button>
-					<button onClick={() => insertMarkdown("# ", "")}>H1</button>
-					<button onClick={() => insertMarkdown("## ", "")}>H2</button>
-					<button onClick={() => insertMarkdown("[", "](url)")}>Link</button>
-					<button onClick={() => insertMarkdown("- ", "")}>List</button>
+			<div className="row">
+				<div className="userSide col-6">
+					<div className="mb-2 toolbar">
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("**")}>Bold</button>
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("*")}>Italic</button>
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("<ins>", "</ins>")}>Underline</button>
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("# ", "")}>H1</button>
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("## ", "")}>H2</button>
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("[", "](url)")}>Link</button>
+						<button className="btn btn-info me-2" onClick={() => insertMarkdown("- ", "")}>List</button>
+					</div>
+					{/* 
+					Helpful reference about text area attributes
+					https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement 
+					*/}
+					<textarea
+						className="w-100"
+						ref={textareaRef}
+						name="userTextArea"
+						style={{resize: "both"}}
+						id={textareaId}
+						value={text}
+						rows="10"
+						cols="20"
+						onChange={(e) => {
+							setText(e.target.value);
+							if (onChange) onChange(e.target.value);
+						}}
+					></textarea>
 				</div>
-				{/* 
-                Helpful reference about text area attributes
-                https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement 
-                */}
-				<textarea
-					ref={textareaRef}
-					name="userTextArea"
-					style={{resize: "both"}}
-					id={textareaId}
-					value={text}
-					rows="10"
-					cols="20"
-					onChange={(e) => {
-						setText(e.target.value);
-						if (onChange) onChange(e.target.value);
-					}}
-				></textarea>
+				{showPreview && (
+					<div className="previewArea col-6 mt-4">
+						<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
+					</div>
+				)}
 			</div>
-			{showPreview && (
-				<div className="previewArea">
-					<MarkdownPreview source={text} rehypePlugins={rehypePlugins} />
-				</div>
-			)}
 		</div>
 	);
 }
