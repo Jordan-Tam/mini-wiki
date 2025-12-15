@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface ChatParams {
     wikiId: string;
-    userId: string;
+    token:string;
 }
 
 export interface ChatMessage {
@@ -15,10 +15,23 @@ const useWs = (url:URL) => {
     // states
     const [message, setMessage] = useState<any>(null);
     const [opening, setOpening] = useState<boolean>(true);
+    const [open, setOpen] = useState<boolean>(false);
     const [disconnected, setDisconnected] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const socket = useRef<WebSocket>(null);
+
+    let send = (message:any) => {
+        if(!open || !socket.current || !socket.current.OPEN) {
+            throw `Cannot send message to closed socket`;
+        }
+
+        try {
+            socket.current.send(message);
+        } catch (e) {
+            console.error(`Couldnt send message:: ${e}`);
+        }
+    }
 
     useEffect(() => {
         try {
@@ -30,6 +43,7 @@ const useWs = (url:URL) => {
 
         socket.current.onopen = (ev) => {
             setOpening(false);
+            setOpen(true);
         }
 
         socket.current.onclose = (ev) => {
@@ -48,15 +62,18 @@ const useWs = (url:URL) => {
         }
     }, [url]);
 
-    return { message, opening, disconnected, error };
+    return { message, opening, open, disconnected, error, send };
 }
 
 export const Chat:React.FC<ChatParams> = ({
     wikiId,
-    userId
+    token
 }: ChatParams) => {
+    // states
+    const [sentAuth, setSentAuth] = useState<boolean>(false);
+
     let url;
-    let url_str = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/wiki/${wikiId}/chat`;
+    let url_str = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/chat/${wikiId}`;
     try {
         url = new URL(url_str);
     } catch (e) {
@@ -65,11 +82,23 @@ export const Chat:React.FC<ChatParams> = ({
     }
 
     // connect ws
-    const { message, opening, disconnected, error } = useWs(url);
+    console.log(`chat:: connect to ${url.toString()}`);
+    const { message, opening, open, disconnected, error, send } = useWs(url);
+
+    if(!opening && !error && !sentAuth) {
+        // sent auth
+        send(token);
+        setSentAuth(true);
+    }
 
     // store messages
     let messages = new Array<ChatMessage>();
     useEffect(() => {
+        // skip if message undefined
+        if(message === null) {
+            return;
+        }
+        
         let parse = {} as ChatMessage;
         try {
             parse = JSON.parse(String(message)) as ChatMessage;
