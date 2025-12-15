@@ -27,9 +27,12 @@ export const AuthProvider = ({ children }) => {
           return;
         }
         const result = await response.json();
+        console.log(result);
         if (result.username) {
+          console.log("AAA")
           user.username = result.username;
         } else {
+          console.log("AAA")
           user.username = user.uid;
         }
       }

@@ -266,6 +266,71 @@ function TableEditor({
 		setCellPosition(newText, currentCell);
 	};
 
+	// Delete current row
+	const deleteRow = () => {
+		const rows = parseTable(text);
+		// Prevent deletion of the separator row (row 1)
+		if (currentCell.rowIndex === 1) {
+			alert(
+				"Cannot delete the separator row. This row is required for table structure."
+			);
+			return;
+		}
+		// Prevent deletion if only 2 rows remain (header + 1 data row)
+		if (rows.length <= 2) {
+			alert(
+				"Cannot delete the last data row. A table must have at least one data row."
+			);
+			return;
+		}
+		// Confirm deletion
+		if (!window.confirm("Are you sure you want to delete this row?")) {
+			return;
+		}
+		rows.splice(currentCell.rowIndex, 1);
+		const newText = tableToMarkdown(rows);
+		// Move cursor to the previous row if we deleted the last row, otherwise stay at same index
+		const newRowIndex = Math.min(currentCell.rowIndex, rows.length - 1);
+		setText(newText);
+		if (onChange) onChange(newText);
+		setCellPosition(newText, {
+			rowIndex: newRowIndex,
+			colIndex: currentCell.colIndex,
+			offsetInCell: currentCell.offsetInCell
+		});
+	};
+
+	// Delete current column
+	const deleteColumn = () => {
+		const rows = parseTable(text);
+		if (rows.length === 0) return;
+		const numCols = rows[0].length;
+		// Prevent deletion if only 1 column remains
+		if (numCols <= 1) {
+			alert(
+				"Cannot delete the last column. A table must have at least one column."
+			);
+			return;
+		}
+		// Confirm deletion
+		if (!window.confirm("Are you sure you want to delete this column?")) {
+			return;
+		}
+		rows.forEach((row) => {
+			row.splice(currentCell.colIndex, 1);
+		});
+		const newText = tableToMarkdown(rows);
+		// Move cursor to the previous column if we deleted the last column, otherwise stay at same index
+		const newColIndex = Math.min(currentCell.colIndex, numCols - 2);
+		setText(newText);
+		if (onChange) onChange(newText);
+		setCellPosition(newText, {
+			rowIndex: currentCell.rowIndex,
+			colIndex: newColIndex,
+			offsetInCell: currentCell.offsetInCell
+		});
+	};
+
 	return (
 		<div className="tableEditor">
 			<div className="row">
@@ -277,6 +342,9 @@ function TableEditor({
 						<button className="btn btn-info me-2" onClick={insertRowBelow}>
 							Insert Row Below
 						</button>
+						<button className="btn btn-danger me-2" onClick={deleteRow}>
+							Delete Row
+						</button>
 					</div>
 					<div className="toolbar mb-2">
 						<button className="btn btn-info me-2" onClick={insertColumnLeft}>
@@ -284,6 +352,9 @@ function TableEditor({
 						</button>
 						<button className="btn btn-info me-2" onClick={insertColumnRight}>
 							Insert Column Right
+						</button>
+						<button className="btn btn-danger me-2" onClick={deleteColumn}>
+							Delete Column
 						</button>
 					</div>
 					<div className="toolbar mb-2">

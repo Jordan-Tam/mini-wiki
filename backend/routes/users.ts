@@ -41,6 +41,14 @@ router.route("/registerFB").post(async (req: any, res) => {
   } catch (e) {
     return res.status(400).json({ error: e });
   }
+  try{  //Checking if the user exists so we don't make a dupe
+    const u = await user_data_functions.getUserByFirebaseUID(firebaseUID);
+    if(u){
+      return res.json(u);
+    }
+  }catch(e){
+    //do nothing
+  }
   try {
     const newUser = await user_data_functions.createUser(
       (email = email),

@@ -87,7 +87,9 @@ function Profile() {
   //console.log(isUserProfile)
   return (
     <div className="container-fluid">
-      <h2>{user.username}</h2>
+      <h2 className="display-5">
+        {user.username}
+      </h2>
 
       <hr/>
       {isUserProfile && user !== null && (
