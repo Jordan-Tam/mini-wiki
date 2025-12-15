@@ -7,7 +7,7 @@ import { databaseConnection } from "../config/mongoConnection.ts";
 import { users, wikis } from "../config/mongoCollections.ts";
 
 // Hard-coded Firebase UIDs of users already created in Firebase
-const SEED_USER_UIDS = [
+export const SEED_USER_UIDS = [
 	"IQtraRRIrOa65GXAyVEizvuIYol2",
 	"fMW5DoXA6CUEd5kKVJWRiWqt6p23",
 	"e7CHvUC7xoOdY3Uz1pBHOo3qG7l1",
