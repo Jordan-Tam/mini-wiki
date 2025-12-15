@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 interface ChatParams {
     wikiId: string;
@@ -11,137 +11,135 @@ export interface ChatMessage {
     message: string;
 }
 
-const useWs = (url:URL) => {
-    // states
-    const [message, setMessage] = useState<any>(null);
-    const [opening, setOpening] = useState<boolean>(true);
-    const [open, setOpen] = useState<boolean>(false);
-    const [disconnected, setDisconnected] = useState<boolean>(false);
+const useWs = (url: string) => {
+    const [message, setMessage] = useState<string | null>(null);
+    const [opening, setOpening] = useState(true);
+    const [open, setOpen] = useState(false);
+    const [disconnected, setDisconnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const socket = useRef<WebSocket>(null);
-
-    let send = (message:any) => {
-        if(!open || !socket.current || !socket.current.OPEN) {
-            throw `Cannot send message to closed socket`;
+  
+    const socket = useRef<WebSocket | null>(null);
+  
+    const send = (data: string) => {
+        const ws = socket.current;
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            throw new Error("Cannot send message to closed socket");
         }
-
-        try {
-            socket.current.send(message);
-        } catch (e) {
-            console.error(`Couldnt send message:: ${e}`);
-        }
-    }
-
+        ws.send(data);
+    };
+  
     useEffect(() => {
+        setOpening(true);
+        setOpen(false);
+        setDisconnected(false);
+        setError(null);
+    
+        let ws: WebSocket;
         try {
-            socket.current = new WebSocket(url);
+            ws = new WebSocket(url);
         } catch (e) {
             setOpening(false);
-            return setError(String(e));
-        }
-
-        socket.current.onopen = (ev) => {
-            setOpening(false);
-            setOpen(true);
-        }
-
-        socket.current.onclose = (ev) => {
-            setOpening(false);
-            setDisconnected(true);
-        }
-
-        socket.current.onerror = (ev) => {
-            setDisconnected(true);
-            setOpening(false);
-            setError("error");
-        }
-
-        socket.current.onmessage = (msg) => {
-            setMessage(msg.data);
-        }
-    }, [url]);
-
-    return { message, opening, open, disconnected, error, send };
-}
-
-export const Chat:React.FC<ChatParams> = ({
-    wikiId,
-    token
-}: ChatParams) => {
-    // states
-    const [sentAuth, setSentAuth] = useState<boolean>(false);
-
-    let url;
-    let url_str = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/chat/${wikiId}`;
-    try {
-        url = new URL(url_str);
-    } catch (e) {
-        console.error(`Chat:: Invalid URL: ${url_str}`);
-        return (<p className="error">Invalid URL</p>);
-    }
-
-    // connect ws
-    console.log(`chat:: connect to ${url.toString()}`);
-    const { message, opening, open, disconnected, error, send } = useWs(url);
-
-    if(!opening && !error && !sentAuth) {
-        // sent auth
-        send(token);
-        setSentAuth(true);
-    }
-
-    // store messages
-    let messages = new Array<ChatMessage>();
-    useEffect(() => {
-        // skip if message undefined
-        if(message === null) {
+            setError(String(e));
             return;
         }
-        
-        let parse = {} as ChatMessage;
+  
+        socket.current = ws;
+  
+        ws.onopen = () => {
+            setOpening(false);
+            setOpen(true);
+        };
+    
+        ws.onclose = () => {
+            setOpening(false);
+            setOpen(false);
+            setDisconnected(true);
+        };
+    
+        ws.onerror = () => {
+            setOpening(false);
+            setOpen(false);
+            setDisconnected(true);
+            setError("error");
+        };
+  
+      ws.onmessage = (msg) => setMessage(String(msg.data));
+  
+        return () => {
+            ws.close();
+        };
+    }, [url]);
+  
+    return { message, opening, open, disconnected, error, send };
+  };
+  
+
+  const Chat: React.FC<ChatParams> = ({ wikiId, token }) => {
+    const url = useMemo(() => {
+        const scheme = window.location.protocol === "https:" ? "wss:" : "ws:";
+        return `${scheme}//${window.location.host}/chat/${wikiId}`;
+    }, [wikiId]);
+  
+    const { message, opening, open, disconnected, error, send } = useWs(url);
+  
+    const [sentAuth, setSentAuth] = useState(false);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+  
+    useEffect(() => {
+        if (open && !error && !sentAuth) {
+            send(token);
+            setSentAuth(true);
+        }
+    }, [open, error, sentAuth, token, send]);
+  
+    // if wikiId changes, you're effectively connecting to a new room
+    useEffect(() => {
+        setSentAuth(false);
+        setMessages([]);
+    }, [wikiId]);
+  
+    useEffect(() => {
+        if (message == null) return;
+    
+        let parsed: ChatMessage;
         try {
-            parse = JSON.parse(String(message)) as ChatMessage;
-        } catch (e) {
-            return console.error(`Chat:: Malformed message:`, message);
+            parsed = JSON.parse(message);
+        } catch {
+            console.error("Chat:: Malformed message:", message);
+            return;
         }
-
-        if(typeof parse.user !== "string" || typeof parse.message !== "string") {
-            return console.error(`Chat:: Malformed chat message object:`, message);
+    
+        if (typeof parsed.user !== "string" || typeof parsed.message !== "string") {
+            console.error("Chat:: Malformed chat message object:", parsed);
+            return;
         }
-
-        messages.push(message);
+    
+        setMessages((prev) => [...prev, parsed]);
     }, [message]);
-
+  
     return (
         <div className="chat-container">
-            { error
-                ? <p className="error">Error connecting chat {error}</p>
-                : (
-                    disconnected
-                    ? <p>Chat disconnected</p>
-                    : (
-                        opening
-                        ? <p>Connecting...</p>
-                        : (
-                            <>
-                                <div className="chat-messages-box">
-                                    {messages.map((m) => {
-                                        // message card
-                                        return (
-                                            <div className="chat-message">
-                                                <p className="chat-username">{m.user}</p>
-                                                <p className="chat-content">{m.message}</p>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <div className="chat-text-box"></div>
-                            </>
-                        )
-                    )
-                )
-            }
+            {error ? (
+            <p className="error">Error connecting chat {error}</p>
+            ) : disconnected ? (
+            <p>Chat disconnected</p>
+            ) : opening ? (
+            <p>Connecting...</p>
+            ) : (
+            <>
+                <div className="chat-messages-box">
+                {messages.map((m, i) => (
+                    <div className="chat-message" key={i}>
+                    <p className="chat-content">{`<${m.user}>: ${m.message}`}</p>
+                    </div>
+                ))}
+                </div>
+                <div className="chat-text-box"></div>
+            </>
+            )}
         </div>
     );
-}
+  };
+  
+  export default memo(Chat);
+  
