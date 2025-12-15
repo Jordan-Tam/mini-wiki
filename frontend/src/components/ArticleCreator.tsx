@@ -226,12 +226,13 @@ function ArticleCreator() {
 
 	return (
 		<div className="container-fluid article-creator">
-			{(isLoading) ? (
+			{(isLoading && isEditMode) ? (
 				<div className="loading-state">
 					<p>Loading page content...</p>
 				</div>
 			) : (
 				<>
+				{isEditMode &&
 					<div className="mb-3 article-creator-header">
 						<p className="mb-3">
 							<span style={{fontWeight: "bold"}}>Wiki: </span>
@@ -244,7 +245,7 @@ function ArticleCreator() {
 						<div>
 							<Link to={`/${wikiUrlName}/${pageId}`} className="btn btn-warning">Cancel</Link>
 						</div>
-					</div>
+					</div>}
 					<div className="editors-container">
 						{editors.length === 0 ? (
 							<div className="empty-state">

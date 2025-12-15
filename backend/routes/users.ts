@@ -274,4 +274,62 @@ router
 
     })
 
+  router 
+    .route("/:id/bio")
+    /** 
+     * Edit user bio
+     * New Bio provided in body
+     */
+    .post(async (req: any, res) => {
+      const id = req.params.id.trim();
+      const newBio = req.body.bio;
+
+      try {
+        
+        const user = await user_data_functions.getUserByFirebaseUID(id)
+        if (typeof newBio !== "string" || newBio.length > 255){
+          throw 'Invalid bio.'
+        }  
+
+      } catch (e) {
+
+        return res.status(400).json({error: e})
+
+      }
+
+      try {
+
+        await user_data_functions.changeBio(id, newBio);
+
+        const user = await user_data_functions.getUserByFirebaseUID(id)
+        return res.json(user);
+
+      } catch (e) {
+
+        return res.status(500).json({error: e})
+
+      }
+
+  });
+
+// made this a new route instead of just 
+// removing the authentication check
+// i assume it may be needed somewhere else
+router
+  .route("/:id/profile")
+  .get(async (req, res) => {
+    try {
+      const user = await user_data_functions.getUserByFirebaseUID(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ error: "user not found" });
+      }
+  
+      return res.json({ user });
+    } catch (e) {
+      return res.status(500).json({ error: e });
+    }
+  });
+  
+
 export default router;

@@ -9,6 +9,7 @@ import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
 import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx";
 import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
 import AddPrivateViewerModal from "./modals/AddPrivateViewerModal.jsx";
+import DeleteWikiModal from "./modals/DeleteWikiModal.jsx";
 
 let key_val = 0;
 function WikiHome() {
@@ -114,7 +115,8 @@ function WikiHome() {
 	const [deletePrivateViewer, setDeletePrivateViewer] = useState(false);
 	const [private_viewers, setPrivateViewers] = useState(undefined);
 	const [showPVs, setShowPVs] = useState(false);
-
+	const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(false);
+	const [owner, setOwner] = useState(undefined)
 	// Search
 	const [searchTerm, setSearchTerm] = useState("");
 	const [searchResults, setSearchResults] = useState(null);
@@ -156,15 +158,14 @@ function WikiHome() {
 				const data = await response.json();
 
 				if (!response.ok) {
-					throw (await response.json()).error;
+					throw data.error;
 				}
 
 				//throw new Error("Failed to fetch wiki");
+				console.log(data)
 				setCollaborators(data);
 			} catch (e) {
 				setError(e);
-			} finally {
-				setLoading(false);
 			}
 		};
 
@@ -192,15 +193,42 @@ function WikiHome() {
 				setPrivateViewers(data);
 			} catch (e) {
 				setError(e);
-			} finally {
-				setLoading(false);
-			}
+			} 
 		};
 
 		if (wiki && currentUser) {
 			fetchPVs();
 		}
 	}, [wiki, currentUser]);
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			try {
+				const response = await fetch(`/api/users/${wiki.owner}/profile`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+
+				const data = await response.json();
+
+				if (!response.ok) {
+					throw data.error;
+				}
+
+				setOwner(data.user);
+			} catch (e) {
+				setError(e);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		if (wiki && currentUser) {
+			fetchUser();
+		}
+	}, [wiki]);
 
 	const handleCloseModals = () => {
 		setCategory(undefined);
@@ -212,6 +240,7 @@ function WikiHome() {
 		setShowDeleteCollaboratorModal(false);
 		setShowAddPrivateViewerModal(false);
 		setShowDeletePrivateViewerModal(false);
+		setShowDeleteWikiModal(false);
 	};
 
 	const handleSearch = async (e) => {
@@ -261,7 +290,19 @@ function WikiHome() {
 	return (
 		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
+			<p className="text-muted">
+			Created by{" "}
+			<Link
+				to={`/profile/${owner.firebaseUID}`}
+				style={{ textDecoration: "none" }}
+			>
+				{owner.username}
+			</Link>
+			</p>
+
+			<hr/>
 			<p>{wiki?.description}</p>
+			
 
 			{/* Search Bar */}
 			<div className="card mb-4">
@@ -387,17 +428,19 @@ function WikiHome() {
 										</li>
 									)}
 
-									{collaborators?.map((username) => (
+									{collaborators?.map((user) => (
 										<>
 											<li
-												key={username}
+												key={user.username}
 												className="list-group-item d-flex justify-content-between align-items-center"
 											>
-												<p>{username}</p>
+												<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
+													{user.username}
+												</Link>
 												<button
 													className="btn btn-danger btn-sm"
 													onClick={() => {
-														setDeleteCollaborator(username);
+														setDeleteCollaborator(user.username);
 														setShowDeleteCollaboratorModal(true);
 													}}
 												>
@@ -442,17 +485,19 @@ function WikiHome() {
 										</li>
 									)}
 
-									{private_viewers?.map((username) => (
+									{private_viewers?.map((user) => (
 										<>
 											<li
-												key={username}
+												key={user.username}
 												className="list-group-item d-flex justify-content-between align-items-center"
 											>
-												<p>{username}</p>
+												<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
+													{user.username}
+												</Link>
 												<button
 													className="btn btn-danger btn-sm"
 													onClick={() => {
-														setDeletePrivateViewer(username);
+														setDeletePrivateViewer(user.username);
 														setShowDeletePrivateViewerModal(true);
 													}}
 												>
@@ -479,6 +524,13 @@ function WikiHome() {
 				>
 					+ New Page
 				</button>
+				{wiki.owner === currentUser.uid &&
+				<button 
+				className="btn btn-danger me-3"
+				onClick={() => setShowDeleteWikiModal(true)}
+				>
+					Delete Wiki
+				</button>}
 			</div>
 
 			<div className="mb-3">
@@ -595,6 +647,13 @@ function WikiHome() {
 					handleClose={handleCloseModals}
 					username={deletePrivateViewer}
 					setWiki={setWiki}
+					wikiId={wiki._id}
+				/>
+			)}
+			{showDeleteWikiModal && (
+				<DeleteWikiModal
+					isOpen={showDeleteWikiModal}
+					handleClose={handleCloseModals}
 					wikiId={wiki._id}
 				/>
 			)}
