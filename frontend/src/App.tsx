@@ -14,12 +14,14 @@ import Article from "./components/Article.tsx";
 import Browse from "./components/Browse.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
 import CategoryPage from "./components/CategoryPage.jsx";
-import Settings from "./components/Settings.tsx"
+import Settings from "./components/Settings.tsx";
+import "./styles/editors.css";
+import "./styles/article.css";
 
 /**
  * FORBIDDEN WIKI URL NAMES:
  * browse, create, home, profile, user, signin, signup, testing
- * 
+ *
  * FORBIDDEN PAGE NAMES:
  * category, chat, search
  */
@@ -39,20 +41,32 @@ function App() {
 					<Route path="/settings" element={<PrivateRoute />}>
 						<Route path="/settings" element={<Settings />} />
 					</Route>
-					
+
 					<Route path="/profile/:id" element={<Profile />} />
-					
+
 					{/* <Route path="/user" /> */}
 					<Route path="/signin" element={<SignIn />} />
 					<Route path="/signup" element={<SignUp />} />
 					<Route path="/testing" element={<TestingPage />} />
 					<Route path="/:wikiUrlName" element={<WikiHome />} />
-					<Route path="/:wikiUrlName/category/:categoryUrlName" element={<CategoryPage />} />
+					<Route
+						path="/:wikiUrlName/category/:categoryUrlName"
+						element={<CategoryPage />}
+					/>
 					{/* <Route path="/:wikiUrlName/chat" /> */}
 					{/* <Route path="/:wikiUrlName/search" /> */}
-					<Route path="/:wikiUrlName/:pageUrlName" element={<Article fetchFromUrl={true} editHref="/edit" />} />
-					<Route path="/:wikiUrlName/:pageId/create" element={<ArticleCreator />} />
-					<Route path="/:wikiUrlName/:pageId/edit" element={<ArticleCreator />} />
+					<Route
+						path="/:wikiUrlName/:pageUrlName"
+						element={<Article fetchFromUrl={true} editHref="/edit" />}
+					/>
+					<Route
+						path="/:wikiUrlName/:pageId/create"
+						element={<ArticleCreator />}
+					/>
+					<Route
+						path="/:wikiUrlName/:pageId/edit"
+						element={<ArticleCreator />}
+					/>
 				</Routes>
 			</AuthProvider>
 		</>

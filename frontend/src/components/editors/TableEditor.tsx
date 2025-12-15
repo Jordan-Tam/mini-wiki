@@ -271,16 +271,28 @@ function TableEditor({
 			<div className="row">
 				<div className="userSide col-6">
 					<div className="toolbar mb-2">
-						<button className="btn btn-info me-2" onClick={insertRowAbove}>Insert Row Above</button>
-						<button className="btn btn-info me-2" onClick={insertRowBelow}>Insert Row Below</button>
+						<button className="btn btn-info me-2" onClick={insertRowAbove}>
+							Insert Row Above
+						</button>
+						<button className="btn btn-info me-2" onClick={insertRowBelow}>
+							Insert Row Below
+						</button>
 					</div>
 					<div className="toolbar mb-2">
-						<button className="btn btn-info me-2" onClick={insertColumnLeft}>Insert Column Left</button>
-						<button className="btn btn-info me-2" onClick={insertColumnRight}>Insert Column Right</button>
+						<button className="btn btn-info me-2" onClick={insertColumnLeft}>
+							Insert Column Left
+						</button>
+						<button className="btn btn-info me-2" onClick={insertColumnRight}>
+							Insert Column Right
+						</button>
 					</div>
 					<div className="toolbar mb-2">
-						<button className="btn btn-info me-2" onClick={addRowsAtEnd}>Add Rows (Bulk)</button>
-						<button className="btn btn-info me-2" onClick={addColumnsAtEnd}>Add Columns (Bulk)</button>
+						<button className="btn btn-info me-2" onClick={addRowsAtEnd}>
+							Add Rows (Bulk)
+						</button>
+						<button className="btn btn-info me-2" onClick={addColumnsAtEnd}>
+							Add Columns (Bulk)
+						</button>
 					</div>
 					<textarea
 						className="w-100"
@@ -296,7 +308,6 @@ function TableEditor({
 						}}
 						onClick={updateCurrentCellFromCursor}
 						onKeyUp={updateCurrentCellFromCursor}
-						style={{resize: "both"}}
 					></textarea>
 				</div>
 				{showPreview && (

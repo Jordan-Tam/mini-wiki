@@ -42,13 +42,48 @@ function TextEditor({
 			<div className="row">
 				<div className="userSide col-6">
 					<div className="mb-2 toolbar">
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("**")}>Bold</button>
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("*")}>Italic</button>
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("<ins>", "</ins>")}>Underline</button>
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("# ", "")}>H1</button>
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("## ", "")}>H2</button>
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("[", "](url)")}>Link</button>
-						<button className="btn btn-info me-2" onClick={() => insertMarkdown("- ", "")}>List</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("**")}
+						>
+							Bold
+						</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("*")}
+						>
+							Italic
+						</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("<ins>", "</ins>")}
+						>
+							Underline
+						</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("# ", "")}
+						>
+							H1
+						</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("## ", "")}
+						>
+							H2
+						</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("[", "](url)")}
+						>
+							Link
+						</button>
+						<button
+							className="btn btn-info me-2"
+							onClick={() => insertMarkdown("- ", "")}
+						>
+							List
+						</button>
 					</div>
 					{/* 
 					Helpful reference about text area attributes
@@ -58,7 +93,6 @@ function TextEditor({
 						className="w-100"
 						ref={textareaRef}
 						name="userTextArea"
-						style={{resize: "both"}}
 						id={textareaId}
 						value={text}
 						rows="10"
