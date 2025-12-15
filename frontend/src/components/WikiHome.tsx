@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext.jsx";
 import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 import CategoryCard from "./cards/CategoryCard.jsx";
-import { Chat } from "./Chat.tsx";
+import { default as Chat } from "./Chat.tsx";
 
 function WikiHome() {
 	const { wikiUrlName } = useParams();
@@ -14,6 +14,7 @@ function WikiHome() {
 	const [error, setError] = useState(null);
 	const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
 	const [showNewPageModal, setShowNewPageModal] = useState(false);
+	const [chatReady, setChatReady] = useState<boolean>(false);
 
 	useEffect(() => {
 		const fetchWiki = async () => {
@@ -39,6 +40,16 @@ function WikiHome() {
 
 		if (wikiUrlName && currentUser) fetchWiki();
 	}, [wikiUrlName, currentUser]);
+
+	/**
+	 * Chat ready effect
+	 */
+	useEffect(() => {
+		if (!chatReady && wiki && currentUser) {
+			console.log(wiki, currentUser);
+			setChatReady(true);
+		}
+	}, [wiki, currentUser, chatReady]);
 
 	const handleCloseModals = () => {
 		setShowNewCategoryModal(false);
@@ -117,7 +128,7 @@ function WikiHome() {
 			</div> */}
 
 			{/* Chat */}
-			{(wiki && currentUser) && (<Chat
+			{chatReady && (<Chat
 				wikiId={wiki?._id}
 				token={currentUser?.accessToken}
 			/>)}
