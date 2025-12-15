@@ -64,7 +64,7 @@ function Profile() {
         // const favoriteResult = await favoriteResponse.json();
         // setFavorites(favoriteResult);
 
-        const wikiRes = await fetch(`/api/wiki/`, {
+        const wikiRes = await fetch(`/api/users/${id}/wikis`, {
           method: "GET",
           headers: { Authorization: "Bearer " + token },
         });
