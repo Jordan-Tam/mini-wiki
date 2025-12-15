@@ -699,7 +699,48 @@ router
 		} catch (e) {
 			return res.status(404).json({ error: `${e}` });
 		}
-	});
+	})
+	.delete(async (req: any, res) => {
+		console.log("DELETE PAGE")
+
+		let wikiUrlName = req.params.wikiUrlName;
+        let pageUrlName = req.params.pageUrlName;
+        let wiki: any;
+		let page: any;
+
+		// Input validation.
+		try {
+			wikiUrlName = checkUrlName(wikiUrlName);
+			pageUrlName = checkString(pageUrlName, "Page URL");
+		} catch (e) {
+			return res.status(400).json({ error: e });
+		}
+
+		// Check if wiki exists and get page with page name.
+		try {
+			wiki = await wikiDataFunctions.getWikiByUrlName(wikiUrlName);
+			page = await pageDataFunctions.getPageByUrlName(wiki._id, pageUrlName);
+		} catch (e) {
+			return res.status(404).json({ error: e });
+		}
+
+		if(req.user.uid !== wiki.owner && !wiki.collaborators.includes(req.user.uid)){
+			return res.status(403).json({error: "You are not an owner/collaborator of this wiki."})
+		}
+
+		try{
+			await pageDataFunctions.deletePage(wiki._id, page._id);
+		} catch (e) {
+			console.log("ts fucked up")
+			return res.status(500).json({error: e});
+		}
+
+        await redisFunctions.del_json(`${wikiUrlName}`);
+		
+		return res.json({message: "Success"})
+
+	})
+	;
 
 router
 	.route("/:urlName/pages/:pageId/content")
