@@ -117,6 +117,13 @@ const wiki_data_functions = {
 
 	},
 
+	/**
+   	* Get wikis by user (firebase) uid
+   	*/
+	async getWikisByOwner(firebaseUID:string): Promise<Array<any>> {
+		return await (await wikis()).find({owner: firebaseUID}).toArray() as Array<any>;
+	},
+
 	authorized(
 		wiki: Wiki,
 		firebaseUID: string

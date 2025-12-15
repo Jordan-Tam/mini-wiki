@@ -47,45 +47,52 @@ function DeleteUserModal(props) {
           onSubmit={async (e) => {
             e.preventDefault();
             try {
-              if (currentUser.providerData[0].providerId === "password") {
-                await doDeleteUserEmailAndPassword(
-                  currentUser.email,
-                  password.value
-                );
-                const token = currentUser.accessToken;
-                const response = await fetch(
-                  `http://localhost:3000/users/${currentUser.uid}`,
-                  {
-                    method: "DELETE",
-                    headers: {
-                      Authorization: "Bearer " + token,
-                    },
-                  }
-                );
-                if (!response.ok) {
-                  alert((await response.json()).error);
-                  return;
+              /**
+               * Try deleting from backend, code 409 = user needs to delete wikis, redirect to wikis page
+               */
+              const token = currentUser.accessToken;
+              const response = await fetch(
+                `http://localhost:3000/users/${currentUser.uid}`,
+                {
+                  method: "DELETE",
+                  headers: {
+                    Authorization: "Bearer " + token,
+                  },
                 }
+              );
+
+              // check status
+              if (!response.ok || response.status !== 200) {
+                // user needs to get rid of their wikis
+                if(response.status === 409) {
+                  alert((await response.json()).error);
+                  // redirect to wikis
+                  return window.location.href = `/profile/${currentUser.uid}`;
+                }
+
+                alert((await response.json()).error);
+                return;
               } else {
-                await doDeleteUserSocial();
-                const token = currentUser.accessToken;
-                const response = await fetch(
-                  `http://localhost:3000/users/${currentUser.uid}`,
-                  {
-                    method: "DELETE",
-                    headers: {
-                      Authorization: "Bearer " + token,
-                    },
-                  }
-                );
-                if (!response.ok) {
-                  alert((await response.json()).error);
-                  return;
+                /**
+                 * Response ok -- user was deleted from the local database
+                 */
+                /**
+                 * If user exists in firebase, delete in firebase, else do delete from social
+                 */
+                if (currentUser.providerData[0].providerId === "password") {
+                  // do firebase delete
+                  await doDeleteUserEmailAndPassword(
+                    currentUser.email,
+                    password.value
+                  );
+                } else {
+                  // do social delete
+                  await doDeleteUserSocial();
                 }
+                alert("Account Deleted");
+                setShowDeleteModal(false);
+                props.handleClose();
               }
-              alert("Account Deleted");
-              setShowDeleteModal(false);
-              props.handleClose();
             } catch (e) {
               alert(e);
               setShowDeleteModal(false);
