@@ -3,7 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { checkUrlName, checkUsername } from "../../helpers.ts";
 
 const FORBIDDEN_WIKI_URL_NAMES = [
-  "browse",
+  "discover",
   "create",
   "home",
   "profile",

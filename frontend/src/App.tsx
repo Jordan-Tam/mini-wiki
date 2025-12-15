@@ -11,14 +11,14 @@ import TestingPage from "./components/TestingPage.jsx";
 import WikiHome from "./components/WikiHome.tsx";
 import ArticleCreator from "./components/ArticleCreator.tsx";
 import Article from "./components/Article.tsx";
-import Browse from "./components/Browse.jsx";
+import Discover from "./components/Discover.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
 import CategoryPage from "./components/CategoryPage.jsx";
 import Settings from "./components/Settings.tsx"
 
 /**
  * FORBIDDEN WIKI URL NAMES:
- * browse, create, home, profile, user, signin, signup, testing
+ * discover, create, home, profile, user, signin, signup, testing
  * 
  * FORBIDDEN PAGE NAMES:
  * category, chat, search
@@ -31,7 +31,7 @@ function App() {
 				<Header />
 				<Routes>
 					<Route path="/" element={<Landing />} />
-					<Route path="/browse" element={<Browse />} />
+					<Route path="/discover" element={<Discover />} />
 					<Route path="/create" element={<CreateWiki />} />
 					<Route path="/home" element={<PrivateRoute />}>
 						<Route path="/home" element={<Home />} />

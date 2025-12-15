@@ -65,8 +65,8 @@ function Header() {
 										</Link>
 									</li>
 									<li className="nav-item px-2">
-										<Link className="nav-link" to="/browse">
-											Browse
+										<Link className="nav-link" to="/discover">
+											Discover
 										</Link>
 									</li>
 									<li className="nav-item px-2">
