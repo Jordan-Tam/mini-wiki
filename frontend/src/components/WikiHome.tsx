@@ -204,7 +204,7 @@ function WikiHome() {
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
-				const response = await fetch(`/api/users/${wiki.owner}`, {
+				const response = await fetch(`/api/users/${wiki.owner}/profile`, {
 					method: "GET",
 					headers: {
 						Authorization: "Bearer " + currentUser?.accessToken
@@ -217,7 +217,7 @@ function WikiHome() {
 					throw data.error;
 				}
 
-				setOwner(data);
+				setOwner(data.user);
 			} catch (e) {
 				setError(e);
 			} finally {
