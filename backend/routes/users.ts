@@ -2,6 +2,7 @@ import { Router } from "express";
 import { checkEmail, checkId, checkString, checkUsername } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 import wiki_data_functions from "../data/wikis.ts";
+import redisFunctions from "../lib/redis/redis.ts";
 
 export const router = Router();
 
@@ -61,6 +62,8 @@ router
 
 		try {
 
+      //TODO:
+
 			const user = await user_data_functions.getUserByFirebaseUID(req.user.uid);
 		
 			const favoriteIds = [];
@@ -93,6 +96,7 @@ router
    */
   .post(async (req: any, res) => {
 
+    //TODO:
 
 		let { wikiId } = req.body;
 
@@ -124,6 +128,8 @@ router
    * Removes a wiki from the user's favorites array.
    */
   .delete(async (req: any, res) => {
+
+    //TODO:
 
     let { wikiId } = req.body;
 
@@ -160,6 +166,9 @@ router
    * get user by id
    */
   .get(async (req: any, res) => {
+
+    // TODO: REDIS
+    
     let firebaseUID = req.params.id;
     let tokenId = req.user.user_id;
     if (firebaseUID !== tokenId) {

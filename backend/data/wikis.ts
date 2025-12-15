@@ -31,6 +31,8 @@ const wiki_data_functions = {
 
 		const wikisList = await wikisCollection.find({}).toArray();
 
+		console.log(wikisList);
+
 		return wikisList;
 	},
 

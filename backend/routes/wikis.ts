@@ -71,6 +71,7 @@ const redis_policy = {
 		* A private viewer is added.
 		* A private viewer is removed.
 		* The wiki is deleted.
+		* One of the wiki's page's contents are changed.
 	 */
 	wiki_policy: "UPDATE",
 
@@ -80,6 +81,7 @@ const redis_policy = {
 	 * 
 	 * EVENTS THAT CAUSE THE VALUE TO BECOME OUTDATED:
 	 	* The user changes their username.
+		* The user updates their bio.
 		* The user favorites a wiki.
 		* The user unfavorites a wiki.
 	 */
@@ -166,6 +168,7 @@ router
 
 			// TODO: When adding collaborators/viewers, make sure that the user being added has their personal getWikisByUser key-value updated.
 			// TODO: And if that wiki is also public, update the publicWikis entry as done above.
+			
 
 		} catch (e) {
 			return res.status(500).json({ error: e });
@@ -522,6 +525,8 @@ router
 	 */
 	.post(async (req: any, res) => {
 
+		//TODO:
+
 		let wikiId = req.params.id;
 		let { pageName, category } = req.body;
 
@@ -600,6 +605,8 @@ router
 
 	.post(async (req: any, res) => {
 
+		//TODO:
+
 		let username = ""
 		const wikiId = req.params.id.trim();
 		try {
@@ -633,6 +640,8 @@ router
 	})
 
 	.delete(async (req:any, res) => {
+
+		//TODO:
 
 		let username = ""
 		const wikiId = req.params.id.trim();
@@ -840,6 +849,8 @@ router
 	 */ 
 	.post(async (req: any, res) => {
 
+		//TODO:
+
 		let username = ""
 		const wikiId = req.params.id.trim();
 		try {
@@ -875,6 +886,8 @@ router
 	 * (specify collaborator in body)
 	 */
 	.delete(async (req:any, res) => {
+
+		//TODO:
 
 		let username = ""
 		const wikiId = req.params.id.trim();
