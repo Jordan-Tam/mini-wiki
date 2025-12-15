@@ -92,6 +92,8 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
                 
             // send user join
             await chats[id].broadcast(JSON.stringify({user: "[SERVER]", message: `${username} has joined the chat!`}));
+
+            auth_recieved = true;
         }
     }
 
