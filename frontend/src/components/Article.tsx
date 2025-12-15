@@ -115,6 +115,11 @@ const Article: React.FC<ArticleProps> = ({
 		);
 	}, [onEdit, editHref, location.pathname]);
 
+	const handleDelete = async () => {
+
+	}
+
+
 	if (fetchFromUrl && loading) return <p>Loading...</p>;
 	if (fetchFromUrl && error) return <p>Error: {error}</p>;
 
@@ -135,6 +140,10 @@ const Article: React.FC<ArticleProps> = ({
 				</p>
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
 				{editButton}
+				<br/>
+				<button type="button" className="btn btn-danger" onClick={handleDelete} aria-label="Delete this article">
+					Delete
+				</button>
 			</div>
 
 			<div>
