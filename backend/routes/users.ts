@@ -214,6 +214,17 @@ router
         .status(403)
         .json({ error: "Cannot delete a user that isn't you" });
     }
+
+    /**
+     * Get wikis owned by user. If user owns wiki, do not allow deletion of user.
+     */
+    let user_owned_wikis = await wiki_data_functions.getWikisByOwner(firebaseUID);
+    if(user_owned_wikis.length > 0) {
+      // block deletion -- user owns wikis
+      let wiki_names = user_owned_wikis.map((w) => w.name);
+      return res.status(409).json({error: `You still own ${wiki_names.length}. You must transfer ownership of these wikis or delete them before continuing.\n${wiki_names.join('\n')}`});
+    }    
+
     const deleted = await user_data_functions.deleteUser(firebaseUID);
     if (deleted.userDeleted) {
       return res.json(deleted);
