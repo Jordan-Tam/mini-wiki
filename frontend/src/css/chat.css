@@ -28,3 +28,7 @@
     /* flex:5 1 auto; */
     flex-grow:5;
 }
+
+.chat-content {
+    display: inline-block;
+}
