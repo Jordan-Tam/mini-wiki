@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from "react-icons/fa";
 
 
-function Browse(){
+function Discover(){
 
 	const { currentUser } = useContext(AuthContext);
     //console.log(currentUser)
@@ -130,7 +130,12 @@ function Browse(){
     console.log(wikis.length)
     return (
         <div className="container-fluid">
-            <h1>Browse Public Wikis</h1>
+            {!favoritesOnly &&
+                <h1>Discover Wikis</h1>
+            }
+            {favoritesOnly &&
+                <h1>Browse Favorites</h1>
+            }
     
             <input
                 type="text"
@@ -186,19 +191,16 @@ function Browse(){
                                     {favorites.some(favoriteWiki => favoriteWiki._id === wiki._id) ? (
                                         <>
                                             <FaHeart color="red" />
-                                            <p>
-                                                {wiki.favorites}
-                                            </p>
                                         </>
                                     ) : (
                                         <>
                                             <FaRegHeart color="red" />
-                                            <p> 
-                                                {wiki.favorites}
-                                            </p>
                                         </>
                                     )}
                                 </button>
+                                <p> 
+                                    &nbsp;{`${wiki.favorites}`}
+                                </p>
                             </div>
                         </div>
                     ))
@@ -214,4 +216,4 @@ function Browse(){
     
 }
 
-export default Browse;
+export default Discover;

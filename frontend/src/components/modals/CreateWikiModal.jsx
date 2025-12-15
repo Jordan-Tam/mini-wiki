@@ -43,7 +43,7 @@ function CreateWikiModal(props) {
     let navigate = useNavigate();
 
     const FORBIDDEN_WIKI_URL_NAMES = [
-      "browse",
+      "discover",
       "create",
       "home",
       "profile",

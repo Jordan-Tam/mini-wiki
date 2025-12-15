@@ -16,7 +16,6 @@ let key_val = 0;
 function WikiHome() {
 	const { wikiUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
-	const [chatReady, setChatReady] = useState<boolean>(false);
 
 	// Helper function to strip markdown formatting for displaying highlights
 	const stripMarkdown = (text) => {
@@ -148,15 +147,6 @@ function WikiHome() {
 
 		if (wikiUrlName && currentUser) fetchWiki();
 	}, [wikiUrlName, currentUser]);
-
-	/**
-	 * Chat ready effect
-	 */
-	useEffect(() => {
-			if (!chatReady && wiki && currentUser) {
-				setChatReady(true);
-			}
-	}, [wiki, currentUser, chatReady]);
 
 	useEffect(() => {
 		const fetchCollaborators = async () => {
@@ -537,6 +527,12 @@ function WikiHome() {
 				>
 					+ New Page
 				</button>
+				<button
+					className="btn btn-secondary me-3"
+					onClick={() => {window.location.href += "/chat"}}
+				>
+					💬 Chat
+				</button>
 				{wiki.owner === currentUser.uid &&
 				<button 
 				className="btn btn-danger me-3"
@@ -586,12 +582,6 @@ function WikiHome() {
 					</div>
 				))}
 			</div>
-
-			{/* Chat */}
-			{chatReady && (<Chat
-				wikiId={wiki?._id}
-				token={currentUser?.accessToken}
-			/>)}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
