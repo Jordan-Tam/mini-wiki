@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext.jsx";
 import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
 import CreatePageModal from "./modals/CreatePageModal.jsx";
 import CategoryCard from "./cards/CategoryCard.jsx";
+import { Chat } from "./Chat.tsx";
 
 function WikiHome() {
 	const { wikiUrlName } = useParams();
@@ -114,6 +115,12 @@ function WikiHome() {
 					<p>No pages yet. Create one to get started!</p>
 				)}
 			</div> */}
+
+			{/* Chat */}
+			{(wiki && currentUser) && (<Chat
+				wikiId={wiki?._id}
+				token={currentUser?.accessToken}
+			/>)}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
