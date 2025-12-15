@@ -97,8 +97,9 @@ router
 	 */
 	.get(async (req: any, res: any) => {
 
+		// REDIS: Check if the object already exists in cache.
 		if (await redisFunctions.exists_in_cache(`${req.user.uid}/getWikisByUser`)) {
-			return res.json(await redisFunctions.get_json(`${req.user.uid}/getWikisByUser`)); // REDIS
+			return res.json(await redisFunctions.get_json(`${req.user.uid}/getWikisByUser`));
 		}
 
 		let wikis;
@@ -108,7 +109,8 @@ router
 			return res.status(500).json({error: e});
 		}
 
-		await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, wikis); // REDIS
+		// REDIS: Add the object to the cache.
+		await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, wikis);
 
 		return res.json(wikis);
 
@@ -158,12 +160,33 @@ router
 				(req as any).user.uid
 			);
 
-			await redisFunctions.set_json(`${(req as any).user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser((req as any).user.uid)); // REDIS (THIS VERSION IMMEDIATELY UPDATES ENTRY IN CACHE SO IT IS UP TO DATE THE NEXT TIME THE USER VISITS THE HOME PAGE)
-			//await redisFunctions.del_json(`${(req as any).user.uid}/getWikisByUser`); // REDIS (THIS VERSION DELETES THE ENTRY FROM THE CACHE SO THE USER HAS TO VISIT THE HOME PAGE FIRST BEFORE IT IS READDED)
+			// REDIS: The getWikisByUser entry is now outdated because there is a new wiki in the OWNER list, so update/delete it from the cache.
+			if (redis_policy.wiki_policy === "UPDATE") {
 
-			if (wiki.access === "public-edit" || wiki.access === "public-view") {
-				await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis()); // REDIS
+				await redisFunctions.set_json(
+					`${(req as any).user.uid}/getWikisByUser`,
+					await wikiDataFunctions.getWikisByUser((req as any).user.uid)
+				);
+
+			} else {
+				
+				await redisFunctions.del_json(`${(req as any).user.uid}/getWikisByUser`);
+
 			}
+
+			// REDIS: If the wiki is public, update/delete the public wikis entry from the cache.
+			if (wiki.access === "public-edit" || wiki.access === "public-view") {
+				
+				if (redis_policy.publicWikis_policy === "UPDATE") {
+					await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
+				} else {
+					await redisFunctions.del_json("publicWikis");
+				}
+
+			}
+
+			// REDIS: Add the newly created wiki to the cache.
+			//TODO:
 
 			return res.json(wiki);
 
@@ -186,12 +209,14 @@ router
 
 		try {
 
+			// REDIS: Check if the public wikis array already exists in cache.
 			if (await redisFunctions.exists_in_cache("publicWikis")) {
-				return res.json(await redisFunctions.get_json("publicWikis")); // REDIS
+				return res.json(await redisFunctions.get_json("publicWikis"));
 			}
 
 			const public_wikis = await wikiDataFunctions.getAllPublicWikis();
 
+			// REDIS: Add the 
 			// await redisFunctions.set("publicWikis", public_wikis); // REDIS (This line is breaking the browse page)
 
 			return res.json(public_wikis);
@@ -507,7 +532,7 @@ router
 
 			let updatedWiki = await (wikiDataFunctions.deleteCategory(wikiId, categoryName));
 
-			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+			//await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
 
 			return res.json(updatedWiki);
 
