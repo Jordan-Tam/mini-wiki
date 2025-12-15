@@ -5,6 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
 import TakenCheck from "./TakenCheck";
 
+
 function Settings() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -67,7 +68,7 @@ function Settings() {
 
   return (
     <div className="container-fluid">
-      <h2>{currentUser.username}'s Account Page</h2>      
+      <h2>Your Settings</h2>      
 
       <div className="form-floating mb-3" style={{ width: "500px" }}>
         <input
@@ -77,7 +78,7 @@ function Settings() {
           placeholder="username"
           onChange={(event) => handleUsernameChange(event.target.value)}
         />
-        <label htmlFor="usernameInput">Change Username</label>
+        <label htmlFor="usernameInput">Change username: {currentUser.username}</label>
       </div>
       {currentUser && (
         <TakenCheck
