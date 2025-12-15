@@ -16,7 +16,12 @@ export default defineConfig({
 				target: process.env.VITE_API_BASE || "http://localhost:3000",
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, "")
-			}
+			},
+			"/chat": {
+				target: process.env.VITE_API_BASE || "http://localhost:3000",
+				ws: true,
+				changeOrigin: true,
+			},
 		}
 	}
 });
