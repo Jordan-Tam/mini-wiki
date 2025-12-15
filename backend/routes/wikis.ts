@@ -701,11 +701,12 @@ router
 		}
 	})
 	.delete(async (req: any, res) => {
+		console.log("DELETE PAGE")
 
 		let wikiUrlName = req.params.wikiUrlName;
         let pageUrlName = req.params.pageUrlName;
         let wiki: any;
-		let pageId: any;
+		let page: any;
 
 		// Input validation.
 		try {
@@ -718,7 +719,7 @@ router
 		// Check if wiki exists and get page with page name.
 		try {
 			wiki = await wikiDataFunctions.getWikiByUrlName(wikiUrlName);
-			pageId = await pageDataFunctions.getPageByUrlName(wiki._id, pageUrlName);
+			page = await pageDataFunctions.getPageByUrlName(wiki._id, pageUrlName);
 		} catch (e) {
 			return res.status(404).json({ error: e });
 		}
@@ -728,8 +729,9 @@ router
 		}
 
 		try{
-			await pageDataFunctions.deletePage(wiki._id, pageId);
+			await pageDataFunctions.deletePage(wiki._id, page._id);
 		} catch (e) {
+			console.log("ts fucked up")
 			return res.status(500).json({error: e});
 		}
 

@@ -78,6 +78,7 @@ function DeleteWikiModal(props) {
               alert(e);
               setShowDeleteWikiModal(false);
               props.handleClose();
+              return;
             }
           }}
         >

@@ -2,7 +2,6 @@ import ReactModal from "react-modal";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import DeletePageModal from "./modals/DeletePageModal.jsx";
 
 ReactModal.setAppElement("#root");
 const customStyles = {
@@ -58,8 +57,8 @@ function DeletePageModal(props) {
           id="deletePageForm"
           onSubmit={async (e) => {
             e.preventDefault();
-            wikiUrlName = props.wikiUrlName;
-            pageUrlName = props.pageUrlName;
+            let wikiUrlName = props.wikiUrlName;
+            let pageUrlName = props.pageUrlName;
             try {
               console.log("delete page");
               if (!wikiUrlName || !pageUrlName) {
@@ -77,13 +76,16 @@ function DeletePageModal(props) {
                   }
                 );
                 if (!response.ok) {
-                  setError((await response.json()).error);
+                  let er = await response.json()
+                  console.log(er.error);
+                  setError(er.error);
                   return;
                 }
               } catch (e) {
                 alert(e);
                 setShowDeletePageModal(false);
                 props.handleClose();
+                return;
               }
               setError("");
               alert("Page Deleted");
