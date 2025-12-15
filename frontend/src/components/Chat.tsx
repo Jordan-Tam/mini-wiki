@@ -84,6 +84,7 @@ const useWs = (url: string) => {
   
     const [sentAuth, setSentAuth] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const textarea = useRef<HTMLTextAreaElement | null>(null);
   
     useEffect(() => {
         if (open && !error && !sentAuth) {
@@ -117,6 +118,21 @@ const useWs = (url: string) => {
         setMessages((prev) => [...prev, parsed]);
     }, [message]);
   
+    // send message handler
+    const _send_message = () => {
+        if(open) {
+            let message = textarea.current?.value;
+            if(!message || message.length < 1) {
+                // dont sent empty message
+                return;
+            }
+
+            console.log(`send:: ${message}`);
+            send(message);
+            textarea.current && (textarea.current.value = "");
+        }
+    }
+
     return (
         <div className="chat-container">
             {error ? (
@@ -134,7 +150,9 @@ const useWs = (url: string) => {
                     </div>
                 ))}
                 </div>
-                <div className="chat-text-box"></div>
+
+                <textarea ref={textarea} className="chat-text-box"/>
+                <button className="chat-send-button" onClick={_send_message}>Send</button>
             </>
             )}
         </div>
