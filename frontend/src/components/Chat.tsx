@@ -1,6 +1,8 @@
 import type React from "react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
+import "../styles/chat.css";
+
 interface ChatParams {
     wikiId: string;
     token:string;
@@ -9,6 +11,7 @@ interface ChatParams {
 export interface ChatMessage {
     user: string;
     message: string;
+    msgid: string;
 }
 
 const useWs = (url: string) => {
@@ -84,7 +87,9 @@ const useWs = (url: string) => {
   
     const [sentAuth, setSentAuth] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [msgIds, setmsgIds] = useState<Array<String>>([]);
     const textarea = useRef<HTMLTextAreaElement | null>(null);
+    const sendbutton = useRef<HTMLButtonElement | null>(null);
   
     useEffect(() => {
         if (open && !error && !sentAuth) {
@@ -117,7 +122,19 @@ const useWs = (url: string) => {
     
         setMessages((prev) => [...prev, parsed]);
     }, [message]);
-  
+
+    useEffect(() => {
+        if(textarea.current) {
+            textarea.current.addEventListener("keydown", (ev) => {
+                if(ev.code === "Enter" && !ev.shiftKey) {
+                    // send
+                    sendbutton.current && sendbutton.current.click();
+                    ev.preventDefault();
+                }
+            })
+        }
+    }, [textarea.current])
+
     // send message handler
     const _send_message = () => {
         if(open) {
@@ -127,8 +144,13 @@ const useWs = (url: string) => {
                 return;
             }
 
-            console.log(`send:: ${message}`);
-            send(message);
+            let msgid = crypto.randomUUID().split('-')[0];
+            setmsgIds([...msgIds, msgid]);
+            send(JSON.stringify({
+                msgid: msgid,
+                message: message
+            }));
+
             textarea.current && (textarea.current.value = "");
         }
     }
@@ -142,22 +164,34 @@ const useWs = (url: string) => {
             ) : opening ? (
             <p>Connecting...</p>
             ) : (
-            <>
-                <div className="chat-messages-box">
-                {messages.map((m, i) => (
-                    <div className="chat-message" key={i}>
-                    <p className="chat-content">{`<${m.user}>: ${m.message}`}</p>
+                <>
+                    <div className="chat-messages-box">
+                    {messages.map((m, i) => (
+                        <div className={`chat-content ${msgIds.includes(m.msgid) ? "chat-content-right" : ""}`} key={i}>
+                            <p className="timestamp">{getTime()}</p>
+                            <p className={`chat-message ${msgIds.includes(m.msgid) ? "chat-message-right" : ""}`}>{`<${m.user}>: ${m.message}`}</p>
+                        </div>
+                    ))}
                     </div>
-                ))}
-                </div>
 
-                <textarea ref={textarea} className="chat-text-box"/>
-                <button className="chat-send-button" onClick={_send_message}>Send</button>
-            </>
+                    <div className="chat-input-container">
+                        <textarea ref={textarea} className="chat-text-box" placeholder="Write your message here..."/>
+                        <button ref={sendbutton} className="chat-send-button" onClick={_send_message}>Send</button>
+                    </div>
+                </>
             )}
         </div>
     );
-  };
+};
+
+function getTime(): string {
+    const now = new Date();
+    return now.toLocaleString('en-US', { 
+        hour: 'numeric', // Use 'numeric' for 1 or 2 digits, '2-digit' for leading zero (e.g., 01, 02)
+        minute: '2-digit', // '2-digit' ensures leading zeros for minutes < 10
+        hour12: true // Ensures 12-hour format
+    });
+}
   
-  export default memo(Chat);
+export default memo(Chat);
   

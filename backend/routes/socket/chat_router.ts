@@ -52,9 +52,22 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
     const _onmessage = async(message:MessageEvent) => {
         // if auth not recieved, test against firebase and get user info. else send
         if(auth_recieved) {
+            let parsed;
+            try {
+                parsed = JSON.parse(message.data.toString()) as {msgid?: string; message?:string};
+                if(!parsed.message || !parsed.msgid) {
+                    socket.send(`Malformed message (missing fields).`);
+                    return;
+                }
+            } catch (e) {
+                socket.send(`Malformed message. Expected JSON.`);
+                return;
+            }
+
             username && await chats[id].broadcast(JSON.stringify({
                 user: username,
-                message: String(message.data)
+                message: String(parsed.message),
+                msgid: parsed.msgid
             }));
         } else {
             /**
@@ -85,7 +98,7 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
             }
 
             user_id = user._id as string;
-            username = user.email as string;
+            username = user.username as string;
 
             // add user to broadcaster
             await chats[id].add(user_id, socket, true);

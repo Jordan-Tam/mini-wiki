@@ -7,6 +7,7 @@ const LETTERS_AND_NUMBERS = UPPERCASE_LETTERS + LOWERCASE_LETTERS + NUMBERS;
 const URL_NAME_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 const CATEGORY_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_- ";
 
+
 const checkString = (
 	str: string,
 	varName: string,
@@ -58,6 +59,7 @@ const checkWikiOrPageName = (name: string, funcName?: string): string => {
 	if (name.length < 1 || name.length > 40) {
 		throw "Wiki/Page name must be between 1-40 characters long.";
 	}
+	
 
 	return name;
 };
@@ -94,6 +96,25 @@ const checkUrlName = (urlName: string, funcName?: string): string => {
 	for (let char of urlName) {
 		if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1) {
 			throw "Wiki URL Name must contain only letters, numbers, hyphens, and underscores.";
+		}
+	}
+
+	return urlName;
+};
+
+const checkUrlName2 = (urlName: string, funcName?: string): string => {
+	// Basic string validation.
+	urlName = checkString(urlName, "Page URL", funcName);
+
+	// Length restrictions.
+	if (urlName.length < 1 || urlName.length > 40) {
+		throw "Page URL must be between 1-40 characters long.";
+	}
+
+	// Character restrictions.
+	for (let char of urlName) {
+		if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1 && " ".indexOf(char) === -1) {
+			throw "Page URL Name must contain only letters, numbers, hyphens, underscores, and spaces.";
 		}
 	}
 
@@ -263,5 +284,6 @@ export {
 	checkWikiOrPageName,
 	checkDescription,
 	checkCategory,
-	checkContentArray
+	checkContentArray,
+	checkUrlName2
 };
