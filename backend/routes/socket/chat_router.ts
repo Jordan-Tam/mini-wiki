@@ -52,7 +52,10 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
     const _onmessage = async(message:MessageEvent) => {
         // if auth not recieved, test against firebase and get user info. else send
         if(auth_recieved) {
-            username && await chats[id].broadcast(`<${username}>: ${String(message.data)}`);
+            username && await chats[id].broadcast(JSON.stringify({
+                user: username,
+                message: String(message.data)
+            }));
         } else {
             /**
              * Check user is logged in / exists
@@ -88,7 +91,7 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
             await chats[id].add(user_id, socket, true);
                 
             // send user join
-            await chats[id].broadcast(`<${username}> has joined the chat!`);
+            await chats[id].broadcast(JSON.stringify({user: "[SERVER]", message: `${username} has joined the chat!`}));
         }
     }
 
