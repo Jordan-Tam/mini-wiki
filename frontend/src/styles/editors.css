@@ -1,0 +1,73 @@
+/* Editor Container Styling */
+.textEditor,
+.tableEditor,
+.imageEditor {
+	width: 100%;
+}
+
+/* Textarea Styling - Consistent height with scrollbars */
+.textEditor textarea,
+.tableEditor textarea {
+	min-height: 400px;
+	max-height: 400px;
+	width: 100%;
+	overflow-y: auto;
+	overflow-x: auto;
+	resize: none;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+/* Preview area styling */
+.previewArea {
+	min-height: 400px;
+	max-height: 400px;
+	overflow-y: auto;
+	overflow-x: auto;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background-color: #f5f5f5;
+}
+
+/* Consistent row height for text/table editors */
+.textEditor .row,
+.tableEditor .row {
+	min-height: 450px;
+}
+
+/* Image Editor preview styling */
+.imageEditor .markdown-output {
+	display: flex;
+	flex-direction: column;
+}
+
+.imageEditor .previewArea {
+	flex-grow: 1;
+	min-height: 200px;
+}
+
+/* Image Editor input styling */
+.imageEditor input {
+	width: 100%;
+	padding: 8px;
+	margin-bottom: 12px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.imageEditor input.error {
+	border-color: red;
+	background-color: #ffe6e6;
+}
+
+.image-form {
+	display: flex;
+	flex-direction: column;
+}
+
+.form-group {
+	margin-bottom: 15px;
+}
