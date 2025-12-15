@@ -14,7 +14,7 @@ import Article from "./components/Article.tsx";
 import Browse from "./components/Browse.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
 import CategoryPage from "./components/CategoryPage.jsx";
-import Settings from "./components/Settings.tsx"
+import Settings from "./components/Settings.tsx";
 import { ChatPage } from "./components/ChatPage.tsx";
 
 /**
