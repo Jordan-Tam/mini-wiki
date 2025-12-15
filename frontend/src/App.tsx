@@ -15,6 +15,7 @@ import Browse from "./components/Browse.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
 import CategoryPage from "./components/CategoryPage.jsx";
 import Settings from "./components/Settings.tsx";
+import { ChatPage } from "./components/ChatPage.tsx";
 
 /**
  * FORBIDDEN WIKI URL NAMES:
@@ -82,6 +83,7 @@ function App() {
               element={<ArticleCreator />}
             />
           </Route>
+		  <Route path="/:wikiUrlName/chat" element={<ChatPage />}/>
         </Routes>
       </AuthProvider>
     </>
