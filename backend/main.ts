@@ -85,7 +85,7 @@ async function Main(): Promise<any> {
    * Setup socket server
    */
   const socket_routes: Routes = {
-    "/wiki/:id/chat/:usr": ChatSocket,
+    "/chat/:id": ChatSocket,
   };
   await SocketServer(server, socket_routes);
 }
