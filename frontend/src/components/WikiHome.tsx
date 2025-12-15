@@ -133,12 +133,14 @@ function WikiHome() {
 					}
 				});
 				if (!response.ok) {
-					throw (await response.json()).error;
+					const d = await response.json();
+					throw d.error;
 				}
 				const data = await response.json();
 				setWiki(data);
 			} catch (e) {
 				setError(`${e}`);
+				setLoading(false);
 			}
 		};
 

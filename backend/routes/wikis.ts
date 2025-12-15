@@ -296,7 +296,7 @@ router
 			return res.json(wiki);
 
 		} catch (e) {
-			return res.status(400).json({ error: e });
+			return res.status(404).json({ error: e });
 		}
 	})
 
