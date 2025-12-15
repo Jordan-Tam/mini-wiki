@@ -2,34 +2,39 @@ import { MessageEvent } from "ws";
 import user_data_functions from "../../data/users";
 import { Broadcaster } from "../../lib/ws/broadcast";
 import { SocketRouter } from "../../lib/ws/socket_server";
+import { admin } from "../../lib/firebase/firebase";
 
 const chats:{[key:string]: Broadcaster} = {};
 
+interface FirebaseDecodedUser {
+    iss: string,
+    aud: string,
+    auth_time: number,
+    user_id: string,
+    sub: string,
+    iat: number,
+    exp: number,
+    email: string,
+    email_verified: boolean,
+    firebase: { identities: { email: Array<string> }, sign_in_provider: string },
+    uid: string;
+}
+
 export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void> => {
     let id = params[":id"];
+    let auth_recieved = false;
 
-    /**
-     * Check user is logged in / exists
-     */
-    let fb_user_id = (req as any).user?.uid;
-    if(!fb_user_id) {
-        return socket.close(1008, `You must be logged in to connect to chat.`);
-    }
-    
-    let user = await user_data_functions.getUserByFirebaseUID(fb_user_id);
-    if(!user) {
-        return socket.close(1008, `User not found.`);
-    }
+    console.log(`got connection to wiki: ${id}`);
 
-    let user_id = user._id;
-    let username = user.username;
+    let user_id:string | null = null;
+    let username: string | null = null;
 
     /**
      * Create socket handlers
      */
     const _onclose = async() => {
         try {
-            await chats[id].remove(user_id);
+            user_id && await chats[id].remove(user_id);
         } catch (e) {
             // user removed elsewhere?
         }
@@ -45,7 +50,46 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
     // right now it's just direct forwarding
     // will need to add XSS and other protections
     const _onmessage = async(message:MessageEvent) => {
-        await chats[id].broadcast(`<${username}>: ${String(message.data)}`);
+        // if auth not recieved, test against firebase and get user info. else send
+        if(auth_recieved) {
+            username && await chats[id].broadcast(`<${username}>: ${String(message.data)}`);
+        } else {
+            /**
+             * Check user is logged in / exists
+             */
+            let token = message.data.toString();
+            let decoded;
+            try {
+                decoded = await admin.auth().verifyIdToken(token) as FirebaseDecodedUser;
+            } catch (e) {
+                // invalid token or auth failed
+                socket.send(`Authorization failed: ${e}`);
+                socket.close(1008);
+                return;
+            }
+
+            if(!decoded.uid) {
+                console.log(`disconnect:: no user id`)
+                socket.send(`You must be logged in to connect to chat.`);
+                return socket.close(1008);
+            }
+            
+            let user = await user_data_functions.getUserByFirebaseUID(decoded.uid);
+            if(!user) {
+                console.log(`disconnect:: user not found`);
+                socket.send(`User not found.`);
+                return socket.close(1008);
+            }
+
+            user_id = user._id as string;
+            username = user.username as string;
+
+            // add user to broadcaster
+            await chats[id].add(user_id, socket, true);
+                
+            // send user join
+            await chats[id].broadcast(`<${username}> has joined the chat!`);
+        }
     }
 
     const _dropEventListeners = async() => {
@@ -68,10 +112,4 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
     if(typeof chats[id] === "undefined") {
         chats[id] = new Broadcaster();
     }
-
-    // add user to broadcaster
-    await chats[id].add(user_id, socket, true);
-
-    // send user join
-    await chats[id].broadcast(`<${username}> has joined the chat!`);
 }
