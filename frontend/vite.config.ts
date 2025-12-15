@@ -10,7 +10,12 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
-      }
+      },
+      "/chat": {
+        target: 'ws://localhost:3000', // Your backend WS server address
+        ws: true, // Enable WebSocket proxying
+        changeOrigin: true, // Needed for many backend servers
+      },
     }
   }
 })
