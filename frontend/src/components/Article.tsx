@@ -9,7 +9,7 @@ import DeletePageModal from "./modals/DeletePageModal.jsx";
 
 
 type ArticleProps = {
-	markdown?: string[];
+	markdown?: Array<{ editorType: string; contentString: string }>;
 	title?: string;
 	onEdit?: () => void;
 	editHref?: string; // path to append to current URL (e.g., "/edit")
@@ -157,14 +157,14 @@ const Article: React.FC<ArticleProps> = ({
 						<em>No content</em>
 					</p>
 				) : (
-					displayMarkdown.map((content, index) => (
+					displayMarkdown.map((item, index) => (
 						<ReactMarkdown
 							key={index}
 							remarkPlugins={REMARK_PLUGINS}
 							rehypePlugins={REHYPE_PLUGINS}
 							components={MARKDOWN_COMPONENTS}
 						>
-							{content}
+							{item.contentString}
 						</ReactMarkdown>
 					))
 				)}

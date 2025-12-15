@@ -3,8 +3,9 @@ import { esClient, WIKI_INDEX } from "./search";
 export async function indexPage(wikiId: string, page: any) {
 	// Join the page content together into single string for elastic search
 	const contentJoined = Array.isArray(page.content)
-		? page.content.join("\n\n")
-		: page.content || "";
+		? page.content.map((item: any) => item.contentString || "").join("\n\n")
+		: "";
+
 	// Make the doc
 	const doc = {
 		wikiId,
