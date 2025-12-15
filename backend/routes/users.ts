@@ -2,6 +2,7 @@ import { Router } from "express";
 import { checkEmail, checkId, checkString, checkUsername } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 import wiki_data_functions from "../data/wikis.ts";
+import { SEED_USER_UIDS } from "../scripts/seed.ts";
 
 export const router = Router();
 
@@ -222,6 +223,25 @@ router
         .status(403)
         .json({ error: "Cannot delete a user that isn't you" });
     }
+
+    /**
+     * MAKE SURE SEEDED USERS CANNOT BE DELETED
+     */
+    if(SEED_USER_UIDS.includes(firebaseUID)) {
+      return res.status(400).json({error: "Please do not delete users from the seed file!"});
+    }
+
+    /**
+     * Get wikis owned by user. If user owns wiki, do not allow deletion of user.
+     */
+    let user_owned_wikis = await wiki_data_functions.getWikisByOwner(firebaseUID);
+    if(user_owned_wikis.length > 0) {
+      // block deletion -- user owns wikis
+      let wiki_names = user_owned_wikis.map((w) => w.name);
+      return res.status(409).json({error: `You still own ${wiki_names.length} wikis. You must transfer ownership of these wikis or delete them before continuing.\n${wiki_names.join('\n')}`});
+    }    
+
+    console.log(`DELETED USER::`);         
     const deleted = await user_data_functions.deleteUser(firebaseUID);
     if (deleted.userDeleted) {
       return res.json(deleted);

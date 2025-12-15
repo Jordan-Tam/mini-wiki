@@ -324,7 +324,6 @@ const user_data_functions = {
 
     return updateInfo;
   }
-
 };
 
 export default user_data_functions;
