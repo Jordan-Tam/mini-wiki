@@ -5,6 +5,8 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
+import DeletePageModal from "./modals/DeletePageModal.jsx";
+
 
 type ArticleProps = {
 	markdown?: string[];
@@ -53,6 +55,7 @@ const Article: React.FC<ArticleProps> = ({
 	const { currentUser } = useContext(AuthContext);
 
 	const [wiki, setWiki] = useState(null);
+	const [showDeletePageModal, setShowDeletePageModal] = useState(false);
 	const [fetchedPage, setFetchedPage] = useState(null);
 	const [loading, setLoading] = useState(fetchFromUrl);
 	const [error, setError] = useState(null);
@@ -95,6 +98,11 @@ const Article: React.FC<ArticleProps> = ({
 		if (wikiUrlName && pageUrlName && currentUser) fetchPage();
 	}, [wikiUrlName, pageUrlName, currentUser, fetchFromUrl]);
 
+	const handleCloseModals = () => {
+		setShowDeletePageModal(false);
+  };
+
+
 	// Memoize the edit button to prevent re-rendering if dependencies don't change
 	const editButton = useMemo(() => {
 		if (!onEdit && !editHref) return null;
@@ -114,6 +122,8 @@ const Article: React.FC<ArticleProps> = ({
 			</button>
 		);
 	}, [onEdit, editHref, location.pathname]);
+
+
 
 	if (fetchFromUrl && loading) return <p>Loading...</p>;
 	if (fetchFromUrl && error) return <p>Error: {error}</p>;
@@ -135,6 +145,10 @@ const Article: React.FC<ArticleProps> = ({
 				</p>
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
 				{editButton}
+				<br/>
+				<button type="button" className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
+					Delete
+				</button>
 			</div>
 
 			<div>
@@ -155,6 +169,14 @@ const Article: React.FC<ArticleProps> = ({
 					))
 				)}
 			</div>
+			{showDeletePageModal && (
+				<DeletePageModal
+					isOpen={showDeletePageModal}
+					handleClose={handleCloseModals}
+					wikiUrlName={wikiUrlName}
+					pageUrlName={pageUrlName}
+				/>
+			)}
 		</article>
 	);
 };

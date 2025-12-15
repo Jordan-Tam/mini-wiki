@@ -18,8 +18,8 @@ const customStyles = {
   },
 };
 
-function DeleteWikiModal(props) {
-  const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(props.isOpen);
+function DeletePageModal(props) {
+  const [showDeletePageModal, setShowDeletePageModal] = useState(props.isOpen);
   const [error, setError] = useState("");
   const { currentUser } = useContext(AuthContext);
 
@@ -28,9 +28,9 @@ function DeleteWikiModal(props) {
   return (
     <div>
       <ReactModal
-        name="deleteWikiModal"
-        isOpen={showDeleteWikiModal}
-        contentLabel="Delete Wiki"
+        name="deletePageModal"
+        isOpen={showDeletePageModal}
+        contentLabel="Delete Page"
         style={customStyles}
       >
         <div
@@ -41,7 +41,7 @@ function DeleteWikiModal(props) {
             className="col"
             style={{ display: "flex", justifyContent: "space-between" }}
           >
-            <h5 style={{ display: "inline" }}>Delete Wiki</h5>
+            <h5 style={{ display: "inline" }}>Delete Page</h5>
             <button
               className="btn btn-secondary"
               onClick={props.handleClose}
@@ -51,34 +51,51 @@ function DeleteWikiModal(props) {
             </button>
           </div>
         </div>
-        <p>Are you sure you want to delete this wiki?</p>
+        <p>Are you sure you want to delete this page?</p>
         <form
           className="form"
-          id="deleteWikiForm"
+          id="deletePageForm"
           onSubmit={async (e) => {
             e.preventDefault();
+            let wikiUrlName = props.wikiUrlName;
+            let pageUrlName = props.pageUrlName;
             try {
-              const token = currentUser.accessToken;
-              const response = await fetch(`/api/wiki/${props.wikiId}`, {
-                method: "DELETE",
-                headers: {
-                  Authorization: "Bearer " + token,
-                },
-              });
-              if (!response.ok) {
-                setError((await response.json()).error);
+              console.log("delete page");
+              if (!wikiUrlName || !pageUrlName) {
+                alert("Error deleting page");
+                return;
+              }
+              try {
+                const response = await fetch(
+                  `/api/wiki/${wikiUrlName}/pages/${pageUrlName}`,
+                  {
+                    method: "DELETE",
+                    headers: {
+                      Authorization: "Bearer " + currentUser?.accessToken,
+                    },
+                  }
+                );
+                if (!response.ok) {
+                  let er = await response.json()
+                  console.log(er.error);
+                  setError(er.error);
+                  return;
+                }
+              } catch (e) {
+                alert(e);
+                setShowDeletePageModal(false);
+                props.handleClose();
                 return;
               }
               setError("");
-              alert("Wiki Deleted");
-              setShowDeleteWikiModal(false);
+              alert("Page Deleted");
+              setShowDeletePageModal(false);
               props.handleClose();
-              navigate("/home");
+              navigate(`/${wikiUrlName}`);
             } catch (e) {
               alert(e);
-              setShowDeleteWikiModal(false);
+              setShowDeletePageModal(false);
               props.handleClose();
-              return;
             }
           }}
         >
@@ -96,4 +113,4 @@ function DeleteWikiModal(props) {
   );
 }
 
-export default DeleteWikiModal;
+export default DeletePageModal;

@@ -39,6 +39,7 @@ const page_data_functions = {
 		for (let page of wiki.pages) {
 			console.log(`${page.urlName} === ${urlName}`);
 			if (page.urlName === urlName) {
+				page._id = page._id.toString();
 				return page;
 			}
 		}
@@ -128,20 +129,25 @@ const page_data_functions = {
 		wikiId: string,
 		pageId: string
 	) {
+
 		
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki");
 		pageId = checkId(pageId, "Page");
 
+
 		// Check if wiki exists.
 		const wiki = await wikiDataFunctions.getWikiById(wikiId);
+		console.log(wiki._id)
 
 		const wikisCollection = await wikis();
-		const deleteInfo = await wikisCollection.findOneAndUpdate(
-			{_id: wiki._id},
-			{$pull: {pages: {"_id": new ObjectId(pageId)}}},
+		const deleteInfo = await wikisCollection.updateOne(
+			{_id: new ObjectId(wikiId)},
+			{$pull: {pages: {_id: new ObjectId(pageId)}}},
 			{returnDocument: "after"}
 		);
+
+		console.log("deleted");
 
 		if (!deleteInfo) {
 			throw "Page could not be deleted.";

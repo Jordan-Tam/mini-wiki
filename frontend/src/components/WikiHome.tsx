@@ -8,13 +8,15 @@ import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
 import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
 import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx";
 import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
-import AddPrivateViewerModal from "./modals/AddPrivateViewerModal.jsx";
 import DeleteWikiModal from "./modals/DeleteWikiModal.jsx";
+import { default as AddPrivateViewerModal } from "../components/modals/addPrivateViewerModal.jsx"
+import Chat from "./Chat";
 
 let key_val = 0;
 function WikiHome() {
 	const { wikiUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext);
+	const [chatReady, setChatReady] = useState<boolean>(false);
 
 	// Helper function to strip markdown formatting for displaying highlights
 	const stripMarkdown = (text) => {
@@ -146,6 +148,15 @@ function WikiHome() {
 
 		if (wikiUrlName && currentUser) fetchWiki();
 	}, [wikiUrlName, currentUser]);
+
+	/**
+	 * Chat ready effect
+	 */
+	useEffect(() => {
+			if (!chatReady && wiki && currentUser) {
+				setChatReady(true);
+			}
+	}, [wiki, currentUser, chatReady]);
 
 	useEffect(() => {
 		const fetchCollaborators = async () => {
@@ -575,6 +586,12 @@ function WikiHome() {
 					</div>
 				))}
 			</div>
+
+			{/* Chat */}
+			{chatReady && (<Chat
+				wikiId={wiki?._id}
+				token={currentUser?.accessToken}
+			/>)}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
