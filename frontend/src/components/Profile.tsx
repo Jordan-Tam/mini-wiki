@@ -52,17 +52,6 @@ function Profile() {
 
 				setUser(data.user);
 
-        // const favoriteResponse = await fetch(`/api/users/favorites`, {
-        //   method: "GET",
-        //   headers: { Authorization: "Bearer " + token }
-        // });
-
-        // if (!favoriteResponse.ok){ 
-        //     throw "failed to fetch favorites"
-        // }
-        
-        // const favoriteResult = await favoriteResponse.json();
-        // setFavorites(favoriteResult);
 
         const wikiRes = await fetch(`/api/users/${id}/wikis`, {
           method: "GET",

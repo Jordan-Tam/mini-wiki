@@ -119,7 +119,7 @@ router
 		
 
 		const FORBIDDEN_WIKI_URL_NAMES = [
-          "browse",
+          "discover",
           "create",
           "home",
           "profile",
