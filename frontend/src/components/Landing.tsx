@@ -6,25 +6,25 @@ function Landing() {
   return (
     <>
       <h1 className=
-      "d-flex justify-content-center text-success fw-bold display-3 mt-5">
+      "d-flex justify-content-center text-primary fw-bold display-3 mt-5">
       MINI WIKI
       </h1>
 
       <p className="d-flex justify-content-center text-center fst-italic">
-      Create personalized wikis about things that you are passionate about.
+      Create personalized wikis about the things that you are passionate about.
       </p>
 
       
       <p className="d-flex justify-content-center ">Get Started Today!</p>
       <br/>
       <Link
-      className="btn btn-success d-block text-center mb-3"
+      className="btn btn-primary d-block text-center mb-3"
       to="/signin">
       Login
       </Link>
 
       <Link
-        className="btn btn-success d-block text-center"
+        className="btn btn-primary d-block text-center"
         to="/signup">
       Sign Up
       </Link>
@@ -33,7 +33,7 @@ function Landing() {
       <br/>
       <br/>
 
-      <h3 className="d-flex justify-content-center text-center">How to use Mini Wiki?</h3>
+      <h3 className="d-flex justify-content-center text-center text-primary">How to use Mini Wiki?</h3>
       
       <ul className="text-center list-unstyled">
         <li>Create your own wikis</li>
@@ -46,7 +46,7 @@ function Landing() {
       </ul>
 
       <br/>
-      <p> When we finish up features we can possibly add demo pictures at the bottom of the landing page</p>
+      
 
 
 
