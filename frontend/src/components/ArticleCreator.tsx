@@ -37,15 +37,12 @@ function ArticleCreator() {
 
 			try {
 				// In edit mode, pageId is actually the pageUrlName, so we need to fetch by URL name
-				const response = await fetch(
-					`/api/wiki/${wikiUrlName}`,
-					{
-						method: "GET",
-						headers: {
-							Authorization: "Bearer " + currentUser.accessToken
-						}
+				const response = await fetch(`/api/wiki/${wikiUrlName}`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser.accessToken
 					}
-				);
+				});
 
 				if (!response.ok) {
 					throw new Error("Failed to fetch page");
@@ -69,19 +66,14 @@ function ArticleCreator() {
 				// Convert the content array into editor items
 				if (pageData.content && Array.isArray(pageData.content)) {
 					const loadedEditors: EditorItem[] = pageData.content.map(
-						(content: string, index: number) => {
-							// Detect if content is a table (starts with | or has table markdown syntax)
-							const isTable =
-								content.trim().startsWith("|") || content.includes("|---|");
-							// Detect if content is ONLY an image (markdown image syntax with nothing else)
-							// This should be just a single line with only image markdown
-							const isImage =
-								content.trim().match(/^!\[.*?\]\(.*?\)$/) &&
-								!content.includes("\n");
+						(
+							item: { editorType: string; contentString: string },
+							index: number
+						) => {
 							return {
 								id: index,
-								type: isTable ? "table" : isImage ? "image" : "text",
-								content: content
+								type: item.editorType as EditorType,
+								content: item.contentString
 							};
 						}
 					);
@@ -172,7 +164,10 @@ function ArticleCreator() {
 			return;
 		}
 
-		const markdownArray: string[] = editors.map((editor) => editor.content);
+		const markdownArray = editors.map((editor) => ({
+			editorType: editor.type,
+			contentString: editor.content
+		}));
 
 		// Validate that we have the required IDs
 		if (!wikiUrlName) {
@@ -226,26 +221,40 @@ function ArticleCreator() {
 
 	return (
 		<div className="container-fluid article-creator">
-			{(isLoading && isEditMode) ? (
+			{isLoading && isEditMode ? (
 				<div className="loading-state">
 					<p>Loading page content...</p>
 				</div>
 			) : (
 				<>
-				{isEditMode &&
-					<div className="mb-3 article-creator-header">
-						<p className="mb-3">
-							<span style={{fontWeight: "bold"}}>Wiki: </span>
-							<Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
-							<span> / </span>				
-							<span style={{fontWeight: "bold"}}>Category: </span>
-							<Link to={`/${wikiUrlName}/category/${page.category_slugified}`}>{page.category}</Link>
-						</p>
-						<h2>Editing <span style={{fontWeight: "bold"}}>{`${page.name}`}</span></h2> {/* TODO */}
-						<div>
-							<Link to={`/${wikiUrlName}/${pageId}`} className="btn btn-warning">Cancel</Link>
+					{isEditMode && (
+						<div className="mb-3 article-creator-header">
+							<p className="mb-3">
+								<span style={{ fontWeight: "bold" }}>Wiki: </span>
+								<Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
+								<span> / </span>
+								<span style={{ fontWeight: "bold" }}>Category: </span>
+								<Link
+									to={`/${wikiUrlName}/category/${page.category_slugified}`}
+								>
+									{page.category}
+								</Link>
+							</p>
+							<h2>
+								Editing{" "}
+								<span style={{ fontWeight: "bold" }}>{`${page.name}`}</span>
+							</h2>{" "}
+							{/* TODO */}
+							<div>
+								<Link
+									to={`/${wikiUrlName}/${pageId}`}
+									className="btn btn-warning"
+								>
+									Cancel
+								</Link>
+							</div>
 						</div>
-					</div>}
+					)}
 					<div className="editors-container">
 						{editors.length === 0 ? (
 							<div className="empty-state">
@@ -258,7 +267,7 @@ function ArticleCreator() {
 							editors.map((editor, index) => (
 								<div key={editor.id} className="mb-5 editor-item">
 									<div className="editor-controls">
-										<h5 className="editor-label" style={{fontWeight: "bold"}}>
+										<h5 className="editor-label" style={{ fontWeight: "bold" }}>
 											{editor.type === "text"
 												? "Text Editor"
 												: editor.type === "table"
@@ -273,8 +282,18 @@ function ArticleCreator() {
 												className="btn btn-secondary me-2 btn-move"
 												title="Move up"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-up" viewBox="0 0 16 16">
-												<path fillRule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="16"
+													height="16"
+													fill="currentColor"
+													className="bi bi-arrow-up"
+													viewBox="0 0 16 16"
+												>
+													<path
+														fillRule="evenodd"
+														d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"
+													/>
 												</svg>
 											</button>
 											<button
@@ -283,8 +302,18 @@ function ArticleCreator() {
 												className="btn btn-secondary me-2 btn-move"
 												title="Move down"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-down" viewBox="0 0 16 16">
-												<path fillRule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="16"
+													height="16"
+													fill="currentColor"
+													className="bi bi-arrow-down"
+													viewBox="0 0 16 16"
+												>
+													<path
+														fillRule="evenodd"
+														d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"
+													/>
 												</svg>
 											</button>
 											<button
@@ -332,13 +361,22 @@ function ArticleCreator() {
 					</div>
 					<div className="bg-info-subtle p-3 rounded-3 mb-5 add-editor-buttons">
 						<p>Insert a New Editor:</p>
-						<button onClick={addTextEditor} className="btn btn-success me-2 btn-add-text">
+						<button
+							onClick={addTextEditor}
+							className="btn btn-success me-2 btn-add-text"
+						>
 							+ Add Text Editor
 						</button>
-						<button onClick={addTableEditor} className="btn btn-success me-2 btn-add-table">
+						<button
+							onClick={addTableEditor}
+							className="btn btn-success me-2 btn-add-table"
+						>
 							+ Add Table Editor
 						</button>
-						<button onClick={addImageEditor} className="btn btn-success btn-add-image">
+						<button
+							onClick={addImageEditor}
+							className="btn btn-success btn-add-image"
+						>
 							+ Add Image Editor
 						</button>
 					</div>
@@ -348,7 +386,12 @@ function ArticleCreator() {
 								onClick={createPage}
 								className="btn btn-primary btn-create-page"
 								disabled={isSaving}
-								style={{fontSize: "30px", fontWeight: "bold", height: "100px", border: "7px solid black"}}
+								style={{
+									fontSize: "30px",
+									fontWeight: "bold",
+									height: "100px",
+									border: "7px solid black"
+								}}
 							>
 								{isSaving
 									? "Saving..."
@@ -358,8 +401,8 @@ function ArticleCreator() {
 							</button>
 						</div>
 					)}
-					<br/>
-					<br/>
+					<br />
+					<br />
 				</>
 			)}
 		</div>
