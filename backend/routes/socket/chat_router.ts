@@ -85,7 +85,7 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
             }
 
             user_id = user._id as string;
-            username = user.username as string;
+            username = user.email as string;
 
             // add user to broadcaster
             await chats[id].add(user_id, socket, true);
