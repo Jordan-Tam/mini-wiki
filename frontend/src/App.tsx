@@ -15,6 +15,8 @@ import Browse from "./components/Browse.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
 import CategoryPage from "./components/CategoryPage.jsx";
 import Settings from "./components/Settings.tsx";
+import "./styles/editors.css";
+import "./styles/article.css";
 import { ChatPage } from "./components/ChatPage.tsx";
 
 /**

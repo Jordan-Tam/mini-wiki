@@ -1,0 +1,38 @@
+/* Article Image Styling */
+
+/* Constrain all images in article content to reasonable dimensions */
+article img {
+	max-width: 100%;
+	height: auto;
+	max-height: 600px;
+	object-fit: contain;
+	display: block;
+	margin: 15px 0;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+}
+
+/* Responsive image sizing - smaller on mobile */
+@media (max-width: 768px) {
+	article img {
+		max-height: 400px;
+	}
+}
+
+/* Ensure images in markdown preview also follow same constraints */
+.previewArea img {
+	max-width: 100%;
+	height: auto;
+	max-height: 600px;
+	object-fit: contain;
+	display: block;
+	margin: 15px 0;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+	.previewArea img {
+		max-height: 400px;
+	}
+}
