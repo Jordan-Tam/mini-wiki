@@ -78,7 +78,7 @@ function Home() {
 					(
 						wikisData.OWNER.length === 0
 						?
-						<p>You don't own any wikis. Click here to create one.</p>
+						<p>You don't own any wikis. <Link to="/create">Click here to create one.</Link></p>
 						:
 						wikisData.OWNER.map((wiki) => <WikiCard wiki={wiki} />)
 					)	
