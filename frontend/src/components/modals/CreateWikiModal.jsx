@@ -51,6 +51,7 @@ function CreateWikiModal(props) {
       "signin",
       "signup",
       "testing",
+      "settings"
     ];
 
     // Submit form function

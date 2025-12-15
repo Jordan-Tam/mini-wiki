@@ -12,7 +12,8 @@ import {
 	checkUrlName,
 	checkWikiOrPageName,
 	checkContentArray,
-	checkUsername
+	checkUsername,
+	checkUrlName2
 } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 
@@ -299,7 +300,7 @@ router
 			return res.json(wiki);
 
 		} catch (e) {
-			return res.status(400).json({ error: e });
+			return res.status(404).json({ error: e });
 		}
 	})
 
@@ -533,7 +534,7 @@ router
 		// 400: Input validation
 		try {
 			wikiId = checkId(wikiId, "Wiki");
-			pageName = checkWikiOrPageName(pageName, "POST :/id/pages");
+			pageName = checkUrlName2(pageName, "POST :/id/pages");
 			category = checkCategory(category, "POST :/id/pages");
 		} catch (e) {
 			return res.status(400).json({ error: e });

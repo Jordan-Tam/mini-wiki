@@ -94,7 +94,7 @@ const wiki_data_functions = {
 		});
 
 		if (wiki === null) {
-			throw "No wiki with that URL.";
+			throw "Wiki URL not found!";
 		}
 
 		wiki._id = wiki._id.toString();

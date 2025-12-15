@@ -98,8 +98,8 @@ function Profile() {
   //console.log(isUserProfile)
   return (
     <div className="container-fluid">
-      <h2>{user.username}'s Profile</h2>
-      
+      <h2>{user.username}</h2>
+
       <hr/>
       {isUserProfile && user !== null && (
         user.bio === "" ? (
@@ -162,6 +162,19 @@ function Profile() {
             <WikiCard wiki={wiki} />
           </li>
         ))}
+
+      { isUserProfile && (
+        <>
+        <h3>Private Wikis</h3>
+        {wikis.OWNER?.filter(wiki => wiki.access === "private")
+          .map(wiki => (
+            <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
+              <WikiCard wiki={wiki} />
+            </li>
+          ))}
+        </>
+      )
+      }
       
 
       {showChangeBioModal && (

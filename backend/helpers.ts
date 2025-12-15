@@ -7,6 +7,7 @@ const LETTERS_AND_NUMBERS = UPPERCASE_LETTERS + LOWERCASE_LETTERS + NUMBERS;
 const URL_NAME_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_-";
 const CATEGORY_ALLOWED_CHARACTERS = LETTERS_AND_NUMBERS + "_- ";
 
+
 const checkString = (
 	str: string,
 	varName: string,
@@ -38,7 +39,6 @@ const checkId = (id: string, id_of_what: string, funcName?: string): string => {
  * Returns a locale string version of it (to make sure all dates stored in the database have the same format)
  */
 const checkDate = (date: string): string => {
-	
 	// Basic string validation.
 	date = checkString(date, "Date");
 
@@ -47,9 +47,10 @@ const checkDate = (date: string): string => {
 		throw "Invalid date";
 	}
 
-	return new Date(date).toLocaleString("en-US", { timeZone: "America/New_York" });
-
-}
+	return new Date(date).toLocaleString("en-US", {
+		timeZone: "America/New_York"
+	});
+};
 
 const checkWikiOrPageName = (name: string, funcName?: string): string => {
 	// Basic string validation.
@@ -58,15 +59,15 @@ const checkWikiOrPageName = (name: string, funcName?: string): string => {
 	if (name.length < 1 || name.length > 40) {
 		throw "Wiki/Page name must be between 1-40 characters long.";
 	}
+	
 
 	return name;
 };
 
 const checkCategory = (category: string, funcName?: string): string => {
-
 	// Basic string validation.
 	category = checkString(category, "Category name", funcName);
-	
+
 	// Length restrictions.
 	if (category.length < 1 || category.length > 20) {
 		throw "Category name must be between 1-20 characters long.";
@@ -95,6 +96,25 @@ const checkUrlName = (urlName: string, funcName?: string): string => {
 	for (let char of urlName) {
 		if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1) {
 			throw "Wiki URL Name must contain only letters, numbers, hyphens, and underscores.";
+		}
+	}
+
+	return urlName;
+};
+
+const checkUrlName2 = (urlName: string, funcName?: string): string => {
+	// Basic string validation.
+	urlName = checkString(urlName, "Page URL", funcName);
+
+	// Length restrictions.
+	if (urlName.length < 1 || urlName.length > 40) {
+		throw "Page URL must be between 1-40 characters long.";
+	}
+
+	// Character restrictions.
+	for (let char of urlName) {
+		if (URL_NAME_ALLOWED_CHARACTERS.indexOf(char) === -1 && " ".indexOf(char) === -1) {
+			throw "Page URL Name must contain only letters, numbers, hyphens, underscores, and spaces.";
 		}
 	}
 
@@ -227,13 +247,25 @@ const checkContentArray = (content: any): string[] => {
 		throw "Content array cannot be empty.";
 	}
 
-	// Validate each element is a string
+	// Validate each element is an object with required fields
 	for (let i = 0; i < content.length; i++) {
-		if (typeof content[i] !== "string") {
-			throw `Content array element at index ${i} must be a string.`;
+		if (typeof content[i] !== "object" || content[i] === null) {
+			throw `Content array element at index ${i} must be an object.`;
 		}
-		if (content[i].trim().length === 0) {
-			throw `Content array element at index ${i} cannot be empty.`;
+
+		if (!content[i].editorType || typeof content[i].editorType !== "string") {
+			throw `Content array element at index ${i} must have a valid editorType string.`;
+		}
+
+		if (
+			!content[i].contentString ||
+			typeof content[i].contentString !== "string"
+		) {
+			throw `Content array element at index ${i} must have a valid contentString string.`;
+		}
+
+		if (content[i].contentString.trim().length === 0) {
+			throw `Content array element at index ${i} contentString cannot be empty.`;
 		}
 	}
 
@@ -252,5 +284,6 @@ export {
 	checkWikiOrPageName,
 	checkDescription,
 	checkCategory,
-	checkContentArray
+	checkContentArray,
+	checkUrlName2
 };
