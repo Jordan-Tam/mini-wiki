@@ -52,7 +52,7 @@ function DeleteUserModal(props) {
                */
               const token = currentUser.accessToken;
               const response = await fetch(
-                `http://localhost:3000/users/${currentUser.uid}`,
+                `/api/users/${currentUser.uid}`,
                 {
                   method: "DELETE",
                   headers: {

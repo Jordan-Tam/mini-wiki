@@ -22,7 +22,7 @@ async function doCreateUserWithEmailAndPassword(
   await createUserWithEmailAndPassword(auth, email, password);
   if (auth.currentUser) {
     const token = (auth.currentUser as any).accessToken;
-    const response = await fetch("http://localhost:3000/users/registerFB", {
+    const response = await fetch("/api/users/registerFB", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
@@ -72,7 +72,7 @@ async function doSocialSignIn(app: string) {
     auth = getAuth();
     if (auth.currentUser) {
       const token = (auth.currentUser as any).accessToken;
-      const response = await fetch("http://localhost:3000/users/registerFB", {
+      const response = await fetch("/api/users/registerFB", {
         method: "POST",
         headers: {
           Authorization: "Bearer " + token,

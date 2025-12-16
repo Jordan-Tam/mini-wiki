@@ -136,7 +136,7 @@ function CreateWiki() {
 		              variable={urlName}
 		              setOK={setURLOK}
 		              varName={"Wiki URL"}
-		              serverURL="http://localhost:3000/wiki/urlTaken/"
+		              serverURL="/api/wiki/urlTaken/"
 		            />
 		            <div className="form-floating mb-3">
 		              {/* //TODO: Change this to a textarea. */}
