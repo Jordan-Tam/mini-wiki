@@ -1068,5 +1068,3 @@ router
 				.json({error: e})
 		}
 	});
-
-export default router;

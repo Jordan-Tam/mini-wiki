@@ -3,7 +3,20 @@ import { checkEmail, checkId, checkString, checkUsername } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 import wiki_data_functions from "../data/wikis.ts";
 import redisFunctions from "../lib/redis/redis.ts";
-import { SEED_USER_UIDS } from "../scripts/seed.ts";
+
+const SEED_USER_UIDS = [
+	"IQtraRRIrOa65GXAyVEizvuIYol2",
+	"fMW5DoXA6CUEd5kKVJWRiWqt6p23",
+	"e7CHvUC7xoOdY3Uz1pBHOo3qG7l1",
+	"39ZJcRzqBzd3WQutJbFGmf1pE6g1",
+	"0nEocWnabUPQW4bm9GMn8Yk3Jsr2",
+	"3L6aRP6NhdPTOTnLkfFmclxHOqL2",
+	"zje4GTOAGzQezhp7V9oUzGTrji43",
+	"ttgWSeJfpFQ96B9GsEXFnAbCcJ13",
+	"HSqikpgSicOk3K2UryuEkXFxX1K3",
+	"iXpvdkmqTnZoOJC2BykznGS2nBB2"
+];
+
 
 export const router = Router();
 
@@ -367,6 +380,3 @@ router
       return res.status(500).json({ error: e });
     }
   });
-  
-
-export default router;

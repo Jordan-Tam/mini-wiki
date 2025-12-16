@@ -11,6 +11,9 @@ import cors from "cors";
 import { admin } from "./lib/firebase/firebase.ts";
 
 async function Main(): Promise<any> {
+
+	console.log(1);
+
 	const APP = express();
 
 	/**
@@ -20,6 +23,8 @@ async function Main(): Promise<any> {
 	APP.use(express.urlencoded({ extended: true }));
 	APP.use(cookieParser());
 	APP.use(cors());
+
+	console.log(2);
 
 	/**
 	 * Authentication Middleware
@@ -50,6 +55,8 @@ async function Main(): Promise<any> {
 		}
 	});
 
+	console.log(3);
+
 	/**
 	 * Routes
 	 */
@@ -71,10 +78,14 @@ async function Main(): Promise<any> {
 		return res.json(response);
 	});
 
+	console.log(4);
+
 	/**
 	 * Routes
 	 */
 	APP.use("/wiki", WikiRouter);
+
+	console.log(5);
 
 	// Log if server boot worked
 	const server = APP.listen(ServerConfig.port, (e) => {
@@ -87,13 +98,20 @@ async function Main(): Promise<any> {
 		}
 	});
 
+	console.log(6);
+
 	/**
 	 * Setup socket server
 	 */
 	const socket_routes: Routes = {
 		"/chat/:id": ChatSocket
 	};
+
+	console.log(7);
+
 	await SocketServer(server, socket_routes);
+
+	console.log(8);
 }
 
 Main();
