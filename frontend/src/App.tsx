@@ -13,7 +13,7 @@ import ArticleCreator from "./components/ArticleCreator.tsx";
 import Article from "./components/Article.tsx";
 import Discover from "./components/Discover.jsx";
 import CreateWiki from "./components/CreateWiki.jsx";
-import CategoryPage from "./components/CategoryPage.jsx";
+import CategoryPage from "./components/CategoryPage.tsx";
 import Settings from "./components/Settings.tsx";
 import "./styles/editors.css";
 import "./styles/article.css";
