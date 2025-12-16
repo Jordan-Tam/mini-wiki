@@ -83,6 +83,7 @@ const checkCategory = (category: string, funcName?: string): string => {
 	return category;
 };
 
+// For wikis...
 const checkUrlName = (urlName: string, funcName?: string): string => {
 	// Basic string validation.
 	urlName = checkString(urlName, "Wiki URL", funcName);
@@ -102,6 +103,7 @@ const checkUrlName = (urlName: string, funcName?: string): string => {
 	return urlName;
 };
 
+// For pages...
 const checkUrlName2 = (urlName: string, funcName?: string): string => {
 	// Basic string validation.
 	urlName = checkString(urlName, "Page URL", funcName);

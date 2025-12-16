@@ -2,7 +2,21 @@ import { Router } from "express";
 import { checkEmail, checkId, checkString, checkUsername } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 import wiki_data_functions from "../data/wikis.ts";
-import { SEED_USER_UIDS } from "../scripts/seed.ts";
+import redisFunctions from "../lib/redis/redis.ts";
+
+const SEED_USER_UIDS = [
+	"IQtraRRIrOa65GXAyVEizvuIYol2",
+	"fMW5DoXA6CUEd5kKVJWRiWqt6p23",
+	"e7CHvUC7xoOdY3Uz1pBHOo3qG7l1",
+	"39ZJcRzqBzd3WQutJbFGmf1pE6g1",
+	"0nEocWnabUPQW4bm9GMn8Yk3Jsr2",
+	"3L6aRP6NhdPTOTnLkfFmclxHOqL2",
+	"zje4GTOAGzQezhp7V9oUzGTrji43",
+	"ttgWSeJfpFQ96B9GsEXFnAbCcJ13",
+	"HSqikpgSicOk3K2UryuEkXFxX1K3",
+	"iXpvdkmqTnZoOJC2BykznGS2nBB2"
+];
+
 
 export const router = Router();
 
@@ -70,6 +84,8 @@ router
 
 		try {
 
+      //TODO:
+
 			const user = await user_data_functions.getUserByFirebaseUID(req.user.uid);
 		
 			const favoriteIds = [];
@@ -102,6 +118,7 @@ router
    */
   .post(async (req: any, res) => {
 
+    //TODO:
 
 		let { wikiId } = req.body;
 
@@ -133,6 +150,8 @@ router
    * Removes a wiki from the user's favorites array.
    */
   .delete(async (req: any, res) => {
+
+    //TODO:
 
     let { wikiId } = req.body;
 
@@ -169,6 +188,9 @@ router
    * get user by id
    */
   .get(async (req: any, res) => {
+
+    // TODO: REDIS
+    
     let firebaseUID = req.params.id;
     let tokenId = req.user.user_id;
     if (firebaseUID !== tokenId) {
@@ -357,6 +379,3 @@ router
       return res.status(500).json({ error: e });
     }
   });
-  
-
-export default router;

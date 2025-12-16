@@ -61,6 +61,7 @@ function DeleteCategoryModal(props) {
 
         } catch (e) {
             setDisableSubmit(false);
+            console.log(e);
             setError(`${e}`);
         }
     };
