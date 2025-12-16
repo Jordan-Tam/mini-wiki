@@ -25,7 +25,7 @@ const MARKDOWN_COMPONENTS = {
 	a: (props: React.ComponentPropsWithoutRef<"a">) => {
 		const { href, children, ...rest } = props;
 		// Use Link for relative URLs, regular <a> for absolute URLs
-		if (href?.startsWith("/")) {
+		if (href?.startsWith("/") || href?.startsWith("#")) {
 			return (
 				<Link to={href} {...rest}>
 					{children}

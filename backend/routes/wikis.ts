@@ -72,6 +72,7 @@ const redis_policy = {
 		* A private viewer is added.
 		* A private viewer is removed.
 		* The wiki is deleted.
+		* One of the wiki's page's contents are changed.
 	 */
 	wiki_policy: "UPDATE",
 
@@ -81,6 +82,7 @@ const redis_policy = {
 	 * 
 	 * EVENTS THAT CAUSE THE VALUE TO BECOME OUTDATED:
 	 	* The user changes their username.
+		* The user updates their bio.
 		* The user favorites a wiki.
 		* The user unfavorites a wiki.
 	 */
@@ -95,8 +97,9 @@ router
 	 */
 	.get(async (req: any, res: any) => {
 
+		// REDIS: Check if the object already exists in cache.
 		if (await redisFunctions.exists_in_cache(`${req.user.uid}/getWikisByUser`)) {
-			return res.json(await redisFunctions.get_json(`${req.user.uid}/getWikisByUser`)); // REDIS
+			return res.json(await redisFunctions.get_json(`${req.user.uid}/getWikisByUser`));
 		}
 
 		let wikis;
@@ -106,7 +109,8 @@ router
 			return res.status(500).json({error: e});
 		}
 
-		await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, wikis); // REDIS
+		// REDIS: Add the object to the cache.
+		await redisFunctions.set_json(`${req.user.uid}/getWikisByUser`, wikis);
 
 		return res.json(wikis);
 
@@ -156,17 +160,39 @@ router
 				(req as any).user.uid
 			);
 
-			await redisFunctions.set_json(`${(req as any).user.uid}/getWikisByUser`, await wikiDataFunctions.getWikisByUser((req as any).user.uid)); // REDIS (THIS VERSION IMMEDIATELY UPDATES ENTRY IN CACHE SO IT IS UP TO DATE THE NEXT TIME THE USER VISITS THE HOME PAGE)
-			//await redisFunctions.del_json(`${(req as any).user.uid}/getWikisByUser`); // REDIS (THIS VERSION DELETES THE ENTRY FROM THE CACHE SO THE USER HAS TO VISIT THE HOME PAGE FIRST BEFORE IT IS READDED)
+			// REDIS: The getWikisByUser entry is now outdated because there is a new wiki in the OWNER list, so update/delete it from the cache.
+			if (redis_policy.wiki_policy === "UPDATE") {
 
-			if (wiki.access === "public-edit" || wiki.access === "public-view") {
-				await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis()); // REDIS
+				await redisFunctions.set_json(
+					`${(req as any).user.uid}/getWikisByUser`,
+					await wikiDataFunctions.getWikisByUser((req as any).user.uid)
+				);
+
+			} else {
+				
+				await redisFunctions.del_json(`${(req as any).user.uid}/getWikisByUser`);
+
 			}
+
+			// REDIS: If the wiki is public, update/delete the public wikis entry from the cache.
+			if (wiki.access === "public-edit" || wiki.access === "public-view") {
+				
+				if (redis_policy.publicWikis_policy === "UPDATE") {
+					await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
+				} else {
+					await redisFunctions.del_json("publicWikis");
+				}
+
+			}
+
+			// REDIS: Add the newly created wiki to the cache.
+			//TODO:
 
 			return res.json(wiki);
 
 			// TODO: When adding collaborators/viewers, make sure that the user being added has their personal getWikisByUser key-value updated.
 			// TODO: And if that wiki is also public, update the publicWikis entry as done above.
+			
 
 		} catch (e) {
 			return res.status(500).json({ error: e });
@@ -183,13 +209,15 @@ router
 
 		try {
 
+			// REDIS: Check if the public wikis array already exists in cache.
 			if (await redisFunctions.exists_in_cache("publicWikis")) {
-				return res.json(await redisFunctions.get_json("publicWikis")); // REDIS
+				return res.json(await redisFunctions.get_json("publicWikis"));
 			}
 
 			const public_wikis = await wikiDataFunctions.getAllPublicWikis();
 
-			// await redisFunctions.set("publicWikis", public_wikis); // REDIS (This line is breaking the browse page)
+			// REDIS: Add the public wikis array to the cache.
+			await redisFunctions.set_json("publicWikis", public_wikis);
 
 			return res.json(public_wikis);
 
@@ -258,22 +286,20 @@ router
 			return res.status(400).json({error: e});
 		}
 
+		// REDIS: Check if the wiki object already exists in the cache.
 		if (await redisFunctions.exists_in_cache(urlName)) {
-			let cached_wiki = await redisFunctions.get_json(urlName); // REDIS
-			if (
-				cached_wiki.access !== "public-edit"
-				&&
-				cached_wiki.access !== "public-view"
-				&&
-				cached_wiki.owner !== req.user.uid
-				&&
-				!(cached_wiki.collaborators.includes(req.user.uid))
-				&&
-				!(cached_wiki.private_viewers.includes(req.user.uid))
-			) {
-				return res.status(403).json({error: "You do not have access to this wiki."});
-			} else {
+
+			let cached_wiki = await redisFunctions.get_json(urlName);
+
+			// Ensure that the user is authorized to view this wiki.
+			if (wikiDataFunctions.authorized(cached_wiki, req.user.uid)) {
+
 				return res.json(cached_wiki);
+
+			} else {
+
+				return res.status(403).json({error: "You do not have access to this wiki."});
+			
 			}
 		}
 
@@ -281,20 +307,18 @@ router
 			
 			let wiki: any = await wikiDataFunctions.getWikiByUrlName(urlName);
 
-			if (
-				wiki.owner !== req.user.uid &&
-				!wiki.collaborators.includes(req.user.uid) &&
-				wiki.access !== "public-edit" &&
-				wiki.access !== "public-view"
-			) {
-				return res
-					.status(403)
-					.json({ error: "You do not permission to access this resource." });
+			if (wikiDataFunctions.authorized(wiki, req.user.uid)) {
+
+				// REDIS: Cache the wiki object.
+				await redisFunctions.set_json(urlName, wiki);
+
+				return res.json(wiki);
+
+			} else {
+
+				return res.status(403).json({error: "You do not have access to this wiki."});
+
 			}
-
-			await redisFunctions.set_json(urlName, wiki); // REDIS
-
-			return res.json(wiki);
 
 		} catch (e) {
 			return res.status(404).json({ error: e });
@@ -315,25 +339,53 @@ router
 		console.log("deleting wiki route")
 		// I'm just sending the id over as urlName to make it easier.
 		let wikiId = req.params.urlName
-		try{
+
+		// Input validation
+		try {
 			wikiId = checkId(wikiId, "wikiId", "Delete Wiki route")
-		}catch(e){
+		} catch (e) {
 			return res.status(400).json({error: e});
-		}try{
-			const wiki = await wikiDataFunctions.getWikiById(wikiId);
-			const user = req.user;
-			if(wiki.owner !== user.user_id){
-				return res.status(403).json({error: "You do not own this wiki"});
+		}
+		
+		// Check if wiki exists.
+		let wiki;
+		try {
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: e});
+		}
+
+		// Check if the user is allowed to delete the wiki.
+		try {
+			if (wiki.owner !== req.user.uid) {
+				throw "You can only delete wikis you own.";
 			}
+		} catch (e) {
+			return res.status(403).json({error: e});
+		}
+
+		// Delete the wiki.
+		try {
+
 			await wikiDataFunctions.deleteWiki(wikiId);
+
+			// REDIS: The ${req.user.uid}/getWikisByUser entry is now outdated. Update/delete it from the cache.
 			await redisFunctions.del_json(`${req.user.uid}/getWikisByUser`);
+			
+			// REDIS: Delete the wiki object from the cache.
 			await redisFunctions.del_json(`${wiki.urlName}`);
+
+			// REDIS: If the wiki is not private, update/delete the public wikis entry from the cache.
 			if(wiki.access !== "private"){
 				await redisFunctions.del_json(`publicWikis`);
 			}
-		}catch(e){
+
+		} catch (e) {
+
 			return res.status(500).json({error: e})
+		
 		}
+
 		return res.json({message: "Success"});
 
 	});
@@ -391,14 +443,23 @@ router
 		let wikiId = req.params.wikiId;
 		let { categoryName } = req.body;
 
-		let wiki;
+		// 400: Input validation.
 		try {
+			wikiId = checkId(wikiId, "Wiki", "POST :wikiId/categories route");
 			categoryName = checkCategory(categoryName, "POST :wikiId/categories route");
-			wiki = await wikiDataFunctions.getWikiById(wikiId);
 		} catch (e) {
 			return res.status(400).json({ error: e });
 		}
 
+		// 404: Check if wiki exists.
+		let wiki;
+		try {
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: e});
+		}
+
+		// 500: Update the wiki.
 		try {
 
 			let updatedWiki = await (wikiDataFunctions.createCategory(
@@ -406,7 +467,8 @@ router
 				categoryName
 			));
 
-			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a new category has been added. Update/delete it from the cache. There is no need to update the publicWikis or getWikisByUser entries because when those entries are retrieved, the categories are not being displayed.
+			await redisFunctions.set_json(wiki.urlName, updatedWiki);
 
 			return res.json(updatedWiki);
 
@@ -454,7 +516,8 @@ router
 
 			let updatedWiki = await (wikiDataFunctions.editCategory(wikiId, oldCategoryName, newCategoryName));
 
-			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a category has been edited. Update/delete it from the cache. There is no need to update the publicWikis or getWikisByUser entries because when those entries are retrieved, the categories are not being displayed.
+			await redisFunctions.set_json(wiki.urlName, updatedWiki);
 
 			return res.json(updatedWiki);
 
@@ -499,12 +562,13 @@ router
 		
 		}
 
-		// Call the edit function.
+		// Call the delete function.
 		try {
 
 			let updatedWiki = await (wikiDataFunctions.deleteCategory(wikiId, categoryName));
 
-			await redisFunctions.set_json(wiki.urlName, updatedWiki); // REDIS
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a category has been deleted. Update/delete it from the cache. There is no need to update the publicWikis or getWikisByUser entries because when those entries are retrieved, the categories are not being displayed.
+			await redisFunctions.set_json(wiki.urlName, updatedWiki);
 
 			return res.json(updatedWiki);
 
@@ -518,8 +582,9 @@ router
 
 router
 	.route("/:id/pages")
+	
 	/**
-	 * Creates a new page in the wiki
+	 * ! Creates a new page in the wiki
 	 */
 	.post(async (req: any, res) => {
 
@@ -543,7 +608,7 @@ router
 			return res.status(404).json({error: e});
 		}
 
-
+		// 500: Add the page.
 		try {
 			let updatedWiki = await pageDataFunctions.createPage(
 				wikiId,
@@ -551,6 +616,7 @@ router
 				category
 			);
 
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a new page has been created. Update/delete it from the cache. There is no need to update the publicWikis or getWikisByUser entries because when those entries are retrieved, the categories are not being displayed.
 			await redisFunctions.set_json(wiki.urlName, updatedWiki);
 
 			return res.json(updatedWiki);
@@ -565,6 +631,9 @@ router
 router 
 	.route("/:id/private_viewer")
 
+	/**
+	 * ! Get a list of private viewers.
+	 */
 	.get(async (req:any, res) => {
 
 		const wikiId = req.params.id.trim();
@@ -599,6 +668,9 @@ router
 
 	})
 
+	/**
+	 * ! Add a new private viewer.
+	 */
 	.post(async (req: any, res) => {
 
 		let username = ""
@@ -609,7 +681,7 @@ router
 			username = checkUsername(req.body.username, "POST");
 
 		} catch (e){
-			return res.status(400).json({error: e})
+			return res.status(400).json({error: e});
 		}
 		let user = ""
 
@@ -619,10 +691,29 @@ router
 			return res.status(404).json({error: "User not found"})
 		}
 
+		// 404: Check if wiki exists.
+		let wiki;
 		try {
-			//console.log(user)
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: "Wiki not found"});
+		}
+
+		try {
+			
 			const retVal = await wikiDataFunctions.addPrivateViewer(wikiId, user)
-			//console.log(retVal)
+			
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a private viewer has been added. Update/delete it from the cache.
+			await redisFunctions.set_json(wiki.urlName, retVal);
+
+			// REDIS: Update/delete the getWikisByUser entry of the new private viewer so that their home page displays the new wiki they can see.
+			await redisFunctions.set_json(
+				`${req.user.uid}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(req.user.uid)
+			);
+
+			// REDIS: There is no need to update the publicWikis entry because this is a private wiki so it doesn't appear in that list.
+
 			return res.json(retVal);
 
 		} catch (e) {
@@ -633,6 +724,9 @@ router
 		
 	})
 
+	/**
+	 * ! Remove a private viewer.
+	 */
 	.delete(async (req:any, res) => {
 
 		let username = ""
@@ -645,18 +739,39 @@ router
 		}
 		let user = ""
 
-		//console.log("try1");
+		// 404: Check if user exists.
 		try {
-			user = await userDataFunctions.getUserIdByUsername(username)
+			user = await userDataFunctions.getUserIdByUsername(username);
 		} catch (e){
-			return res.status(404).json({error: "User not found"})
+			return res.status(404).json({error: "User not found"});
 		}
-		//console.log("try2")
+
+		// 404: Check if wiki exists.
+		let wiki;
+		try {
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: "Wiki not found"});
+		}
+
+		// 500: Delete the private viewer.
 		try {
 
-			//console.log(user)
 			const retVal = await wikiDataFunctions.removePrivateViewer(wikiId, user);
+
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a private viewer has been deleted. Update/delete it from the cache.
+			await redisFunctions.set_json(wiki.urlName, retVal);
+
+			// REDIS: Update/delete the getWikisByUser entry of the removed private viewer so that their home page no longer displays the wiki.
+			await redisFunctions.set_json(
+				`${req.user.uid}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(req.user.uid)
+			);
+
+			// REDIS: There is no need to update the publicWikis entry because this is a private wiki so it doesn't appear in that list.
+
 			return res.json(retVal);
+
 		} catch (e) {
 
 			return res 
@@ -701,6 +816,10 @@ router
 			return res.status(404).json({ error: `${e}` });
 		}
 	})
+
+	/**
+	 * ! Delete a page from a wiki.
+	 */
 	.delete(async (req: any, res) => {
 		console.log("DELETE PAGE")
 
@@ -768,14 +887,13 @@ router
 		// 404: Check if wiki exists.
 		let wiki;
 		try {
-
 			// Get wiki by urlName to get the ID
 			wiki = await wikiDataFunctions.getWikiByUrlName(urlName);
-
 		} catch (e) {
 			return res.status(404).json({error: e});
 		}
 
+		// 500: Change the page content.
 		try {
 			const updatedWiki = await pageDataFunctions.changePageContent(
 				wiki._id.toString(),
@@ -783,9 +901,13 @@ router
 				content
 			);
 
-			//return res.json(updatedPage);
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a page's contents have been edited. Update/delete it from the cache.
+			await redisFunctions.set_json(wiki.urlName, updatedWiki);
+
+			// REDIS: There is no need to update the publicWikis or getWikisByUser entries because when those entries are retrieved, the pages are not being displayed.
 
 			await redisFunctions.set_json(urlName, updatedWiki);
+
 			return res.json(updatedWiki);
 
 		} catch (e) {
@@ -798,8 +920,9 @@ router
  */
 router
 	.route("/:id/collaborators")
+
 	/**
-	 * List collaborators on wiki
+	 *! List collaborators on wiki
 	 */
 	.get(async (req:any, res) => {
 
@@ -851,16 +974,35 @@ router
 		}
 		let user = ""
 
+		// 404: Check if user exists.
 		try {
-			user = await userDataFunctions.getUserIdByUsername(username)
+			user = await userDataFunctions.getUserIdByUsername(username);
 		} catch (e){
-			return res.status(404).json({error: "User not found"})
+			return res.status(404).json({error: "User not found"});
+		}
+
+		// 404: Check if wiki exists.
+		let wiki;
+		try {
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: "Wiki not found"});
 		}
 
 		try {
-			//console.log(user)
-			const retVal = await wikiDataFunctions.addCollaborator(wikiId, user)
-			//console.log(retVal)
+			const retVal = await wikiDataFunctions.addCollaborator(wikiId, user);
+
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a collaborator has been added. Update/delete it from the cache.
+			await redisFunctions.set_json(wiki.urlName, retVal);
+
+			// REDIS: Update/delete the getWikisByUser entry of the new collaborator so that their home page displays the new wiki in the COLLABORATOR section.
+			await redisFunctions.set_json(
+				`${req.user.uid}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(req.user.uid)
+			);
+
+			// REDIS: There is no need to update the publicWikis entry because the Discover page is not displaying the collaborators lists so the outdated entry is still okay to use.
+
 			return res.json(retVal);
 
 		} catch (e) {
@@ -887,16 +1029,36 @@ router
 		}
 		let user = ""
 
+		// 404: Check if user exists.
 		try {
-			user = await userDataFunctions.getUserIdByUsername(username)
+			user = await userDataFunctions.getUserIdByUsername(username);
 		} catch (e){
-			return res.status(404).json({error: "User not found"})
+			return res.status(404).json({error: "User not found"});
+		}
+
+		// 404: Check if wiki exists.
+		let wiki;
+		try {
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: "Wiki not found"});
 		}
 
 		try {
 
-			//console.log(user)
 			const retVal = await wikiDataFunctions.removeCollaborator(wikiId, user);
+			
+			// REDIS: The wiki.urlName entry in the cache is now outdated because a collaborator has been removed. Update/delete it from the cache.
+			await redisFunctions.set_json(wiki.urlName, retVal);
+
+			// REDIS: Update/delete the getWikisByUser entry of the removed collaborator so that their home page no longer displays the wiki in their COLLABORATOR section.
+			await redisFunctions.set_json(
+				`${req.user.uid}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(req.user.uid)
+			);
+
+			// REDIS: There is no need to update the publicWikis entry because the Discover page is not displaying the collaborators lists so the outdated entry is still okay to use.
+			
 			return res.json(retVal);
 
 		} catch (e) {
@@ -906,34 +1068,3 @@ router
 				.json({error: e})
 		}
 	});
-
-
-//! IGNORE EVERYTHING BELOW THIS LINE
-
-/**
- * Spesific wiki (actions) By id
- */
-router
-	.route("/:id/save")
-	/**
-	 * Save changes to wiki
-	 * Requires wiki content in body
-	 */
-	.post(async (req, res) => {
-		
-		return;
-	});
-
-router
-	.route("/:id/publish")
-	/**
-	 * Publish changes publicly
-	 */
-	.post(async (req, res) => {
-		
-		return;
-	});
-
-
-
-export default router;

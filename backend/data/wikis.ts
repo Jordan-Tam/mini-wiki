@@ -31,6 +31,8 @@ const wiki_data_functions = {
 
 		const wikisList = await wikisCollection.find({}).toArray();
 
+		console.log(wikisList);
+
 		return wikisList;
 	},
 
@@ -408,14 +410,21 @@ const wiki_data_functions = {
 		wikiId = checkId(wikiId, "Wiki", "deleteCategory");
 		category = checkCategory(category, "deleteCategory");
 
+		console.log(1);
+
 		let wiki = await this.getWikiById(wikiId);
+
+		console.log(2);
 
 		// Get pages that will be affected (moved to UNCATEGORIZED)
 		const affectedPages = wiki.pages.filter((page: any) => page.category === category);
 
+		console.log(3);
+
 		// Pages associated with the deleted category are moved to the UNCATEGORIZED category.
 		let updatedWiki = {
 			categories: wiki.categories.filter((c: string) => c !== category),
+			categories_slugified: wiki.categories_slugified.filter((c: string) => c !== slugify(category, {replacement: "_"})),
 			pages: wiki.pages.map((page: any) => {
 				if (page.category === category) {
 					page.category = "UNCATEGORIZED";
@@ -426,22 +435,32 @@ const wiki_data_functions = {
 			})
 		};
 
+		console.log(updatedWiki);
+
+		console.log(4);
+
 		const wikisCollection = await wikis();
 		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			updatedWiki,
+			{$set: updatedWiki},
 			{ returnDocument: "after" }
 		);
+
+		console.log(5);
 
 		if (!updateInfo) {
 			throw "Could not delete wiki category.";
 		}
+
+		console.log(6);
 
 		// Re-index affected pages with their new UNCATEGORIZED category
 		for (let page of affectedPages) {
 			const updatedPage = await pageDataFunctions.getPageById(wikiId, page._id.toString());
 			await indexPage(wikiId, updatedPage);
 		}
+
+		console.log(7);
 
 		return await this.getWikiById(wikiId.toString());
 	},

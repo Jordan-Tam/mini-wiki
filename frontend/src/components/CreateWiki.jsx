@@ -86,7 +86,7 @@ function CreateWiki() {
     }
 	
 	return (
-		      <div>
+		      <div className="container-fluid">
 		          <div
 		            className="row mb-3"
 		            style={{ display: "flex", justifyContent: "space-between" }}
@@ -99,7 +99,7 @@ function CreateWiki() {
 		            </div>
 		          </div>
 		          <form onSubmit={(e) => submitForm(e)}>
-		            <div className="form-floating mb-3">
+		            <div className="form-floating mb-3" style={{"width": "500px"}}>
 		              <input
 		                className="form-control"
 		                placeholder="name"
@@ -113,7 +113,7 @@ function CreateWiki() {
 		              />
 		              <label htmlFor="name">Name</label>
 		            </div>
-		            <div className="form-floating mb-3">
+		            <div className="form-floating mb-3" style={{"width": "500px"}}>
 		              <input
 		                className="form-control"
 		                placeholder="urlName"
@@ -138,7 +138,7 @@ function CreateWiki() {
 		              varName={"Wiki URL"}
 		              serverURL="http://localhost:3000/wiki/urlTaken/"
 		            />
-		            <div className="form-floating mb-3">
+		            <div className="form-floating mb-3" style={{"width": "500px"}}>
 		              {/* //TODO: Change this to a textarea. */}
 		              <input
 		                className="form-control"
