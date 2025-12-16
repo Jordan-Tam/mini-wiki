@@ -81,6 +81,8 @@ const wikis_to_seed: any = [
 		owner: FIREBASE_UIDS[0],
 		access: "public-edit",
 		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 			{
 				name: "Getting Started with React",
@@ -110,6 +112,9 @@ const wikis_to_seed: any = [
 		urlName: "database-design-patterns",
 		owner: FIREBASE_UIDS[1],
 		access: "public-view",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
@@ -120,6 +125,9 @@ const wikis_to_seed: any = [
 		urlName: "cloud-computing-essentials",
 		owner: FIREBASE_UIDS[2],
 		access: "public-edit",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
@@ -130,6 +138,9 @@ const wikis_to_seed: any = [
 		urlName: "machine-learning-basics",
 		owner: FIREBASE_UIDS[3],
 		access: "private",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
@@ -140,6 +151,9 @@ const wikis_to_seed: any = [
 		urlName: "python-programming",
 		owner: FIREBASE_UIDS[4],
 		access: "public-edit",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
@@ -150,6 +164,9 @@ const wikis_to_seed: any = [
 		urlName: "company-internal-docs",
 		owner: FIREBASE_UIDS[5],
 		access: "private",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
@@ -160,6 +177,9 @@ const wikis_to_seed: any = [
 		urlName: "research-project-alpha",
 		owner: FIREBASE_UIDS[6],
 		access: "private",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
@@ -170,6 +190,9 @@ const wikis_to_seed: any = [
 		urlName: "personal-finance-guide",
 		owner: FIREBASE_UIDS[7],
 		access: "private",
+		categories: [],
+		collaborators: [],
+		private_viewers: [],
 		pages: [
 
 		]
