@@ -6,8 +6,8 @@ import pageDataFunctions from "../data/pages.ts";
 import redisFunctions from "../lib/redis/redis.ts";
 import { ensureIndex, esClient, WIKI_INDEX } from "../lib/search/search.ts";
 
-// Hard-coded Firebase UIDs of users already created in Firebase
-export const SEED_USER_UIDS = [
+// List of UIDs already stored in Firebase.
+const FIREBASE_UIDS = [
 	"IQtraRRIrOa65GXAyVEizvuIYol2",
 	"fMW5DoXA6CUEd5kKVJWRiWqt6p23",
 	"e7CHvUC7xoOdY3Uz1pBHOo3qG7l1",
@@ -116,6 +116,36 @@ const wikis_to_seed = [
 		collaborators: [FIREBASE_UIDS[0]],
 		private_viewers: [], // None because this is public-view
 		pages: [
+			{
+				name: "Lem E. Hackett",
+				category: "Characters",
+				content: [
+					{
+						editorType: "text",
+						contentString: `**Lem E. Hackett** is a legendary individual who studied discrete mathematics at Stevens. After graduating in 2021, he began making educational YouTube videos about logical fallacies. By 2025, his channel had become the platform's most-subscribed channel with over 600 million YouTube subscribers, which sparked intense debate within the YouTube community regarding the authenticity of this count. He has expressed interest in auditioning for a role in a future Jurassic World sequel.`
+					}
+				]
+			},
+			{
+				name: "Attila the Duck",
+				category: "Characters",
+				content: [
+					{
+						editorType: "text",
+						contentString: "duck"
+					}
+				]
+			},
+			{
+				name: "Edwin Augustus Stevens",
+				category: "Characters",
+				content: [
+					{
+						editorType: "text",
+						contentString: `**Edwin Augustus Stevens** (1795 - 1868) was the founder of Stevens Institute of Technology.`
+					}
+				]
+			},
 			{
 				name: "Pierce Dining Hall",
 				category: "Locations",
@@ -482,21 +512,30 @@ async function seed() {
 						pageId = p._id.toString();
 					}
 				}
-			} catch (error) {
-				console.error(`Error creating wiki ${seedWiki.name}:`, error);
+				if (pageId === undefined) {
+					throw "PAGE NOT FOUND: THIS ERROR SHOULD NEVER HAPPEN";
+				}
+
+				await pageDataFunctions.changePageContent(
+					wikiId,
+					pageId,
+					page.content,
+					wiki.owner
+				);
+
 			}
+		} catch (e) {
+			console.log(`Could not create page for ${wiki.name}: ${e}`);
 		}
 
-		console.log("\n--- Seeding Complete ---");
-		console.log(`Total users created: ${createdUsers.length}`);
-		console.log(`Total wikis created: ${seedWikis.length}`);
-
-		process.exit(0);
-	} catch (error) {
-		console.error("Fatal error during seeding:", error);
-		process.exit(1);
 	}
+
+	console.log("Done seeding database.");
+
+	await closeConnection();
+
+	process.exit(0);
+
 }
 
-// Run the seed script
-seedDatabase();
+seed();
