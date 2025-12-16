@@ -881,11 +881,11 @@ router
 
 		try {
 
-			// page = getPageByUrlName(pageUrlName)
-			// wiki = getWikiByUrlName(wikiUrlName)
-			// if (!wiki.categories.includes(newCategory)) {
-			// 	throw "NEW CATEGORY DOES NOT EXIST.";
-			// }
+			page = pageDataFunctions.getPageByUrlName(pageUrlName)
+			wiki = wikiDataFunctions.getWikiByUrlName(wikiUrlName)
+			if (!wiki.categories.includes(newCategory)) {
+				throw "NEW CATEGORY DOES NOT EXIST.";
+			}
 
 		} catch (e) {
 
