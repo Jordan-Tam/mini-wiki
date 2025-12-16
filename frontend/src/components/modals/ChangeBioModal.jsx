@@ -36,6 +36,10 @@ function ChangeBioModal({ isOpen, handleClose, user, setUser }) {
   
     try {
       setDisableSubmit(true);
+
+      if(bio.trim().length <= 1 || bio.trim().length >= 255){
+        throw `Bio must be between 1 and 255 characters and cannot be all spaces.`
+      }
   
       const response = await fetch(
         `/api/users/${currentUser.uid}/bio`,

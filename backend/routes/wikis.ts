@@ -17,6 +17,8 @@ import {
 } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
 import wiki_data_functions from "../data/wikis.ts";
+import { Wiki } from "../data/types.ts";
+import redis_functions from "../lib/redis/redis.ts";
 
 export const router = Router();
 
@@ -323,9 +325,55 @@ router
 
 	/**
 	 * Edits the wiki specified by "req.params.id".
+	 * expect req.body.name, req.body.description
 	 */
 	.patch(async (req, res) => {
-		return;
+		const wikiUrl = req.params.urlName.trim();
+
+		// test req body
+		if(!req.body) {
+			return res.status(400).json({error: `Missing request body.`});
+		}
+
+		try {
+            checkWikiOrPageName(req.body.name as string);
+        } catch (e) {
+            return res.status(400).json({error: `Invalid wiki name.`});
+        }
+
+        try {
+            checkDescription(req.body.description as string);
+        } catch (e) {
+            return res.status(400).json({error: `Invalid wiki description.`});
+        }
+
+		// test if wiki exists
+		let wiki:Wiki;
+		try {
+			wiki = await wiki_data_functions.getWikiByUrlName(wikiUrl);
+		} catch (e) {
+			return res.status(404).json({error: `Wiki not found.`});
+		}
+
+		const wikiId = wiki._id.toString();
+
+		let update:Wiki;
+		try {
+			await wiki_data_functions.changeWikiName(wikiId, req.body.name);
+			update = await wiki_data_functions.changeWikiDescription(wikiId, req.body.description);
+		} catch (e) {
+			return res.status(500).json({error: `Failed to update wiki: ${e}`});
+		}
+
+		// redis update
+		await redis_functions.set_json(update.urlName, update);
+
+		let redis_target_uids = [...wiki.collaborators, ...wiki.private_viewers, wiki.owner];
+		for(const uid of redis_target_uids) {
+			await redis_functions.del(`${uid}/getWikisByUser`);
+		}
+
+		return res.status(200).json(update);
 	})
 
 	/**
@@ -705,8 +753,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the new private viewer so that their home page displays the new wiki they can see.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because this is a private wiki so it doesn't appear in that list.
@@ -761,8 +809,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the removed private viewer so that their home page no longer displays the wiki.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because this is a private wiki so it doesn't appear in that list.
@@ -995,8 +1043,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the new collaborator so that their home page displays the new wiki in the COLLABORATOR section.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because the Discover page is not displaying the collaborators lists so the outdated entry is still okay to use.
@@ -1051,8 +1099,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the removed collaborator so that their home page no longer displays the wiki in their COLLABORATOR section.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because the Discover page is not displaying the collaborators lists so the outdated entry is still okay to use.
