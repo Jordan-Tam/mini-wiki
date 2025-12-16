@@ -1101,7 +1101,7 @@ router.route("/:urlname/transfer/:userId/:newOwnerId")
 		// transfer wiki owner
 		let newWiki;
 		try {
-			newWiki = await wiki_data_functions.changeWikiOwner(wikiId, newOwnerId);
+			newWiki = await wiki_data_functions.changeWikiOwner(wikiId, userId, newOwnerId);
 			await redisFunctions.set_json(wiki.urlName, newWiki);
 			await redisFunctions.set_json(
 				`${userId}/getWikisByUser`,
