@@ -5,7 +5,7 @@
 	"license": "MIT",
 	"scripts": {
 		"start": "ts-node --project tsconfig.json main.ts",
-		"dev": "npx ts-node-dev --project tsconfig.json main.ts",
+		"dev": "ts-node --project tsconfig.json main.ts",
 		"seed": "ts-node --project tsconfig.json scripts/seed.ts"
 	},
 	"devDependencies": {
