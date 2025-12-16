@@ -5,146 +5,143 @@ import { AuthContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
 import TakenCheck from "./TakenCheck";
 
-
 function Settings() {
-  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [username, setUsername] = useState(null);
-  const [changeUsernameOK, setChangeUsernameOK] = useState(null);
+	const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+	const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+	const [username, setUsername] = useState("");
+	const [changeUsernameOK, setChangeUsernameOK] = useState(null);
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext);
+	const { currentUser, setCurrentUser } = useContext(AuthContext);
 
-  let token: any;
+	let token: any;
 
-  if (currentUser) {
-    token = currentUser.accessToken;
-  }
-  const handleOpenDeleteUserModal = () => {
-    setShowDeleteUserModal(true);
-  };
+	if (currentUser) {
+		token = currentUser.accessToken;
+	}
+	const handleOpenDeleteUserModal = () => {
+		setShowDeleteUserModal(true);
+	};
 
-  const handleCloseDeleteUserModal = () => {
-    setShowDeleteUserModal(false);
-  };
+	const handleCloseDeleteUserModal = () => {
+		setShowDeleteUserModal(false);
+	};
 
-  const handleOpenChangePasswordModal = () => {
-    setShowChangePasswordModal(true);
-  };
+	const handleOpenChangePasswordModal = () => {
+		setShowChangePasswordModal(true);
+	};
 
-  const handleCloseChangePasswordModal = () => {
-    setShowChangePasswordModal(false);
-  };
+	const handleCloseChangePasswordModal = () => {
+		setShowChangePasswordModal(false);
+	};
 
-  const handleUsernameChange = (usernameInput: any) => {
-    setUsername(usernameInput);
-  };
+	const handleUsernameChange = (usernameInput: any) => {
+		setUsername(usernameInput);
+	};
 
-  const handleChangeUsername = async (usernameInput: any) => {
-    const obj = { username: usernameInput };
-    const response = await fetch(
-      `/api/users/${currentUser.uid}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: "Bearer " + token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(obj),
-      }
-    );
-    if (!response.ok) {
-      console.log("Server Error");
-      return;
-    }
-    const result = await response.json();
-    if (result.message === "Username changed") {
-      alert("Username Changed");
-      setCurrentUser({ ...currentUser, username: usernameInput });
-      window.location.reload();
-    }
-  };
+	const handleChangeUsername = async (usernameInput: any) => {
+		const obj = { username: usernameInput };
+		const response = await fetch(`/api/users/${currentUser.uid}`, {
+			method: "PATCH",
+			headers: {
+				Authorization: "Bearer " + token,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(obj)
+		});
+		if (!response.ok) {
+			console.log("Server Error");
+			return;
+		}
+		const result = await response.json();
+		if (result.message === "Username changed") {
+			alert("Username Changed");
+			setCurrentUser({ ...currentUser, username: usernameInput });
+			// window.location.reload();
+			setUsername("");
+		}
+	};
 
+	return (
+		<div className="container-fluid">
+			<h2>Your Settings</h2>
 
+			<div className="form-floating mb-3" style={{ width: "500px" }}>
+				<input
+					className="form-control"
+					name="usernameInput"
+					id="usernameInput"
+					placeholder="username"
+					value={username}
+					onChange={(event) => handleUsernameChange(event.target.value)}
+				/>
+				<label htmlFor="usernameInput">
+					Change username: {currentUser.username}
+				</label>
+			</div>
+			{currentUser && (
+				<TakenCheck
+					variable={username}
+					varName={"Username"}
+					setOK={setChangeUsernameOK}
+					serverURL="/api/users/usernameTaken/"
+				/>
+			)}
 
-  return (
-    <div className="container-fluid">
-      <h2>Your Settings</h2>      
+			{currentUser && changeUsernameOK && (
+				<div>
+					<button onClick={() => handleChangeUsername(username)}>
+						Change Username
+					</button>
+					<br />
+					<br />
+				</div>
+			)}
 
-      <div className="form-floating mb-3" style={{ width: "500px" }}>
-        <input
-          className="form-control"
-          name="usernameInput"
-          id="usernameInput"
-          placeholder="username"
-          onChange={(event) => handleUsernameChange(event.target.value)}
-        />
-        <label htmlFor="usernameInput">Change username: {currentUser.username}</label>
-      </div>
-      {currentUser && (
-        <TakenCheck
-          variable={username}
-          varName={"Username"}
-          setOK={setChangeUsernameOK}
-          serverURL="/api/users/usernameTaken/"
-        />
-      )}
+			{currentUser &&
+				currentUser.providerData[0].providerId === "password" &&
+				showChangePasswordModal && (
+					<ChangePasswordModal
+						isOpen={showChangePasswordModal}
+						handleClose={handleCloseChangePasswordModal}
+					/>
+				)}
+			<br />
+			<SignOutButton />
+			<br />
+			<br />
+			<button
+				className="button"
+				onClick={() => {
+					handleOpenChangePasswordModal();
+				}}
+			>
+				Change Password
+			</button>
+			<br />
+			<br />
 
-      {currentUser && changeUsernameOK && (
-        <div>
-          <button onClick={() => handleChangeUsername(username)}>
-            Change Username
-          </button>
-          <br />
-          <br />
-        </div>
-      )}
-
-      {currentUser &&
-        currentUser.providerData[0].providerId === "password" &&
-        showChangePasswordModal && (
-          <ChangePasswordModal
-            isOpen={showChangePasswordModal}
-            handleClose={handleCloseChangePasswordModal}
-          />
-        )}
-      <br />
-      <SignOutButton />
-      <br />
-      <br />
-      <button
-        className="button"
-        onClick={() => {
-          handleOpenChangePasswordModal();
-        }}
-      >
-        Change Password
-      </button>
-      <br />
-      <br />
-
-      <button
-        className="button"
-        onClick={() => {
-          handleOpenDeleteUserModal();
-        }}
-      >
-        Delete Account
-      </button>
-      {showDeleteUserModal && (
-        <DeleteUserModal
-          isOpen={showDeleteUserModal}
-          handleClose={handleCloseDeleteUserModal}
-        />
-      )}
-      {showChangePasswordModal && (
-        <ChangePasswordModal
-          isOpen={showChangePasswordModal}
-          handleClose={handleCloseChangePasswordModal}
-        />
-      )}
-
-    </div>
-  );
+			<button
+				className="button"
+				onClick={() => {
+					handleOpenDeleteUserModal();
+				}}
+			>
+				Delete Account
+			</button>
+			{showDeleteUserModal && (
+				<DeleteUserModal
+					isOpen={showDeleteUserModal}
+					handleClose={handleCloseDeleteUserModal}
+				/>
+			)}
+			{showChangePasswordModal && (
+				<ChangePasswordModal
+					isOpen={showChangePasswordModal}
+					handleClose={handleCloseChangePasswordModal}
+				/>
+			)}
+		</div>
+	);
 }
 
 export default Settings;
