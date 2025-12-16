@@ -317,7 +317,7 @@ function WikiHome() {
 				<div className="card-body">
 					<h5 className="card-title">Search Pages in this Wiki</h5>
 					<form onSubmit={handleSearch}>
-						<div className="input-group mb-2">
+						<div className="input-group mb-2" style={{zIndex: 0}}>
 							<input
 								type="text"
 								className="form-control"
