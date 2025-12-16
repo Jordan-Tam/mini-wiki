@@ -80,7 +80,7 @@ function Home() {
 						?
 						<p>You don't own any wikis. <Link to="/create">Click here to create one.</Link></p>
 						:
-						wikisData.OWNER.map((wiki) => <WikiCard wiki={wiki} />)
+						wikisData.OWNER.map((wiki) => <WikiCard key={wiki.urlName} wiki={wiki} />)
 					)	
 				}
 				</div>
@@ -96,8 +96,8 @@ function Home() {
 						?
 						<p>You are not a collaborator for any wikis.</p>
 						:
-						wikisData.COLLABORATOR.map((wiki) => <WikiCard wiki={wiki} />)
-					)	
+						wikisData.COLLABORATOR.map((wiki) => <WikiCard key={wiki.urlName} wiki={wiki} />)
+					)
 				}
 				</div>
 				<div className="p-3 bg-warning-subtle">
@@ -111,7 +111,7 @@ function Home() {
 						?
 						<p>You are not a private viewer for any wikis.</p>
 						:
-						wikisData.PRIVATE_VIEWER.map((wiki) => <WikiCard wiki={wiki} />)
+						wikisData.PRIVATE_VIEWER.map((wiki) => <WikiCard key={wiki.urlName} wiki={wiki} />)
 					)	
 				}
 				</div>

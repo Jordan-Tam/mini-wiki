@@ -20,7 +20,7 @@ const FIREBASE_UIDS = [
 	"iXpvdkmqTnZoOJC2BykznGS2nBB2"
 ];
 
-const users_to_seed = [
+const users_to_seed: any = [
 	{
 		firebaseUID: FIREBASE_UIDS[0],
 		email: "user1@gmail.com",
@@ -73,7 +73,107 @@ const users_to_seed = [
 	}
 ];
 
-const wikis_to_seed = [
+const wikis_to_seed: any = [
+	{
+		name: "Web Development Guide",
+		description: "A comprehensive guide to modern web development",
+		urlName: "web-development-guide",
+		owner: FIREBASE_UIDS[0],
+		access: "public-edit",
+		categories: [],
+		pages: [
+			{
+				name: "Getting Started with React",
+				category: "UNCATEGORIZED",
+				content: [
+					{
+						editorType: "",
+						contentString: ""
+					}
+				]
+			},
+			{
+				name: "Node.js Best Practices",
+				category: "UNCATEGORIZED",
+				content: [
+					{
+						editorType: "text",
+						contentString: ""
+					}
+				]
+			}
+		]
+	},
+	{
+		name: "Database Design Patterns",
+		description: "Learn about database design patterns and optimization techniques",
+		urlName: "database-design-patterns",
+		owner: FIREBASE_UIDS[1],
+		access: "public-view",
+		pages: [
+
+		]
+	},
+	{
+		name: "Cloud Computing Essentials",
+		description: "Understanding cloud infrastructure and deployment strategies",
+		urlName: "cloud-computing-essentials",
+		owner: FIREBASE_UIDS[2],
+		access: "public-edit",
+		pages: [
+
+		]
+	},
+	{
+		name: "Machine Learning Basics",
+		description: "Introduction to machine learning concepts and algorithms",
+		urlName: "machine-learning-basics",
+		owner: FIREBASE_UIDS[3],
+		access: "private",
+		pages: [
+
+		]
+	},
+	{
+		name: "Python Programming",
+		description: "Python programming tips, tricks, and best practices",
+		urlName: "python-programming",
+		owner: FIREBASE_UIDS[4],
+		access: "public-edit",
+		pages: [
+
+		]
+	},
+	{
+		name: "Company Internal Documentation",
+		description: "Confidential company processes and procedures",
+		urlName: "company-internal-docs",
+		owner: FIREBASE_UIDS[5],
+		access: "private",
+		pages: [
+
+		]
+	},
+	{
+		name: "Research Project Alpha",
+		description: "Confidential research notes and findings",
+		urlName: "research-project-alpha",
+		owner: FIREBASE_UIDS[6],
+		access: "private",
+		pages: [
+
+		]
+	},
+	{
+		name: "Personal Finance Guide",
+		description: "Private notes on investment strategies and financial planning",
+		urlName: "personal-finance-guide",
+		owner: FIREBASE_UIDS[7],
+		access: "private",
+		pages: [
+
+		]
+	},
 	{
 		name: "JavaScript Sillies",
 		description: "Holding JavaScript accountable since 2025.",

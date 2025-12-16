@@ -292,8 +292,8 @@ function WikiHome() {
 		setSearchError(null);
 	};
 
-	if (loading) return <p>Loading...</p>;
-	if (error) return <p>Error: {error}</p>;
+	if (loading) return <div className="container-fluid">Loading...</div>;
+	if (error) return <div className="container-fluid">Error: {error}</div>;
 	//console.log(collaborators);
 	return (
 		<div className="container-fluid">
@@ -437,25 +437,23 @@ function WikiHome() {
 									)}
 
 									{collaborators?.map((user) => (
-										<>
-											<li
-												key={user.username}
-												className="list-group-item d-flex justify-content-between align-items-center"
+										<li
+											key={user.username}
+											className="list-group-item d-flex justify-content-between align-items-center"
+										>
+											<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
+												{user.username}
+											</Link>
+											<button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeleteCollaborator(user.username);
+													setShowDeleteCollaboratorModal(true);
+												}}
 											>
-												<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
-													{user.username}
-												</Link>
-												<button
-													className="btn btn-danger btn-sm"
-													onClick={() => {
-														setDeleteCollaborator(user.username);
-														setShowDeleteCollaboratorModal(true);
-													}}
-												>
-													Remove Collaborator
-												</button>
-											</li>
-										</>
+												Remove Collaborator
+											</button>
+										</li>
 									))}
 								</ul>
 							</>
@@ -494,25 +492,23 @@ function WikiHome() {
 									)}
 
 									{private_viewers?.map((user) => (
-										<>
-											<li
-												key={user.username}
-												className="list-group-item d-flex justify-content-between align-items-center"
+										<li
+											key={user.username}
+											className="list-group-item d-flex justify-content-between align-items-center"
+										>
+											<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
+												{user.username}
+											</Link>
+											<button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeletePrivateViewer(user.username);
+													setShowDeletePrivateViewerModal(true);
+												}}
 											>
-												<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
-													{user.username}
-												</Link>
-												<button
-													className="btn btn-danger btn-sm"
-													onClick={() => {
-														setDeletePrivateViewer(user.username);
-														setShowDeletePrivateViewerModal(true);
-													}}
-												>
-													Remove from Private Viewers
-												</button>
-											</li>
-										</>
+												Remove from Private Viewers
+											</button>
+										</li>
 									))}
 								</ul>
 							</>
@@ -693,7 +689,7 @@ function WikiHome() {
 						console.log("wywywywywyw");
 					}}
 				/>
-			)};
+			)}
 
 			{(showEditWikiModal && wiki) && (
 				<EditWikiModal
