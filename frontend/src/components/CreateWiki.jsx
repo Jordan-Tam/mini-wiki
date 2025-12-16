@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import TakenCheck from "./TakenCheck";
-import { checkUrlName } from "../../helpers.ts";
+import { checkDescription, checkUrlName, checkWikiOrPageName } from "../../helpers.ts";
 
 function CreateWiki() {
 	//Auth
@@ -45,6 +45,9 @@ function CreateWiki() {
             setError("Cannot use this Wiki URL.");
             return;
           }
+
+		  setName(checkWikiOrPageName(name));
+		  setDescription(checkDescription(description));
 
         } catch (e) {
           setDisableSubmit(false);
