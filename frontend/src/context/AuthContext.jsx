@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   if (loadingUser) {
     return (
-      <div>
+      <div className="container-fluid">
         <h1>Loading...</h1>
       </div>
     );

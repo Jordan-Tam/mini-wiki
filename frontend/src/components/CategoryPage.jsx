@@ -275,8 +275,8 @@ function CategoryPage() {
                         </tr>
                     </thead>
                     <tbody className="table-group-divider">
-                        {displayedList && displayedList.map((page) => (
-                            <tr>
+                        {displayedList && displayedList.map((page, index) => (
+                            <tr key={index}>
                                 <td>
                                     <Link to={`/${wikiUrlName}/${page.urlName}`}>
                                         {page.name}

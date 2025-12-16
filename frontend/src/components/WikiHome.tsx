@@ -292,8 +292,8 @@ function WikiHome() {
 		setSearchError(null);
 	};
 
-	if (loading) return <p>Loading...</p>;
-	if (error) return <p>Error: {error}</p>;
+	if (loading) return <div className="container-fluid">Loading...</div>;
+	if (error) return <div className="container-fluid">Error: {error}</div>;
 	//console.log(collaborators);
 	return (
 		<div className="container-fluid">
@@ -415,7 +415,7 @@ function WikiHome() {
 						</button>
 						{!showCollaborators && (
 							<button
-								className="btn btn-success me-3"
+								className="btn btn-primary me-3"
 								onClick={() => setShowCollaborators(true)}
 							>
 								View Collaborators
@@ -424,7 +424,7 @@ function WikiHome() {
 						{showCollaborators && (
 							<>
 								<button
-									className="btn btn-success ms-3"
+									className="btn btn-danger me-3"
 									onClick={() => setShowCollaborators(false)}
 								>
 									Hide Collaborators
@@ -437,25 +437,23 @@ function WikiHome() {
 									)}
 
 									{collaborators?.map((user) => (
-										<>
-											<li
-												key={user.username}
-												className="list-group-item d-flex justify-content-between align-items-center"
+										<li
+											key={user.username}
+											className="list-group-item d-flex justify-content-between align-items-center"
+										>
+											<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
+												{user.username}
+											</Link>
+											<button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeleteCollaborator(user.username);
+													setShowDeleteCollaboratorModal(true);
+												}}
 											>
-												<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
-													{user.username}
-												</Link>
-												<button
-													className="btn btn-danger btn-sm"
-													onClick={() => {
-														setDeleteCollaborator(user.username);
-														setShowDeleteCollaboratorModal(true);
-													}}
-												>
-													Remove Collaborator
-												</button>
-											</li>
-										</>
+												Remove Collaborator
+											</button>
+										</li>
 									))}
 								</ul>
 							</>
@@ -471,17 +469,22 @@ function WikiHome() {
 							Add Private Viewer
 						</button>
 						{!showPVs && (
+							<>
 							<button
-								className="btn btn-success me-3"
+								className="btn btn-primary me-3"
 								onClick={() => setShowPVs(true)}
 							>
 								View Private Viewers
 							</button>
+							<br/>
+							<br/>
+							</>
 						)}
+
 						{showPVs && (
 							<>
 								<button
-									className="btn btn-success ms-3"
+									className="btn btn-danger me-3"
 									onClick={() => setShowPVs(false)}
 								>
 									Hide Private Viewers
@@ -494,29 +497,29 @@ function WikiHome() {
 									)}
 
 									{private_viewers?.map((user) => (
-										<>
-											<li
-												key={user.username}
-												className="list-group-item d-flex justify-content-between align-items-center"
+										<li
+											key={user.username}
+											className="list-group-item d-flex justify-content-between align-items-center"
+										>
+											<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
+												{user.username}
+											</Link>
+											<button
+												className="btn btn-danger btn-sm"
+												onClick={() => {
+													setDeletePrivateViewer(user.username);
+													setShowDeletePrivateViewerModal(true);
+												}}
 											>
-												<Link to={`/profile/${user.firebaseUID}`} style={{ textDecoration: "none" }}>
-													{user.username}
-												</Link>
-												<button
-													className="btn btn-danger btn-sm"
-													onClick={() => {
-														setDeletePrivateViewer(user.username);
-														setShowDeletePrivateViewerModal(true);
-													}}
-												>
-													Remove from Private Viewers
-												</button>
-											</li>
-										</>
+												Remove from Private Viewers
+											</button>
+										</li>
+
 									))}
 								</ul>
 							</>
 						)}
+
 					</>
 				)}
 				<button className="btn btn-warning me-3"
@@ -540,24 +543,8 @@ function WikiHome() {
 				>
 					💬 Chat
 				</button>
-				{wiki.owner === currentUser.uid && (
-					<button
-						className="btn btn-danger me-3"
-						onClick={() => setShowTransferModal(true)}
-					>
-						↔ Transfer Ownership
-					</button>
-				)}
-
-				{wiki.owner === currentUser.uid &&
-				<button 
-				className="btn btn-danger me-3"
-				onClick={() => setShowDeleteWikiModal(true)}
-				>
-					Delete Wiki
-				</button>}
 			</div>
-
+						
 			<div className="mb-3">
 				{wiki?.categories?.map((category, index) => (
 					<div className="card mb-3" key={key_val++}>
@@ -598,6 +585,23 @@ function WikiHome() {
 					</div>
 				))}
 			</div>
+
+			{wiki.owner === currentUser.uid && (
+					<button
+						className="btn btn-danger me-3"
+						onClick={() => setShowTransferModal(true)}
+					>
+						↔ Transfer Ownership
+					</button>
+				)}
+
+				{wiki.owner === currentUser.uid &&
+				<button 
+				className="btn btn-danger me-3"
+				onClick={() => setShowDeleteWikiModal(true)}
+				>
+					Delete Wiki
+				</button>}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
@@ -693,7 +697,7 @@ function WikiHome() {
 						console.log("wywywywywyw");
 					}}
 				/>
-			)};
+			)}
 
 			{(showEditWikiModal && wiki) && (
 				<EditWikiModal
