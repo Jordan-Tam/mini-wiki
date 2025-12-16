@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 
 Modal.setAppElement("#root");
@@ -21,7 +21,7 @@ const customStyles = {
 
 function CreatePageModal(props) {
 	// Auth
-	const { currentUser } = useContext(AuthContext);
+	const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 	const navigate = useNavigate();
 
 	// Form stuff

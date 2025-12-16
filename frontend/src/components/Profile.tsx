@@ -14,7 +14,7 @@ function Profile() {
   const [user, setUser] = useState(null);
   const [showChangeBioModal, setShowChangeBioModal] = useState(false)
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   let token: any;
   

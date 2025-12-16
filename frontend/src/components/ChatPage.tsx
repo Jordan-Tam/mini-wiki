@@ -1,13 +1,13 @@
 import { useContext, useEffect, useState, type JSX } from "react";
 import type React from "react";
 import { useParams } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.jsx";
 import Chat from "./Chat";
 
 export const ChatPage:React.FC = (): JSX.Element => {
     // get wiki by id
     const { wikiUrlName } = useParams();
-	const { currentUser } = useContext(AuthContext);
+	const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     const [wiki, setWiki] = useState(null);
 	const [loading, setLoading] = useState(true);

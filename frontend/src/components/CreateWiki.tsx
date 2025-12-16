@@ -1,13 +1,13 @@
 import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import TakenCheck from "./TakenCheck.js";
 import { checkDescription, checkUrlName, checkWikiOrPageName } from "../../helpers.ts";
 
 function CreateWiki() {
 	//Auth
-    const {currentUser} = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext) as FbUserContextWrapper;
 
     // Form stuff
     const [name, setName] = useState("");

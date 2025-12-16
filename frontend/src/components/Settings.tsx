@@ -12,7 +12,7 @@ function Settings() {
   const [changeUsernameOK, setChangeUsernameOK] = useState(null);
   const [error, setError] = useState("");
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   let token: any;
 

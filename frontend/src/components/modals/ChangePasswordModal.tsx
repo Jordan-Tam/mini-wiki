@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext";
 import { doChangePassword } from "../../firebase/FirebaseFunctions";
 import ReactModal from "react-modal";
 
@@ -23,7 +23,7 @@ function ChangePasswordModal(props) {
     props.isOpen
   );
 
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
   const [pwMatch, setPwMatch] = useState("");
 
   const handleCloseChangePasswordModal = () => {

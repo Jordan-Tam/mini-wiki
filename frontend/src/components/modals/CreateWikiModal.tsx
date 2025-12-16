@@ -1,5 +1,5 @@
 import {useContext, useState} from "react";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import TakenCheck from "../TakenCheck.js";
@@ -25,7 +25,7 @@ const customStyles = {
 function CreateWikiModal(props) {
 
     // Auth
-    const {currentUser} = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext) as FbUserContextWrapper;
 
     // Modal stuff
     const [showCreateWikiModal, setShowCreateWikiModal] = useState(props.isOpen);

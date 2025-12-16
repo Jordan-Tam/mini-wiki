@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 
 Modal.setAppElement("#root");
@@ -21,7 +21,7 @@ const customStyles = {
 function DeleteCollaboratorModal(props) {
 
     
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     const [username, setUsername] = useState(props.username);
     const [error, setError] = useState("");

@@ -1,12 +1,12 @@
 import { useState, useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from "react-icons/fa";
 
 
 function Discover(){
 
-	const { currentUser } = useContext(AuthContext);
+	const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
     //console.log(currentUser)
     const [token, setToken] = useState(
 		currentUser ? currentUser.accessToken : ""
