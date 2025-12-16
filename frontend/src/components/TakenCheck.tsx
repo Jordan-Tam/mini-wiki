@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 import { checkUrlName, checkUsername } from "../../helpers.ts";
 
 const FORBIDDEN_WIKI_URL_NAMES = [
