@@ -235,16 +235,11 @@ const wiki_data_functions = {
 		wikiId = checkId(wikiId, "Wiki", "changeWikiName");
 		newName = checkDescription(newName, "changeWikiName");
 
-		// Create the updated wiki object.
-		let updatedWiki = {
-			name: newName
-		};
-
 		const wikisCollection = await wikis();
 
-		const updateInfo = await wikisCollection.findOneAndReplace(
+		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			updatedWiki,
+			{ $set: {name: newName} },
 			{ returnDocument: "after" }
 		);
 
@@ -255,7 +250,29 @@ const wiki_data_functions = {
 		return await this.getWikiById(wikiId.toString());
 	},
 
-	async changeWikiDescription() {},
+	/**
+	 * Change the wiki description
+	 * @param wikiId 
+	 * @param newDescription 
+	 */
+	async changeWikiDescription(wikiId:string, newDescription:string): Promise<Wiki> {
+		wikiId = checkId(wikiId, "Wiki", "changeWikiDescription");
+		newDescription = checkDescription(newDescription, "changeWikiDescription");
+
+		const wikic = await wikis();
+
+		const update = wikic.findOneAndUpdate(
+			{ _id: new ObjectId(wikiId) },
+			{ $set: {description: newDescription} },
+			{ returnDocument: "after" }
+		);
+
+		if(!update) {
+			throw "Failed to change wiki description.";
+		}
+
+		return update;
+	},
 
 	async changeWikiOwner(wikiId: string, oldOwner:string, newOwner: string): Promise<Wiki> {
 		// Input validation.
