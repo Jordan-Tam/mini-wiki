@@ -12,6 +12,7 @@ import DeleteWikiModal from "./modals/DeleteWikiModal.jsx";
 import { default as AddPrivateViewerModal } from "../components/modals/addPrivateViewerModal.jsx"
 import type { User, UserContext, Wiki } from "../types.js";
 import { TransferOwnershipModal } from "./modals/TransferOwnershipModal.js";
+import { EditWikiModal } from "./modals/EditWikiModal.js";
 
 let key_val = 0;
 function WikiHome() {
@@ -105,6 +106,7 @@ function WikiHome() {
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
 	const [showAddCollabModal, setShowAddCollabModal] = useState(false);
+	const [showEditWikiModal, setShowEditWikiModal] = useState<boolean>(false);
 	const [collaborators, setCollaborators] = useState<Array<User> | null>(null);
 	const [showCollaborators, setShowCollaborators] = useState(false);
 	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
@@ -517,7 +519,9 @@ function WikiHome() {
 						)}
 					</>
 				)}
-				<button className="btn btn-warning me-3">Edit Wiki</button>
+				<button className="btn btn-warning me-3"
+					onClick={() => {setShowEditWikiModal(true)}}
+				>Edit Wiki</button>
 				<button
 					className="btn btn-secondary me-3"
 					onClick={() => setShowNewCategoryModal(true)}
@@ -690,6 +694,40 @@ function WikiHome() {
 					}}
 				/>
 			)};
+
+			{(showEditWikiModal && wiki) && (
+				<EditWikiModal
+					isOpen={showEditWikiModal}
+					onClose={() => {
+						handleCloseModals();
+						setShowEditWikiModal(false);
+					}}
+					wiki={wiki}
+					onSubmit={async (response) => {
+						// form response, already validated
+						const res = await fetch(`/api/wiki/${wiki.urlName}`, {
+							method: "PATCH",
+							headers: {
+								'Content-Type': 'application/json',
+								Authorization: `Bearer ${currentUser.accessToken}`
+							},
+							body: JSON.stringify({
+								name: response.name,
+								description: response.description
+							})
+						});
+
+						const res_json = await res.json();
+
+						if(!res.ok || res.status !== 200) {
+							alert(`Failed to update wiki: ${res_json.error}`);
+							return;
+						}
+
+						window.location.reload();
+					}}
+				/>
+			)}
 		</div>
 	);
 }
