@@ -4,6 +4,8 @@ import { FaPlus } from 'react-icons/fa';
 import ChangeBioModal from "./modals/ChangeBioModal"
 import WikiCard from "./cards/WikiCard.jsx";
 import { useParams } from "react-router-dom"
+import { FaLock, FaUnlock } from "react-icons/fa";
+import { Link } from "react-router-dom"
 
 function Profile() {
 
@@ -146,23 +148,53 @@ function Profile() {
 
       <hr/>
 
-      <h3>Public Wikis</h3>
-      {wikis.OWNER?.filter(wiki => wiki.access !== "private")
-        .map(wiki => (
-          <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
-            <WikiCard wiki={wiki} />
-          </li>
-        ))}
+      <h3><FaUnlock />{" "}Public Wikis</h3>
 
-      { isUserProfile && (
+      { 
+      wikis.OWNER?.filter(wiki => wiki.access !== "private").length !== 0
+      && (
         <>
-        <h3>Private Wikis</h3>
+        {wikis.OWNER?.filter(wiki => wiki.access !== "private")
+          .map(wiki => (
+            <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
+              <WikiCard wiki={wiki} />
+            </li>
+          ))}
+        </>
+      )
+      }
+
+      { 
+      wikis.OWNER?.filter(wiki => wiki.access !== "private").length === 0
+      && (
+        <>
+        <p> You have no public wikis! <Link to="/create"> Make one </Link> </p>
+        </>
+      )
+      }
+
+
+      { isUserProfile &&
+      wikis.OWNER?.filter(wiki => wiki.access === "private").length !== 0
+      && (
+        <>
+        <h3><FaLock />{" "}Private Wikis</h3>
         {wikis.OWNER?.filter(wiki => wiki.access === "private")
           .map(wiki => (
             <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
               <WikiCard wiki={wiki} />
             </li>
           ))}
+        </>
+      )
+      }
+
+    { isUserProfile &&
+      wikis.OWNER?.filter(wiki => wiki.access === "private").length === 0
+      && (
+        <>
+        <h3><FaLock />{" "}Private Wikis</h3>
+        <p> You have no private wikis! <Link to="/create"> Make one </Link> </p>
         </>
       )
       }
