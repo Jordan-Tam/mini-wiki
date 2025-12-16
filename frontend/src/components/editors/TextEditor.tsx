@@ -2,22 +2,34 @@ import { useState, useRef, useEffect } from "react";
 import rehypeSanitize from "rehype-sanitize";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
+interface TextEditorProps {
+	onChange: (content:string) => any;
+	defaultValue: string;
+	showPreview: boolean;
+	inputId: string;
+}
+
 function TextEditor({
 	onChange,
 	defaultValue = "Text",
 	showPreview = true,
 	inputId
-}) {
+}: TextEditorProps) {
 	const textareaId = inputId;
 	const [text, setText] = useState(defaultValue);
 	// https://react.dev/learn/manipulating-the-dom-with-refs
-	const textareaRef = useRef(null);
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	// Add for security per the github
 	// (https://github.com/uiwjs/react-markdown-preview?tab=readme-ov-file#security)
 	const rehypePlugins = [rehypeSanitize];
 	// Function to add in the markdown symbols
-	const insertMarkdown = (before, after = before) => {
+	const insertMarkdown = (before:string, after:string = before) => {
 		const textarea = textareaRef.current;
+
+		if(!textarea) {
+			return;
+		}
+
 		const start = textarea.selectionStart;
 		const end = textarea.selectionEnd;
 		const selectedText = text.substring(start, end);
@@ -95,8 +107,8 @@ function TextEditor({
 						name="userTextArea"
 						id={textareaId}
 						value={text}
-						rows="10"
-						cols="20"
+						rows={10}
+						cols={20}
 						onChange={(e) => {
 							setText(e.target.value);
 							if (onChange) onChange(e.target.value);

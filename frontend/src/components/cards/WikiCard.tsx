@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
+import type { Wiki } from "../../types";
 
-function WikiCard({wiki}) {
+function WikiCard({wiki}:{wiki: Wiki}) {
     return (
         <Link
             to={`/${wiki.urlName}`}
