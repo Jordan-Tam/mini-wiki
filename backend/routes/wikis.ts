@@ -613,7 +613,8 @@ router
 			let updatedWiki = await pageDataFunctions.createPage(
 				wikiId,
 				pageName,
-				category
+				category,
+				req.user.uid
 			);
 
 			// REDIS: The wiki.urlName entry in the cache is now outdated because a new page has been created. Update/delete it from the cache. There is no need to update the publicWikis or getWikisByUser entries because when those entries are retrieved, the categories are not being displayed.
@@ -898,7 +899,8 @@ router
 			const updatedWiki = await pageDataFunctions.changePageContent(
 				wiki._id.toString(),
 				pageId,
-				content
+				content,
+				req.user.uid
 			);
 
 			// REDIS: The wiki.urlName entry in the cache is now outdated because a page's contents have been edited. Update/delete it from the cache.

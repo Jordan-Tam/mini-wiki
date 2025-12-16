@@ -1,13 +1,13 @@
+import {databaseConnection, closeConnection} from "../config/mongoConnection.ts";
+import {users as usersCollection, wikis as wikisCollection} from "../config/mongoCollections.ts";
 import userDataFunctions from "../data/users.ts";
 import wikiDataFunctions from "../data/wikis.ts";
 import pageDataFunctions from "../data/pages.ts";
 import redisFunctions from "../lib/redis/redis.ts";
 import { ensureIndex, esClient, WIKI_INDEX } from "../lib/search/search.ts";
-import { databaseConnection } from "../config/mongoConnection.ts";
-import { users, wikis } from "../config/mongoCollections.ts";
 
-// Hard-coded Firebase UIDs of users already created in Firebase
-const SEED_USER_UIDS = [
+// List of UIDs already stored in Firebase.
+const FIREBASE_UIDS = [
 	"IQtraRRIrOa65GXAyVEizvuIYol2",
 	"fMW5DoXA6CUEd5kKVJWRiWqt6p23",
 	"e7CHvUC7xoOdY3Uz1pBHOo3qG7l1",
@@ -20,555 +20,532 @@ const SEED_USER_UIDS = [
 	"iXpvdkmqTnZoOJC2BykznGS2nBB2"
 ];
 
-interface SeedUser {
-	uid: string;
-	username: string;
-	email: string;
-}
-
-const seedUsers: SeedUser[] = [
+const users_to_seed = [
 	{
-		uid: SEED_USER_UIDS[0],
-		username: "JohnDoe",
-		email: "user1@gmail.com"
+		firebaseUID: FIREBASE_UIDS[0],
+		email: "user1@gmail.com",
+		username: "John_Doe"
 	},
 	{
-		uid: SEED_USER_UIDS[1],
-		username: "JaneSmith",
-		email: "user2@gmail.com"
+		firebaseUID: FIREBASE_UIDS[1],
+		email: "user2@gmail.com",
+		username: "Jane_Smith"
 	},
 	{
-		uid: SEED_USER_UIDS[2],
-		username: "AlexJohnson",
-		email: "user3@gmail.com"
+		firebaseUID: FIREBASE_UIDS[2],
+		email: "user3@gmail.com",
+		username: "Alan_Smithee"
 	},
 	{
-		uid: SEED_USER_UIDS[3],
-		username: "EmilyBrown",
-		email: "user4@gmail.com"
+		firebaseUID: FIREBASE_UIDS[3],
+		email: "user4@gmail.com",
+		username: "Alice"
 	},
 	{
-		uid: SEED_USER_UIDS[4],
-		username: "MichaelWilson",
-		email: "user5@gmail.com"
+		firebaseUID: FIREBASE_UIDS[4],
+		email: "user5@gmail.com",
+		username: "Bob"
 	},
 	{
-		uid: SEED_USER_UIDS[5],
-		username: "SarahDavis",
-		email: "user6@gmail.com"
+		firebaseUID: FIREBASE_UIDS[5],
+		email: "user6@gmail.com",
+		username: "Eve"
 	},
 	{
-		uid: SEED_USER_UIDS[6],
-		username: "DavidMiller",
-		email: "user7@gmail.com"
+		firebaseUID: FIREBASE_UIDS[6],
+		email: "user7@gmail.com",
+		username: "Mallory"
 	},
 	{
-		uid: SEED_USER_UIDS[7],
-		username: "OliviaGarcia",
-		email: "user8@gmail.com"
+		firebaseUID: FIREBASE_UIDS[7],
+		email: "user8@gmail.com",
+		username: "John_Q_Public"
 	},
 	{
-		uid: SEED_USER_UIDS[8],
-		username: "JamesMartinez",
-		email: "user9@gmail.com"
+		firebaseUID: FIREBASE_UIDS[8],
+		email: "user9@gmail.com",
+		username: "Baby_Doe"
 	},
 	{
-		uid: SEED_USER_UIDS[9],
-		username: "SophiaAnderson",
-		email: "user10@gmail.com"
+		firebaseUID: FIREBASE_UIDS[9],
+		email: "user10@gmail.com",
+		username: "MongoDB_Enthusiast"
 	}
 ];
 
-interface SeedWiki {
-	name: string;
-	description: string;
-	urlName: string;
-	ownerUid: string;
-	access: string;
-	pages: Array<{
-		name: string;
-		category: string;
-		content: Array<{ editorType: string; contentString: string }>;
-	}>;
-}
-
-const seedWikis: SeedWiki[] = [
+const wikis_to_seed = [
 	{
-		name: "Web Development Guide",
-		description: "A comprehensive guide to modern web development",
-		urlName: "web-development-guide",
-		ownerUid: SEED_USER_UIDS[0],
+		name: "JavaScript Sillies",
+		description: "Holding JavaScript accountable since 2025.",
+		urlName: "javascript-sillies",
+		owner: FIREBASE_UIDS[0],
 		access: "public-edit",
+		categories: ["Dates and Times", "Fruits"], // Slugification will be done automatically by the data functions.
+		collaborators: [], // None because this is public-edit
+		private_viewers: [], // None because this is public-edit
 		pages: [
 			{
-				name: "Getting Started with React",
-				category: "UNCATEGORIZED",
+				name: "new Date stuff",
+				category: "Dates and Times",
 				content: [
 					{
 						editorType: "text",
-						contentString:
-							"# Getting Started with React\n\nReact is a JavaScript library for building user interfaces with reusable components.\n\n## Key Concepts\n\n- **Components**: Building blocks of React apps\n- **JSX**: JavaScript syntax extension\n- **Props**: Data passed to components\n- **State**: Component data that changes over time"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"## Installation\n\n```bash\nnpx create-react-app my-app\ncd my-app\nnpm start\n```"
-					},
-					{
-						editorType: "table",
-						contentString:
-							"| Feature | Description |\n|---------|-------------|\n| Virtual DOM | Efficient rendering |\n| Component-based | Reusable UI pieces |\n| One-way data flow | Predictable state management |"
+						contentString: "..."
 					}
 				]
 			},
 			{
-				name: "Node.js Best Practices",
-				category: "UNCATEGORIZED",
+				name: "Banana",
+				category: "Fruits",
 				content: [
 					{
 						editorType: "text",
-						contentString:
-							"# Node.js Best Practices\n\nNode.js is a JavaScript runtime built on Chrome's V8 JavaScript engine.\n\n## Best Practices\n\n1. Use async/await for asynchronous code\n2. Handle errors properly\n3. Use environment variables\n4. Implement logging\n5. Use a process manager like PM2"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"**Error Handling Example:**\n\n```javascript\ntry {\n  await someAsyncOperation();\n} catch (error) {\n  console.error('Error:', error);\n  // Handle error appropriately\n}\n```"
+						contentString: "```('b' + 'a' + + 'a' + 'a').toLowerCase() === \"banana\"``` returns true.\n\nNow laugh."
 					}
 				]
 			}
 		]
 	},
 	{
-		name: "Database Design Patterns",
-		description:
-			"Learn about database design patterns and optimization techniques",
-		urlName: "database-design-patterns",
-		ownerUid: SEED_USER_UIDS[1],
+		name: "Stevens Cinematic Universe",
+		description: "Welcome to the Stevens Institute of Technology online encyclopedia!",
+		urlName: "stevens",
+		owner: FIREBASE_UIDS[1],
 		access: "public-view",
+		categories: ["Characters", "Locations", "Events", "Organizations"],
+		collaborators: [FIREBASE_UIDS[0]],
+		private_viewers: [], // None because this is public-view
 		pages: [
 			{
-				name: "Relational Database Fundamentals",
-				category: "UNCATEGORIZED",
+				name: "Lem E. Hackett",
+				category: "Characters",
 				content: [
 					{
 						editorType: "text",
-						contentString:
-							"# Relational Database Fundamentals\n\nRelational databases organize data into tables with rows and columns.\n\n## ACID Properties\n\n- **Atomicity**: Transactions are all-or-nothing\n- **Consistency**: Data remains valid\n- **Isolation**: Concurrent transactions don't interfere\n- **Durability**: Committed data persists"
-					},
-					{
-						editorType: "table",
-						contentString:
-							"| Database | Type | Use Case |\n|----------|------|----------|\n| PostgreSQL | Relational | Complex queries, ACID compliance |\n| MySQL | Relational | Web applications |\n| SQLite | Relational | Embedded, mobile apps |"
+						contentString: `**Lem E. Hackett** is a legendary individual who studied discrete mathematics at Stevens. After graduating in 2021, he began making educational YouTube videos about logical fallacies. By 2025, his channel had become the platform's most-subscribed channel with over 600 million YouTube subscribers, which sparked intense debate within the YouTube community regarding the authenticity of this count. He has expressed interest in auditioning for a role in a future Jurassic World sequel.`
 					}
 				]
 			},
 			{
-				name: "MongoDB Schema Design",
-				category: "UNCATEGORIZED",
+				name: "Gogo the Gorilla",
+				category: "Characters",
 				content: [
 					{
 						editorType: "text",
-						contentString:
-							"# MongoDB Schema Design\n\nMongoDB is a document-oriented database with flexible schema design.\n\n## Design Patterns\n\n- **Embedding**: Store related data together\n- **Referencing**: Link documents with IDs\n- **Hybrid**: Combine both approaches"
-					},
+						contentString: "gorilla"
+					}
+				]
+			},
+			{
+				name: "Edwin Augustus Stevens",
+				category: "Characters",
+				content: [
 					{
 						editorType: "text",
-						contentString:
-							'**Example Document:**\n\n```json\n{\n  "_id": ObjectId("..."),\n  "name": "John Doe",\n  "email": "john@example.com",\n  "orders": [\n    { "id": 1, "total": 99.99 },\n    { "id": 2, "total": 149.99 }\n  ]\n}\n```'
-					},
+						contentString: `**Edwin Augustus Stevens** (1795 - 1868) was the founder of Stevens Institute of Technology.`
+					}
+				]
+			},
+			{
+				name: "Marques Brownlee",
+				category: "Characters",
+				content: [
 					{
 						editorType: "text",
-						contentString:
-							"*Remember*: Schema design should be driven by your application's query patterns!"
+						contentString: `**Marques Brownlee** (born 1993) is a YouTuber who graduated from Stevens Institute of Technology with a Bachelor of Science in 2015.`
+					}
+				]
+			},
+			{
+				name: "Pierce Dining Hall",
+				category: "Locations",
+				content: [
+					{
+						editorType: "text",
+						contentString: `**Pierce Dining Hall** is a restaurant located in the 2nd floor of the Howe Center. It serves breakfast, lunch, and dinner.`
+					}
+				]
+			},
+			{
+				name: "Flock Party",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: `The **Flock Party** is an annual Stevens tradition that takes place in August before the fall semester begins. Students set up tables on Palmer Lawn to promote the over 100 student organizations that the school has to offer.`
+					}
+				]
+			},
+			{
+				name: "Water main break (November 2022)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
+					}
+				]
+			},
+			{
+				name: "Water main break (February 2023)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
+					}
+				]
+			},
+			{
+				name: "Water main break (February 2024)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
+					}
+				]
+			},
+			{
+				name: "Water main break (October 2024)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
+					}
+				]
+			},
+			{
+				name: "Water main break (January 2025)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
+					}
+				]
+			},
+			{
+				name: "Water main break (February 2025)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
+					}
+				]
+			},
+			{
+				name: "Water main break (September 2025)",
+				category: "Events",
+				content: [
+					{
+						editorType: "text",
+						contentString: "The water main broke again."
 					}
 				]
 			}
 		]
 	},
 	{
-		name: "Cloud Computing Essentials",
-		description: "Understanding cloud infrastructure and deployment strategies",
-		urlName: "cloud-computing-essentials",
-		ownerUid: SEED_USER_UIDS[2],
-		access: "public-edit",
-		pages: [
+		"name": "CS 554 Labs",
+		"description": "All the labs mwahahaha",
+		"urlName": "cs-554-labs",
+		"owner": FIREBASE_UIDS[2],
+		"access": "public-edit",
+		"categories": [],
+		"collaborators": [],
+		"private_viewers": [],
+		"pages": [
 			{
-				name: "AWS Essentials",
-				category: "UNCATEGORIZED",
-				content: [
+				"name": "Lab 1",
+				"category": "UNCATEGORIZED",
+				"content": [
 					{
-						editorType: "text",
-						contentString:
-							"# AWS Essentials\n\nAmazon Web Services provides on-demand cloud computing resources.\n\n## Core Services\n\n- **EC2**: Virtual servers\n- **S3**: Object storage\n- **RDS**: Managed databases\n- **Lambda**: Serverless compute"
+						"editorType": "text",
+						"contentString": "<div class=\"description user_content student-version enhanced\">\n<h1 id=\"toc_0\">CS-554 Lab 1</h1>\n<h2 id=\"toc_1\">Reviewing API Development</h2>\n<p>For this lab, you will submit a web server with the supplied routes and middleware.</p>\n<p>There is NO UI for this lab. The routes all return JSON data and JSON will be expected in the request body (use Postman or similar REST client).</p>\n<p>You may find it helpful to reference the following 546 lecture code: <a class=\"inline_disabled external\" href=\"https://github.com/stevens-cs546-cs554/CS-546/tree/master/lecture_04\" target=\"_blank\">Lecture 4</a>, &nbsp;<a class=\"inline_disabled external\" href=\"https://github.com/stevens-cs546-cs554/CS-546/tree/master/lecture_05\" target=\"_blank\">Lecture 5</a>&nbsp;, <a class=\"inline_disabled external\" href=\"https://github.com/stevens-cs546-cs554/CS-546/tree/master/lecture_06\" target=\"_blank\">Lecture 6</a>, <a class=\"inline_disabled external\" href=\"https://github.com/stevens-cs546-cs554/CS-546/tree/master/lecture_10\" target=\"_blank\">Lecture 10</a></p>\n<p>You are allowed to use <strong>your</strong> code from 546 labs to complete the assignment.&nbsp;</p>\n<h2 id=\"toc_3\">Database</h2>\n<p>You will use a module to abstract out the database calls.</p>\n<p>You will store all data in a database named as such: <code>LastName-FirstName-CS554-Lab1</code>.</p>\n<p>You may name the collection however you would like.</p>\n<p><strong>All ids must be generated by the server and be sufficiently random!</strong></p>\n<p><strong>Your collection schema is shown below, you MUST match the schema!&nbsp;</strong></p>\n<h3 id=\"toc_4\">The blog document</h3>\n<div>\n<pre><code>{ &nbsp; </code><br><code>  _id: new ObjectID(),</code><br><code>  title: string, \"body\": string, </code><br><code>  postedBy: {_id: ObjectID, username: string},<br>  postedOn: &nbsp;date as string (will be populated automatically based on the current date. MUST be in \"MM/DD/YYYY\" format)</code><br><code>  updatedOn: date as string (will be populated automatically when a blog post is updated based on the current date. MUST be in \"MM/DD/YYYY\" format this field will only be present on blog posts that have been updated. blog posts that have not been updated will not have this field at all),  <br>  comments: [] </code><br><code>}</code></pre>\n</div>\n<p>You will initialize <code>comments</code> as an empty array in your DB create function as there cannot be any comments on a blog post, before the blog post has been created.</p>\n<p>You do not have to initialize the <code>updatedOn</code> field at all when a blog post is created. &nbsp;That field can just be added <strong>only</strong> if the blog post has been updated before.</p>\n<p><span><code>title</code>: &nbsp;It must be a non empty string that is at LEAST 10 characters long and no longer than 255 characters and can contain any character, numbers, letters, spaces, special characters, however, it should NOT be just a string of spaces so make sure you trim the input!</span></p>\n<p><span><code>body:</code></span><span>, &nbsp;It must be a non empty string that is at LEAST 25 characters and can contain any character, numbers, letters, spaces, special characters, however, it should NOT be just a string of spaces so make sure you trim the input!<br></span></p>\n<p><span>The <code>postedBy</code> field will be populated from the currently logged in user (when they login, you will save a representation of the user in the session). The <code>postedOn</code> field will be populated automatically from the current date in \"MM/DD/YYYY\" format. &nbsp;</span></p>\n<h3 id=\"toc_5\">The comment object (stored as a sub-document in the blog document)</h3>\n<div>\n<pre>{\n  _id: new ObjectID(), &nbsp; <br>  postedBy: {_id:ObjectID, username: string}, <br>  postedOn: date as string (will be populated automatically based on the current date.  MUST be in \"MM/DD/YYYY\" format),<br>  comment: string <br>}</pre>\n</div>\n<p><span>The <code>postedBy</code> and <code>postedOn</code> fields will be populated from the user info stored in the current session for that user and the current date in \"MM/DD/YYYY\" format.&nbsp;</span></p>\n<p><span><code>comment</code></span><strong></strong><span>: string, &nbsp;It must be a non empty string that is at LEAST 10 characters and a maximum of 500 characters and can contain any character, numbers, letters, spaces, special characters, however, it should NOT be just a string of spaces so make sure you trim the input!</span></p>\n<h3 id=\"toc_5\">The user document: &nbsp;You will use bcrypt to hash the password to store in the DB for signup and for login you will use the compare method to validate the correct password</h3>\n<div>\n<pre><code class=\"language-none\">{\n  _id: new ObjectID(),\n  name: string,\n  username: string,<br>  password: hashedPW\n}<br><br></code></pre>\n<p><code>name</code>: &nbsp;should not contain numbers, should be at least 5 characters long, may contain spaces \"Patrick Hill\" can include SOME special characters that are normal for names (hyphens, apostrophe, period) and should be a max of 25 characters long.</p>\n<p><code>username</code>: should be at least 5 characters long, can include a mix of letters and numbers but not JUST numbers, so if numbers are present, there must be other letters in the username for it to be valid (NO SPECIAL CHARACTERS, NO SPACES). Usernames should be unique and case insensitive!</p>\n<p><code>password</code>: should be at LEAST 8 characters long and should have at LEAST one lowercase letter, one uppercase letter, one number and one special character contained in it, NO SPACES.&nbsp;</p>\n</div>\n<h3 id=\"toc_6\">Example blog post with comments stored in Mongo:</h3>\n<div>\n<pre>{\n  _id: ObjectId(\"61294dadd90ffc066cd03bed\"),\n  title: \"My experience Teaching JavaScript\",\n  body: \"This is the blog post body.. here is the actually blog post content.. blah blah blah.....\",  <br>  postedBy: {_id: ObjectId(\"54794dadd90ffc063cd04bee\"), username: \"graffixnyc\"},<br>  postedOn: \"09/01/2025\" <br>  comments: [\n      {\n        _id: ObjectId(\"61294dadd90ffc066cd03bef\"), &nbsp; &nbsp; &nbsp; &nbsp; <br>        postedBy: {_id: ObjectId(\"61294dadd90ffc066cd03bee\"), username: \"stevenspride\"},<br>        postedOn: \"09/01/2025\" <br>        comment: \"Wow, great post! I really loved the 'blah blah blah' part! It was intellectually stimulating!\" <br>      }, <br>      { <br>        _id: ObjectId(\"61296014082fe5073f9ba4f2\"), &nbsp; &nbsp; &nbsp; &nbsp; <br>        postedBy: {_id: ObjectId(\"6129617a082fe5073f9ba4f5\"), username: \"ducksrule\"} &nbsp; <br>        postedOn: \"09/02/2025\"&nbsp; &nbsp; &nbsp; <br>        comment: \"Very informative post!\" <br>      } <br>  ]<br>}</pre>\n</div>\n<h3><span>Example User Document in Mongo:</span></h3>\n<div>\n<pre><code class=\"language-none\">{\n  _id: ObjectId(\"<span>61294dadd90ffc066cd03bee\")</span>, <br>  name: \"Patrick Hill\", username:\"graffixnyc\",<br>  password: \"$2a$16$7JKSiEmoP3GNDSalogqgPu0sUbwder7CAN/5wnvCWe6xCKAKwlTD.\" <br>}<br></code></pre>\n<h2 id=\"toc_3\">Routes</h2>\n</div>"
 					},
 					{
-						editorType: "table",
-						contentString:
-							"| Service | Purpose | Pricing Model |\n|---------|---------|---------------|\n| EC2 | Virtual Servers | Per hour/second |\n| S3 | Storage | Per GB stored |\n| Lambda | Serverless | Per invocation |\n| RDS | Databases | Per instance hour |"
+						"editorType": "table",
+						"contentString": "<table style=\"border-collapse: collapse; width: 100.039382%; height: 1223.400015px;\" border=\"1\">\n<thead>\n<tr style=\"height: 26.799999px;\">\n<th style=\"width: 6.107171%; height: 26.799999px;\">Verb</th>\n<th style=\"width: 18.223165%; height: 26.799999px;\">Route</th>\n<th style=\"width: 75.649962%; height: 26.799999px;\">Description</th>\n</tr>\n</thead>\n<tbody>\n<tr style=\"height: 105.599998px;\">\n<td style=\"width: 6.107171%; height: 105.599998px;\">GET</td>\n<td style=\"width: 18.223165%; height: 105.599998px;\">/blog</td>\n<td style=\"width: 75.649962%; height: 105.599998px;\">Returns an array of blog posts in the system. By default, it will show the first 25 blog posts in the collection. If a <a class=\"external\" href=\"http://expressjs.com/en/api.html#req.query\" target=\"_blank\">querystring </a>variable <code>?skip=n</code> is provided, you will skip the first <code>n</code> blog posts. If a querystring variable <code>?take=y</code> is provided, it will show <code>y</code> number of blog posts. By default, the route will show up to <code>25</code> blog posts; at most, it will show <code>100</code> blog posts. Skip and take can both be provided on the same request.</td>\n</tr>\n<tr style=\"height: 28.799999px;\">\n<td style=\"width: 6.107171%; height: 28.799999px;\">GET</td>\n<td style=\"width: 18.223165%; height: 28.799999px;\">/blog/:id</td>\n<td style=\"width: 75.649962%; height: 28.799999px;\">Shows the blog post with the supplied ID</td>\n</tr>\n<tr style=\"height: 193.600006px;\">\n<td style=\"width: 6.107171%; height: 193.600006px;\">POST</td>\n<td style=\"width: 18.223165%; height: 193.600006px;\">/blog</td>\n<td style=\"width: 75.649962%; height: 193.600006px;\">\n<p>Creates a blog post with the supplied detail and returns the newly created object blog object; fails request if not all details are supplied, are incorrect type etc... &nbsp;The user <strong>MUST</strong> be logged in to post a blog. &nbsp;In the request body, you will only be sending the <code>title</code> and the <code>body</code> fields of the blog post. &nbsp;The <code>postedBy</code> field will be populated from the currently logged in user (when they login, you will save a representation of the user in the session). The <code>postedOn</code> field will be populated automatically from the current date in \"MM/DD/YYYY\" format. &nbsp;</p>\n</td>\n</tr>\n<tr style=\"height: 177.600006px;\">\n<td style=\"width: 6.107171%; height: 177.600006px;\">PUT</td>\n<td style=\"width: 18.223165%; height: 177.600006px;\">/blog/:id</td>\n<td style=\"width: 75.649962%; height: 177.600006px;\">Updates the blog post with the supplied ID and returns the updated blog post object; <strong>Note</strong>: PUT calls must provide all details of the new state of the object! <strong>Note:&nbsp;</strong> you cannot manipulate comments in this route, the <code>postedOn</code>, <code>postedBy</code> also must remain intact! A user has to be logged in to update a blog post <strong>AND</strong> they must be the same user who originally posted the blog post. &nbsp;So if user A posts a blog post, user B should NOT be able to update that blog post. In the request body, you will only be sending the <code>title</code> and the <code>body</code> fields of the blog post. You must also automatically add/update the <code>updatedOn</code> field to the blog post document in the DB with the current date in \"MM/DD/YYYY\" format every time a post is updated.&nbsp;</td>\n</tr>\n<tr style=\"height: 225.600006px;\">\n<td style=\"width: 6.107171%; height: 225.600006px;\">PATCH</td>\n<td style=\"width: 18.223165%; height: 225.600006px;\">/blog/:id</td>\n<td style=\"width: 75.649962%; height: 225.600006px;\">\n<p>Updates the blog post with the supplied ID and returns the updated blog post object; <strong>Note</strong>: PATCH calls can update one or more fields in the original resource, but at least one!!<br><strong>Note: </strong>you cannot manipulate comments in this route, the <code>postedOn</code>, <code>postedBy</code> also must remain intact!! A user has to be logged in to update a blog post <strong>AND</strong> they must be the same user who originally posted the blog post. &nbsp;So if user A posts a blog post, user B should NOT be able to update that blog post. In the request body, you will only be sending the <code>title</code> and the <code>body</code> fields of the blog post. You must also automatically add/update the <code>updatedOn</code> field to the blog post document in the DB with the current date in \"MM/DD/YYYY\" format every time a post is updated.&nbsp;</p>\n</td>\n</tr>\n<tr style=\"height: 102.400002px;\">\n<td style=\"width: 6.107171%; height: 102.400002px;\">POST</td>\n<td style=\"width: 18.223165%; height: 102.400002px;\">/blog/:id/comments</td>\n<td style=\"width: 75.649962%; height: 102.400002px;\">Adds a new comment to the blog post; ids must be generated by the server(mongo), and not supplied, a user needs to be logged in to post a comment. &nbsp;The only field you need to send in the request body is the comment itself. The <code>postedBy</code> and <code>postedOn</code> fields will be populated from the user info stored in the current session for that user and the current date in \"MM/DD/YYYY\" format. &nbsp;</td>\n</tr>\n<tr style=\"height: 78.400002px;\">\n<td style=\"width: 6.107171%; height: 78.400002px;\">DELETE</td>\n<td style=\"width: 18.223165%; height: 78.400002px;\">/blog/:blogId/:commentId</td>\n<td style=\"width: 75.649962%; height: 78.400002px;\">Deletes the comment with an id of <code>commentId</code> on the blog post with an id of <code>blogId</code>&nbsp;a user has to be logged in to delete a comment <strong>AND</strong> they must be the same user who originally posted the comment. &nbsp;So if user A posts a comment, user B should NOT be able to delete that comment.&nbsp;</td>\n</tr>\n<tr style=\"height: 79.800003px;\">\n<td style=\"width: 6.107171%; height: 79.800003px;\">POST</td>\n<td style=\"width: 18.223165%; height: 79.800003px;\">/blog/signup</td>\n<td style=\"width: 75.649962%; height: 79.800003px;\">\n<p>Creates a new user in the system with the supplied detail and returns the created user document (<a class=\"inline_disabled external\" href=\"https://www.merriam-webster.com/dictionary/sans\" target=\"_blank\" rel=\"noreferrer noopener\"><span>sans</span><span class=\"external_link_icon\" style=\"margin-inline-start: 5px; display: inline-block; text-indent: initial; \" role=\"presentation\"><svg viewBox=\"0 0 1920 1920\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:1em; height:1em; vertical-align:middle; fill:currentColor\">\n    <path d=\"M1226.667 267c88.213 0 160 71.787 160 160v426.667H1280v-160H106.667v800C106.667 1523 130.56 1547 160 1547h1066.667c29.44 0 53.333-24 53.333-53.333v-213.334h106.667v213.334c0 88.213-71.787 160-160 160H160c-88.213 0-160-71.787-160-160V427c0-88.213 71.787-160 160-160Zm357.706 442.293 320 320c20.8 20.8 20.8 54.614 0 75.414l-320 320-75.413-75.414 228.907-228.906H906.613V1013.72h831.254L1508.96 784.707l75.413-75.414Zm-357.706-335.626H160c-29.44 0-53.333 24-53.333 53.333v160H1280V427c0-29.333-23.893-53.333-53.333-53.333Z\" fill-rule=\"evenodd\"></path>\n</svg>\n<span class=\"screenreader-only\">Links to an external site.</span></span></a> password); fails request if not all details supplied or are incorrect type.</p>\n</td>\n</tr>\n<tr style=\"height: 174.399994px;\">\n<td style=\"width: 6.107171%; height: 174.399994px;\">POST</td>\n<td style=\"width: 18.223165%; height: 174.399994px;\">/blog/login</td>\n<td style=\"width: 75.649962%; height: 174.399994px;\">Logs in a user with the supplied username and password. Returns the logged in user document (<a class=\"inline_disabled external\" href=\"https://www.merriam-webster.com/dictionary/sans\" target=\"_blank\" rel=\"noreferrer noopener\"><span>sans</span><span class=\"external_link_icon\" style=\"margin-inline-start: 5px; display: inline-block; text-indent: initial; \" role=\"presentation\"><svg viewBox=\"0 0 1920 1920\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:1em; height:1em; vertical-align:middle; fill:currentColor\">\n    <path d=\"M1226.667 267c88.213 0 160 71.787 160 160v426.667H1280v-160H106.667v800C106.667 1523 130.56 1547 160 1547h1066.667c29.44 0 53.333-24 53.333-53.333v-213.334h106.667v213.334c0 88.213-71.787 160-160 160H160c-88.213 0-160-71.787-160-160V427c0-88.213 71.787-160 160-160Zm357.706 442.293 320 320c20.8 20.8 20.8 54.614 0 75.414l-320 320-75.413-75.414 228.907-228.906H906.613V1013.72h831.254L1508.96 784.707l75.413-75.414Zm-357.706-335.626H160c-29.44 0-53.333 24-53.333 53.333v160H1280V427c0-29.333-23.893-53.333-53.333-53.333Z\" fill-rule=\"evenodd\"></path>\n</svg>\n<span class=\"screenreader-only\">Links to an external site.</span></span></a> password). You will set the session so once they successfully log in, they will remain logged in until the session expires or they logout. On successful login, you will store a representation of the user to authenticate &nbsp;the user in future requests for the session. &nbsp;You will store their <code>username</code> and their <code>_id</code> which will be read from the session when they try to create a blog post, try to update a blog post (making sure they can only update a post they originally posted), &nbsp;post a comment or delete a comment (making sure they can only delete a comment they posted)</td>\n</tr>\n<tr style=\"height: 30.4px;\">\n<td style=\"width: 6.107171%; height: 30.4px;\">GET</td>\n<td style=\"width: 18.223165%; height: 30.4px;\">/blog/logout</td>\n<td style=\"width: 75.649962%; height: 30.4px;\"><span>This route will expire/delete the </span><code>cookie/session</code><span> and inform the user that they have been logged out.</span></td>\n</tr>\n</tbody>\n</table>"
+					},
+					{
+						"editorType": "text",
+						"contentString": "\n<p>All PUT, POST, and PATCH routes expect their content to be in JSON format, supplied in the body.</p>\n<p>All routes will return JSON.</p>\n<h2 id=\"toc_2\">&nbsp;Middleware</h2>\n<p>You will write and apply the following middlewares:</p>\n<ol>\n<li>You will apply a middleware that will be applied to the POST, PUT and PATCH routes for the /blog endpoint that will check if there is a logged in user, if there is not a user logged in, you will respond with the proper status code.&nbsp;</li>\n<li>You will apply a middleware that will be applied to the POST and DELETE routes for the /blog/:id/comments and /blog/:blogId/:commentId endpoints respectively that will check if there is a logged in user, if there is not a user logged in, you will respond with the proper status code. For the DELETE route, you also need to make sure the currently logged in user is the user who posted the comment that is being deleted.</li>\n</ol>\n<h3 id=\"toc_6\"></h3>\n<h2 id=\"toc_7\"><strong><span style=\"color: #e62429;\">Error Checking</span></strong></h2>\n<ol>\n<li><strong><span style=\"color: #e62429;\">You must error check all routes checking correct data types, making sure all the input is there, in the correct range etc..</span></strong></li>\n<li><strong><span style=\"color: #e62429;\">You must error check all DB functions&nbsp; checking correct data types, making sure all the input is there, in the correct range &nbsp;etc..</span></strong></li>\n<li><strong><span style=\"color: #e62429;\">You must fail with proper and valid HTTP status codes depending on the failure type</span></strong></li>\n<li><strong><span style=\"color: #e62429;\">Do not forget to check for proper datatypes in the query string parameters for skip and take (they should be positive numbers, if they are not positive&nbsp;numbers, you should throw an error)</span></strong></li>\n</ol>\n<h2 id=\"toc_8\">Notes</h2>\n<ol>\n<li>Remember to submit your <code>package.json</code> file but <strong>not</strong> your <code>node_modules</code> folder.</li>\n</ol>\n</div>"
 					}
-				]
+				],
+				"first_created": "12/15/2025, 1:36:51 PM",
+				"last_edited": "12/15/2025, 1:40:36 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
 			},
 			{
-				name: "Docker Containers",
-				category: "UNCATEGORIZED",
-				content: [
+				"name": "Lab 2",
+				"category": "UNCATEGORIZED",
+				"content": [
 					{
-						editorType: "text",
-						contentString:
-							"# Docker Containers\n\nDocker enables you to package applications with their dependencies.\n\n## Benefits\n\n1. **Consistency**: Same environment everywhere\n2. **Isolation**: Apps don't interfere\n3. **Portability**: Run anywhere\n4. **Efficiency**: Lightweight compared to VMs"
+						"editorType": "text",
+						"contentString": "<h1 id=\"toc_0\">CS-554 Lab 2</h1>\n<h2 id=\"toc_1\">Redis</h2>\n<p>For this assignment, you will practice your usage of redis and async / await together.&nbsp;</p>\n<p>You will use your lab 1 code for this assignment and will implement caching.&nbsp;</p>"
 					},
 					{
-						editorType: "text",
-						contentString:
-							'**Basic Dockerfile:**\n\n```dockerfile\nFROM node:18\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nEXPOSE 3000\nCMD ["npm", "start"]\n```'
+						"editorType": "text",
+						"contentString": "<h2 id=\"toc_3\">Your cache</h2>\n<p>You will cache your data in Redis for this assignment after it has been accessed; you should not cache all data by default. When a request is made to one of the routes, you will first check to see if it is already stored in the cache. &nbsp;If it is, you will serve it from the cache. If it's not stored in the cache, you will then query the DB to get the data, store it in the cache for the next time it is accessed and will respond with the JSON data returned from the DB.</p>\n<p><span>For the most popular blog posts, you will need to research </span><strong>sorted sets</strong><span> in Redis (these are sometimes referred to as scoreboards or leaderboards) &nbsp;We will be storing the the entire blog object and then a count of how many times that blog post was accessed. If someone accessed a blog post that has been accessed already, you will increment the count. &nbsp;If the access a post not in the list, you will add it to the list and set the count initially to 1.&nbsp;</span></p>"
 					},
 					{
-						editorType: "text",
-						contentString:
-							"*Pro tip*: Use `.dockerignore` to exclude unnecessary files!"
+						"editorType": "text",
+						"contentString": "<h2 id=\"toc_4\">Your Routes</h2>\n<p>You will be using the same routes as you did in lab 1, with the same constraints as lab 1. &nbsp;You also will implement one new route. &nbsp;The original routes are displayed below from lab 1. &nbsp;I added in the caching for each route.</p>"
+					},
+					{
+						"editorType": "table",
+						"contentString": "<table style=\"width: 100.052176%;\" border=\"1\">\n<thead>\n<tr>\n<th style=\"width: 5.550063%;\">Verb</th>\n<th style=\"width: 16.473996%;\">Route</th>\n<th style=\"width: 77.965166%;\">Description</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"width: 5.550063%;\">GET</td>\n<td style=\"width: 16.473996%;\">/blog</td>\n<td style=\"width: 77.965166%;\">\n<p>Returns an array of blog posts in the system. By default, it will show the first 25 blog posts in the collection. If a <a class=\"external\" href=\"http://expressjs.com/en/api.html#req.query\" target=\"_blank\">querystring </a>variable <code>?skip=n</code> is provided, you will skip the first <code>n</code> blog posts. If a querystring variable <code>?take=y</code> is provided, it will show <code>y</code> number of blog posts. By default, the route will show up to <code>25</code> blog posts; at most, it will show <code>100</code> blog posts. Skip and take can both be provided on the same request.</p>\n<p data-start=\"83\" data-end=\"109\"><strong data-start=\"83\" data-end=\"107\">Redis Implementation</strong></p>\n<p data-start=\"111\" data-end=\"183\">You’ll need to make a small adjustment to your data function for this.</p>\n<ol data-start=\"185\" data-end=\"950\">\n<li data-start=\"185\" data-end=\"549\">\n<p data-start=\"188\" data-end=\"213\"><strong data-start=\"188\" data-end=\"210\">Initial cache load</strong>:</p>\n<ul data-start=\"217\" data-end=\"549\">\n<li data-start=\"217\" data-end=\"413\">\n<p data-start=\"219\" data-end=\"413\">When this route is accessed for the <em data-start=\"255\" data-end=\"267\">first time</em> (or after you clear the blog post list cache because a post/comment was added, updated, or deleted), load <strong data-start=\"359\" data-end=\"377\">all blog posts</strong> from the database into the cache.</p>\n</li>\n<li data-start=\"417\" data-end=\"549\">\n<p data-start=\"419\" data-end=\"549\">Even though you store all posts in the cache, you should still only return the subset requested by the <code data-start=\"509\" data-end=\"515\">skip</code> and <code data-start=\"520\" data-end=\"526\">take</code> query string values provided in the request.</p>\n</li>\n</ul>\n</li>\n<li data-start=\"551\" data-end=\"950\">\n<p data-start=\"554\" data-end=\"580\"><strong data-start=\"554\" data-end=\"577\">Middleware handling</strong>:</p>\n<ul data-start=\"584\" data-end=\"950\">\n<li data-start=\"584\" data-end=\"720\">\n<p data-start=\"586\" data-end=\"720\">After the initial load, or whenever the cache is refreshed, create middleware that checks whether the blog post list exists in the cache.</p>\n</li>\n<li data-start=\"724\" data-end=\"808\">\n<p data-start=\"726\" data-end=\"808\">If it does, retrieve them from the cache instead of hitting the database.</p>\n</li>\n<li data-start=\"812\" data-end=\"950\">\n<p data-start=\"814\" data-end=\"950\">Since the cache contains all blog posts, apply the <code data-start=\"865\" data-end=\"871\">skip</code> and <code data-start=\"876\" data-end=\"882\">take</code> filtering directly in the middleware before sending the response.</p>\n</li>\n</ul>\n</li>\n</ol>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">GET</td>\n<td style=\"width: 16.473996%;\">/blog/:id</td>\n<td style=\"width: 77.965166%;\">\n<p>Shows the blog post with the supplied ID</p>\n<p><strong>Redis implementation: </strong>when this route is accessed, you will create a middleware that checks to see if the blog being requested is in the cache, if it is in the cache, you will respond with the json data that is in the cache, if it's not in the cache, it will 1. Query the db for the data, 2. Store the data in cache, 3. Respond with the data returned from the db.&nbsp;</p>\n<p>***In addition to caching each post, you will also have to keep track of the number of times each post is requested in a sorted list with Redis. You will store the entire blog post object in the list and then have a field that keeps track of how many times that post was accessed. &nbsp;The sorted list will be accessed from the /mostpopular route. See the /mostpopular for more specific instructions.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">POST</td>\n<td style=\"width: 16.473996%;\">/blog</td>\n<td style=\"width: 77.965166%;\">\n<p>Creates a blog post with the supplied detail and returns the newly created object blog object; fails request if not all details are supplied, are incorrect type etc... &nbsp;The user <strong>MUST</strong> be logged in to post a blog. &nbsp;In the request body, you will only be sending the <code>title</code> and the <code>body</code> fields of the blog post. &nbsp;The <code>postedBy</code> field will be populated from the currently logged in user (when they login, you will save a representation of the user in the session). The <code>postedOn</code> field will be populated automatically from the current date in \"MM/DD/YYYY\" format. &nbsp;</p>\n<p><strong>Redis implementation: </strong>when a new blog post is created, you will store it in the cache as you did for posts in the /blog/:id route and respond with the json data from the db after the blog post is created.</p>\n<p>&nbsp;Don't forget to update the sorted list, to include this new post as one of the ones that was accessed. Since the post is being created for the first time in the route, then it has been accessed 1 time after it's created</p>\n<p>You should also clear the cached blog post list from the GET /blog route as the data will be stale and will need to be re-cached after a new blog post is added.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">PUT</td>\n<td style=\"width: 16.473996%;\">/blog/:id</td>\n<td style=\"width: 77.965166%;\">\n<p>Updates the blog post with the supplied ID and returns the updated blog post object; <strong>Note</strong>: PUT calls must provide all details of the new state of the object! <strong>Note:&nbsp;</strong> you cannot manipulate comments in this route, the <code>postedOn</code>, <code>postedBy</code> also must remain intact! A user has to be logged in to update a blog post <strong>AND</strong> they must be the same user who originally posted the blog post. &nbsp;So if user A posts a blog post, user B should NOT be able to update that blog post. In the request body, you will only be sending the <code>title</code> and the <code>body</code> fields of the blog post. You must also automatically add/update the <code>updatedOn</code> field to the blog post document in the DB with the current date in \"MM/DD/YYYY\" format every time a post is updated.&nbsp;</p>\n<p><strong>Redis implementation: </strong>when a post is updated, if that post id is stored in the cache, you will need to update the cache with the updated data. You will store it in the cache as you did for posts in the /blog/:id route and respond with the json data from the db after the post is updated.</p>\n<p>&nbsp; Don't forget to update the sorted list, to include this updated recipe data as one of the ones that was accessed. &nbsp;</p>\n<p>You should also clear the cached blog post list from the GET /blog route as the data will be stale and will need to be re-cached after a new blog post is added.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">PATCH</td>\n<td style=\"width: 16.473996%;\">/blog/:id</td>\n<td style=\"width: 77.965166%;\">\n<p>Updates the blog post with the supplied ID and returns the updated blog post object; <strong>Note</strong>: PATCH calls can update one or more fields in the original resource, but at least one!!<br><strong>Note: </strong>you cannot manipulate comments in this route, the <code>postedOn</code>, <code>postedBy</code> also must remain intact!! A user has to be logged in to update a blog post <strong>AND</strong> they must be the same user who originally posted the blog post. &nbsp;So if user A posts a blog post, user B should NOT be able to update that blog post. In the request body, you will only be sending the <code>title</code> and the <code>body</code> fields of the blog post. You must also automatically add/update the <code>updatedOn</code> field to the blog post document in the DB with the current date in \"MM/DD/YYYY\" format every time a post is updated.&nbsp;</p>\n<p><strong>Redis implementation: </strong>when a post is updated, if that post id is stored in the cache, you will need to update the cache with the updated data. You will store it in the cache as you did for posts in the /blog/:id route and respond with the json data from the db after the post is updated.</p>\n<p>&nbsp; Don't forget to update the sorted list, to include this updated recipe data as one of the ones that was accessed. &nbsp;</p>\n<p>You should also clear the cached blog post list from the GET /blog route as the data will be stale and will need to be re-cached after a new blog post is added.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">POST</td>\n<td style=\"width: 16.473996%;\">/blog/:id/comments</td>\n<td style=\"width: 77.965166%;\">\n<p>Adds a new comment to the blog post; ids must be generated by the server(mongo), and not supplied, a user needs to be logged in to post a comment. &nbsp;The only field you need to send in the request body is the comment itself. The <code>postedBy</code> and <code>postedOn</code> fields will be populated from the user info stored in the current session for that user and the current date in \"MM/DD/YYYY\" format. &nbsp;</p>\n<p><strong>Redis implementation: </strong>when a comment is posted, if that blog post id is stored in the cache, you will need to update the cache with the updated data for that blog post. You will store it in the cache as you did for posts in the /blog/:id route and respond with the json data from the db after the post is updated with the new comment.</p>\n<p>&nbsp;Don't forget to update the sorted list, to include this updated post data with the comments as one of the ones that was accessed.&nbsp;</p>\n<p>You should also clear the cached blog post list from the GET /blog route as the data will be stale and will need to be re-cached after a new blog post is added.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">DELETE</td>\n<td style=\"width: 16.473996%;\">/blog/:blogId/:commentId</td>\n<td style=\"width: 77.965166%;\">\n<p>Deletes the comment with an id of <code>commentId</code> on the blog post with an id of <code>blogId</code>&nbsp;a user has to be logged in to delete a comment <strong>AND</strong> they must be the same user who originally posted the comment. &nbsp;So if user A posts a comment, user B should NOT be able to delete that comment.&nbsp;</p>\n<p><strong>Redis implementation: </strong>when a comment is deleted, if that blog post id is stored in the cache, you will need to update the cache with the updated data for that blog post. You will store it in the cache as you did for posts in the /blog/:id route and respond with the json data from the db after the post is updated and the comment is deleted.&nbsp;</p>\n<p>&nbsp;Don't forget to update the sorted list, to include this updated post data with the comment removed as one of the ones that was accessed.&nbsp;</p>\n<p>You should also clear the cached blog post list from the GET /blog route as the data will be stale and will need to be re-cached after a new blog post is added.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">POST</td>\n<td style=\"width: 16.473996%;\">/blog/signup</td>\n<td style=\"width: 77.965166%;\">\n<p>Creates a new user in the system with the supplied detail and returns the created user document (<a class=\"inline_disabled external\" href=\"https://www.merriam-webster.com/dictionary/sans\" target=\"_blank\"><span>sans</span><span class=\"external_link_icon\" role=\"presentation\"><span class=\"screenreader-only\">Links to an external site.</span></span></a> password); fails request if not all details supplied or are incorrect type.</p>\n</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">POST</td>\n<td style=\"width: 16.473996%;\">/blog/login</td>\n<td style=\"width: 77.965166%;\">Logs in a user with the supplied username and password. Returns the logged in user document (<a class=\"inline_disabled external\" href=\"https://www.merriam-webster.com/dictionary/sans\" target=\"_blank\"><span>sans</span><span class=\"external_link_icon\" role=\"presentation\"><span class=\"screenreader-only\">Links to an external site.</span></span></a> password). You will set the session so once they successfully log in, they will remain logged in until the session expires or they logout. On successful login, you will store a representation of the user to authenticate &nbsp;the user in future requests for the session. &nbsp;You will store their <code>username</code> and their <code>_id</code> which will be read from the session when they try to create a blog post, try to update a blog post (making sure they can only update a post they originally posted), &nbsp;post a comment or delete a comment (making sure they can only delete a comment they posted)</td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">GET</td>\n<td style=\"width: 16.473996%;\">/blog/logout</td>\n<td style=\"width: 77.965166%;\"><span>This route will expire/delete the </span><code>cookie/session</code><span> and inform the user that they have been logged out.</span></td>\n</tr>\n<tr>\n<td style=\"width: 5.550063%;\">GET</td>\n<td style=\"width: 16.473996%;\">/mostpopular</td>\n<td style=\"width: 77.965166%;\">\n<p>This route will display the top 10 most accessed blog posts that are stored in a sorted list with Redis.&nbsp;</p>\n<p>When a blog post is requested from the GET blog/:id route, you will add it to your cached sorted list in Redis to count how many times that specific blog has been accessed. You should either set the count to 1 if it has not been accessed, or increment it +1 if it has already been accessed before.&nbsp;</p>\n<p><strong>So, GET /mostpopular will return the top 10 blog posts from the sorted list, with the blog post that is most accessed being first in the list. You will return ALL the blog post data for each item in the list. (You should have stored this in the list in the blog/:id route</strong></p>\n<p><strong>Please see how I do something similar for the top most searched terms &nbsp;in the lecture code example <a class=\"inline_disabled external\" href=\"https://github.com/stevens-cs546-cs554/CS-554/tree/master/redis/redis_full_page_caching_handlebars_new_redis_package\" target=\"_blank\">here</a></strong></p>\n</td>\n</tr>\n</tbody>\n</table>"
+					},
+					{
+						"editorType": "text",
+						"contentString": "\n<p>All PUT, POST, and PATCH routes expect their content to be in JSON format, supplied in the body.</p>\n<p>All routes will return JSON.</p>\n<h2 id=\"toc_2\">&nbsp;Middleware</h2>\n<p>You will write and apply the following middlewares:</p>\n<ol>\n<li>Same middleware that applied to lab 1 are still applicable here.&nbsp;</li>\n<li>You will need middleware functions for the routes that cache data. The middleware functions should check the cache for the data and respond with the cached directly from the middleware functions. The only times your application should go to the routes/data functions is if the data was not cached and you are retrieving it in order to cache it. You will lose points if you do not handle it using middleware functions. &nbsp;The /mostpopular route implementation can be done directly in the routes, but the other endpoints with Redis implementation MUST use middleware functions and checking the cache for data, if it is cached, your middleware will respond with the data from the cache, if it's not cached, then the middleware will go on to the routes/data functions.&nbsp;</li>\n</ol>\n<h2 id=\"toc_7\">Extra Credit:</h2>\n<p>For extra credit, instead of storing the session in Express-Session, you will store the session in Redis. &nbsp;If we restart your server, It should read the session in Redis and the session should still be valid. &nbsp;If you implement full session caching using Redis and it works properly, you will get +10 for extra credit.</p>\n<h3 id=\"toc_6\"></h3>\n<h2 id=\"toc_7\"><strong><span>Error Checking</span></strong></h2>\n<ol>\n<li><strong><span>You must error check all routes checking correct data types, making sure all the input is there, in the correct range etc..</span></strong></li>\n<li><strong><span>You must error check all DB functions&nbsp; checking correct data types, making sure all the input is there, in the correct range &nbsp;etc..</span></strong></li>\n<li><strong><span>You must fail with proper and valid HTTP status codes depending on the failure type</span></strong></li>\n<li><strong><span>Do not forget to check for proper datatypes in the query string parameters for skip and take (they should be positive numbers, if they are not positive&nbsp;numbers, you should throw an error)</span></strong></li>\n</ol>\n<h2 id=\"toc_8\">Notes</h2>\n<ol>\n<li>Remember to submit your <code>package.json</code> file but <strong>not</strong> your <code>node_modules</code> folder.</li>\n</ol>\n</div>"
 					}
-				]
-			}
-		]
-	},
-	{
-		name: "Machine Learning Basics",
-		description: "Introduction to machine learning concepts and algorithms",
-		urlName: "machine-learning-basics",
-		ownerUid: SEED_USER_UIDS[3],
-		access: "private",
-		pages: [
-			{
-				name: "Supervised Learning",
-				category: "UNCATEGORIZED",
-				content: [
-					{
-						editorType: "text",
-						contentString:
-							"# Supervised Learning\n\nSupervised learning uses labeled training data to make predictions.\n\n## Common Algorithms\n\n- Linear Regression\n- Logistic Regression\n- Decision Trees\n- Random Forests\n- Neural Networks"
-					},
-					{
-						editorType: "table",
-						contentString:
-							"| Algorithm | Type | Use Case |\n|-----------|------|----------|\n| Linear Regression | Regression | Continuous predictions |\n| Logistic Regression | Classification | Binary outcomes |\n| Random Forest | Both | General purpose |"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"**Remember**: Always split your data into training and testing sets!"
-					}
-				]
-			}
-		]
-	},
-	{
-		name: "Python Programming",
-		description: "Python programming tips, tricks, and best practices",
-		urlName: "python-programming",
-		ownerUid: SEED_USER_UIDS[4],
-		access: "public-edit",
-		pages: [
-			{
-				name: "Python Basics",
-				category: "UNCATEGORIZED",
-				content: [
-					{
-						editorType: "text",
-						contentString:
-							"# Python Basics\n\nPython is a versatile, high-level programming language.\n\n## Key Features\n\n- **Easy to learn**: Simple, readable syntax\n- **Versatile**: Web, data science, automation, AI\n- **Large ecosystem**: Extensive libraries\n- **Community**: Active and supportive"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"```python\n# Hello World\nprint('Hello, World!')\n\n# Variables\nname = 'Alice'\nage = 30\n\n# Functions\ndef greet(person):\n    return f'Hello, {person}!'\n```"
-					}
-				]
+				],
+				"first_created": "12/15/2025, 1:41:41 PM",
+				"last_edited": "12/15/2025, 1:45:08 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
 			},
 			{
-				name: "Data Structures",
-				category: "UNCATEGORIZED",
-				content: [
+				"name": "Lab 3",
+				"category": "UNCATEGORIZED",
+				"content": [
 					{
-						editorType: "text",
-						contentString:
-							"# Python Data Structures\n\n## Built-in Types\n\n- **Lists**: Ordered, mutable collections\n- **Tuples**: Ordered, immutable collections\n- **Dictionaries**: Key-value pairs\n- **Sets**: Unordered, unique elements"
-					},
-					{
-						editorType: "table",
-						contentString:
-							"| Type | Syntax | Mutable | Ordered |\n|------|--------|---------|----------|\n| List | `[1, 2, 3]` | Yes | Yes |\n| Tuple | `(1, 2, 3)` | No | Yes |\n| Dict | `{'a': 1}` | Yes | Yes (3.7+) |\n| Set | `{1, 2, 3}` | Yes | No |"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"*Tip*: Use the right data structure for the job to optimize performance!"
+						"editorType": "text",
+						"contentString": "<div class=\"description user_content enhanced\" data-resource-type=\"assignment.body\" data-resource-id=\"613883\"><h1 id=\"toc_0\">CS-554 Lab 3</h1>\n<h2 id=\"toc_1\"><span>Creating a GraphQL Server</span></h2>\n<p><span>For this assignment, We are going to create a GraphQL server using Apollo Server. &nbsp;We will also be using MongoDB and Redis (if you do the extra credit)!</span></p>\n<h2><span>Database Schema</span></h2>\n<p><span>For the MongoDB data, you will be using three collections: <code>instructors</code>,&nbsp;<code>courses,</code>&nbsp;and <code>students</code>. Make sure you do proper data validation! &nbsp;If something is a string, don't let it be empty, don't let it be just spaces etc. &nbsp;Use common sense and carry over everything you learned in 546. For example, I shouldn't have to tell you that a course start_date must be before the end_date. &nbsp;I shouldn't have to tell you that a college student should be at least 18 (maybe be optimistic and maybe set it to 16 min and 100 max there was like a 90 year old that went to college once.) &nbsp;Keep all years &gt;= 1900. Trim all input from the user as well! &nbsp;Please don't forget that. Everything we did in 546 does not go out the window in 554. If you have any questions, just ask!&nbsp;</span></p>\n<p><span>The schema for them is as follows:</span></p>\n<p><strong>Instructors:</strong></p>\n<pre><code>{</code><br><code>  _id: ObjectId,</code><br><code>  first_name: string, <br>  last_name: string,</code><br><code>  department: string,<br>  email: string (MUST BE A VALID EMAIL ADDRESS),<br> &nbsp;phone: string in ###-###-#### for mat, </code><br><code>  office: string,</code><br><code>  date_hired: string (MUST BE A VALID DATE IN MM/DD/YYYY format)</code><br><code>}</code></pre>\n<p><strong>Students:</strong></p>\n<pre><code>{</code><br><code>  _id: ObjectId,</code><br><code>  <span>first_name: string,<br></span> &nbsp;<span>last_name: string,<br></span> &nbsp;email: string (MUST BE A VALID EMAIL ADDRESS),<br>  date_of_birth: string (MUST BE A VALID DATE IN MM/DD/YYYY format!),<br>  major: string<br><span>  gpa: number (from 1-4 can contain only positive whole numbers and decimals with only 2 decimal places. Must be &gt;=1 and &lt;=4),</span><br><span>  enrolled_courses: [ObjectIds (relates to _id from the courses collection)]</span></code><br><code>}<br><br></code></pre>\n<p><strong>Courses:</strong></p>\n<pre><code>{</code><br><code>  _id: ObjectId,</code><br><code> &nbsp; course_name: string,<br>  department: string,<br>  credits: number,<br> &nbsp;<span>instructor: ObjectId (relates to _id from the instructors collection)],<br>  start_date: string (must be valid date in MM/DD/YYYY format),<br>  end_date: string (must be valid date in MM/DD/YYYY format)</span></code><br><code>}</code></pre>\n<h2><span>Schema</span></h2>\n<p><span>We are going to have three main types for our data (excluding queries and mutations): &nbsp;<code>Student, Course</code> and <code>Instructor</code>.</span></p>\n<pre><code>type Instructor {</code><br><code>  _id: String</code><br><code>  first_name: String<br>  last_name: String</code><br><code>  department: String<br>  email: String<br>  phone: String<br>  office: String<br>  date_hired: String</code><br><code>  courses: [Course]</code><br><code>  numOfClassesTaught: Int</code><br><code>}</code><br><br><code>type Student {</code><br><code>  _id: String</code><br><code> &nbsp;first_name: String<br>  last_name: String<br> &nbsp;email: String<br>  date_of_birth: String<br>  major: String</code><br><code>  gpa: Float</code><br><code>  enrolled_courses: [Course]<br>  numOfEnrolledCourses: Int</code><br><code>}</code><br><br><code>type Course {</code><br><code>  _id: String!</code><br><code>  course_name: String</code><br><code>  department: String</code><br><code>  credits: Int</code><br><code>  instructor: Instructor<br>  start_date: String<br></code><code>  end_date: String&nbsp; <br>  students: [Student]<br>  numOfStudentsEnrolled: Int</code><br><code>}</code><br><br></pre>\n<h3><span>Queries</span></h3>\n<ol style=\"list-style-type: decimal;\">\n<li><strong><code>instructors: [Instructor] </code></strong>&nbsp;// Returns an array of all instructors.</li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><strong><code>students: [Student]</code></strong> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns an array of all students.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>courses: [Course]</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns an array of all courses.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getInstructorById(_id: String!): Instructor</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Gets a single instructor by ID.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getStudentById(_id: String!): Student</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Gets a single student by ID.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><strong><code>getCourseById(_id: String!): Course</code></strong> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Gets a single course by ID.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getStudentsByCourseId(courseId: String!): [Student]</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all students enrolled in the course with the given courseId.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getCoursesByInstructorId(instructorId: String!): [Course] </strong></code>&nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all courses taught by a given instructor.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getCoursesByDepartment(department: String!): [Course] </strong></code>&nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all courses that match the given department (case-insensitive).&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getInstructorsByDepartment(department: String!): [Instructor] </strong></code>&nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all instructors that belong to the given department (case-insensitive).</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><strong><code>getInstructorsHiredBetween(start: String!, end: String!): [Instructor] </code></strong>&nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all instructors whose date_hired falls between the supplied MM/DD/YYYY start and end dates (inclusive). Must validate that both dates are valid.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getStudentsByMajor(major: String!): [Student]</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all students by their declared major (case-insensitive).&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getCoursesByDateRange(start: String!, end: String!): [Course]</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns all courses whose start_date and end_date fall within the supplied MM/DD/YYYY date range (inclusive). Must validate that both dates are valid.&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>searchStudentsByLastName(searchTerm: String!): [Student]</strong></code> &nbsp;</span><span style=\"font-family: inherit; font-size: 1rem;\">// Returns students whose last name <strong>contains</strong> the searchTerm (case-insensitive).&nbsp;</span></li>\n</ol>\n<p><span><strong>Remember: &nbsp;When we use the \"!\" after the type for the input params (<code>searchTerm: String!)</code>, that means that the field is required!</strong></span></p>\n<h3><span>Relationships/Computed Fields</span></h3>\n<p data-start=\"212\" data-end=\"531\"><strong data-start=\"212\" data-end=\"226\">Instructor</strong><br data-start=\"226\" data-end=\"229\">For the Instructor type, we need to set up the relationship between an instructor’s <code data-start=\"313\" data-end=\"318\">_id</code> and the courses that have that instructor’s <code data-start=\"363\" data-end=\"368\">_id</code> as the value in their <code data-start=\"391\" data-end=\"403\">instructor</code> field. Here the parentValue is the Instructor, so we will query the Course type to get all courses taught by that instructor.</p>\n<ul data-start=\"533\" data-end=\"652\">\n<li data-start=\"533\" data-end=\"652\">\n<p data-start=\"535\" data-end=\"652\"><strong data-start=\"535\" data-end=\"553\">Computed Field</strong>: <code data-start=\"555\" data-end=\"575\">numOfClassesTaught</code><br data-start=\"575\" data-end=\"578\">This will return a count of all the courses taught by that instructor.<strong style=\"font-family: inherit; font-size: 1rem;\"></strong></p>\n</li>\n</ul>\n<p data-start=\"659\" data-end=\"1061\"><strong data-start=\"659\" data-end=\"670\">Student</strong><br data-start=\"670\" data-end=\"673\">For the Student type, we need to set up the relationship between a student’s <code data-start=\"750\" data-end=\"755\">_id</code> and the courses they are enrolled in. The student document has an <code data-start=\"822\" data-end=\"840\">enrolled_courses</code> array that contains course <code data-start=\"868\" data-end=\"873\">_id</code>s. So in the resolver, the parentValue is the Student, and we will query the Course type to get all courses whose <code data-start=\"987\" data-end=\"992\">_id</code> matches the ones listed in the student’s <code data-start=\"1034\" data-end=\"1052\">enrolled_courses</code> field.</p>\n<ul data-start=\"1063\" data-end=\"1200\">\n<li data-start=\"1063\" data-end=\"1200\">\n<p data-start=\"1065\" data-end=\"1200\"><strong data-start=\"1065\" data-end=\"1083\">Computed Field</strong>: <code data-start=\"1085\" data-end=\"1107\">numOfEnrolledCourses</code><br data-start=\"1107\" data-end=\"1110\">This will return a count of all the courses that the student is currently enrolled in.</p>\n</li>\n</ul>\n<p data-start=\"1207\" data-end=\"1279\"><strong data-start=\"1207\" data-end=\"1217\">Course</strong><br data-start=\"1217\" data-end=\"1220\">For the Course type, we need to set up two relationships:</p>\n<ol data-start=\"1280\" data-end=\"1688\">\n<li data-start=\"1280\" data-end=\"1488\">\n<p data-start=\"1283\" data-end=\"1488\">The <code data-start=\"1287\" data-end=\"1299\">instructor</code> field, which links the course to the instructor teaching it. Here the parentValue is the Course, so we find the Instructor where their <code data-start=\"1435\" data-end=\"1440\">_id</code> matches the parentValue’s <code data-start=\"1467\" data-end=\"1479\">instructor</code> field.</p>\n</li>\n<li data-start=\"1489\" data-end=\"1688\">\n<p data-start=\"1492\" data-end=\"1688\">The students enrolled in the course. For this, the parentValue is the Course, so we query the Student type to find all students where their <code data-start=\"1632\" data-end=\"1650\">enrolled_courses</code> array contains this course’s <code data-start=\"1680\" data-end=\"1685\">_id</code>.</p>\n</li>\n</ol>\n<ul data-start=\"1690\" data-end=\"1817\">\n<li data-start=\"1690\" data-end=\"1817\">\n<p data-start=\"1692\" data-end=\"1817\"><strong data-start=\"1692\" data-end=\"1710\">Computed Field</strong>: <code data-start=\"1712\" data-end=\"1735\">numOfStudentsEnrolled</code><br data-start=\"1735\" data-end=\"1738\">This will return a count of all students currently enrolled in that course.</p>\n</li>\n</ul>\n<h3><span>Mutations</span></h3>\n<ol style=\"list-style-type: decimal;\">\n<li><code><strong>addInstructor(first_name: String!, last_name: String!, department: String!, email: String!, phone: String!, office: String!, date_hired: String!) -&gt; Instructor </strong></code>&nbsp;// Creates an instructor and saves to MongoDB. Validate that email is valid, phone matches ###-###-####, and date_hired is a valid MM/DD/YYYY date.&nbsp;</li>\n<li><code><strong>editInstructor(_id: String!, first_name: String, last_name: String, department: String, email: String, phone: String, office: String, date_hired: String) -&gt; Instructor </strong></code>&nbsp;// Updates an instructor’s details (PATCH-style AT LEAST ONE FIELD OTHER THAT THE ID MUST BE PRESENT). Validate email, phone, and date formats when provided.&nbsp;</li>\n<li><code><strong>removeInstructor(_id: String!) -&gt; Instructor &nbsp;</strong></code>// Deletes an instructor from MongoDB.<strong> Must also set the instructor field of all their courses to <code>null</code>.&nbsp;</strong></li>\n<li><strong><code>addStudent(first_name: String!, last_name: String!, email: String!, date_of_birth: String!, major: String!, gpa: Float!) -&gt; Student &nbsp;</code></strong><br>// Creates a student and saves to MongoDB. Validate email, date_of_birth format, and ensure GPA is between 1.00–4.00 with up to 2 decimal places.&nbsp;</li>\n<li><code><strong>editStudent(_id: String!, first_name: String, last_name: String, email: String, date_of_birth: String, major: String, gpa: Float) -&gt; Student &nbsp;</strong></code>// Updates a student’s details (PATCH-style AT LEAST ONE FIELD OTHER THAT THE ID MUST BE PRESENT). Validate updated fields.&nbsp;</li>\n<li><code><strong>removeStudent(_id: String!) -&gt; Student &nbsp;</strong></code>// Deletes a student from MongoDB</li>\n<li><strong><code>addCourse(course_name: String!, department: String!, credits: Int!, instructor: String!, start_date: String!, end_date: String!) -&gt; Course </code></strong>&nbsp;<br>// Creates a course and saves to MongoDB. Validate that instructor ID exists and is a valid instructor in our instructor data, start_date and end_date are valid MM/DD/YYYY, and that end_date is after start_date.&nbsp;</li>\n<li><code><strong>editCourse(_id: String!, course_name: String, department: String, credits: Int, instructor: String, start_date: String, end_date: String) -&gt; Course </strong></code>&nbsp;// Updates a course’s details (PATCH-style AT LEAST ONE FIELD OTHER THAT THE ID MUST BE PRESENT). If instructor is updated, validate the new instructor exists. If dates are updated, validate formats and ordering.&nbsp;</li>\n<li><code><strong>removeCourse(_id: String!) -&gt; Course &nbsp;</strong></code>// Deletes a course from MongoDB. Must also remove this course’s ID from all students’ enrolled_courses arrays.</li>\n<li><code><strong>updateCourseInstructor(courseId: String!, instructorId: String!): Course &nbsp;</strong></code>// Updates the instructor assigned to a given course. Must make sure that both the courseId and instructorId are valid and present in the data.&nbsp;</li>\n<li><code><strong>enrollStudentInCourse(studentId: String!, courseId: String!) -&gt; Student </strong></code>&nbsp;// Adds a courseId to the student’s enrolled_courses array if not already present. Validate that both IDs exist in the data</li>\n<li><code><strong>removeStudentFromCourse(studentId: String!, courseId: String!) -&gt; Student </strong></code>// Removes a courseId from the student’s enrolled_courses array. Validate both IDs exist in the data.</li>\n</ol>\n<h2 id=\"toc_8\">Extra Credit</h2>\n<p>If you do the extra credit and it is fully working and functional, you can receive up to 15 extra bonus points. For extra credit, we are adding Redis into the mix. <strong>Side note:</strong> This was a requirement of the assignment, but I decided to be nice and make it extra credit instead. You're welcome :)&nbsp;</p>\n<h2>Redis:</h2>\n<p>For Redis, we will only be caching the data from MongoDB. Meaning, when your resolvers make a query to MongoDB, we are just storing the data returned from MongoDB into the Redis cache. It's very hard to cache GraphQL queries since every query can be different (as mentioned in lecture) so that's why we are just going to cache the data returned from Mongo.</p>\n<p>You will cache the whole Instructor/Course/Student query results (<code>instructors: [Instructor], courses: [Course], students: [Student]</code>) that returns all the instructors/courses/students from Mongo. &nbsp;You can store this using any key you like.</p>\n<p>When you call any of the following queries, you will cache the data returned from mongo for the next time:</p>\n<ol style=\"list-style-type: decimal;\">\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getInstructorById(_id: String!): Instructor</strong></code> &nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getStudentById(_id: String!): Student</strong></code> &nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><strong><code>getCourseById(_id: String!): Course</code></strong> &nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getStudentsByCourseId(courseId: String!): [Student]</strong></code> &nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getCoursesByInstructorId(instructorId: String!): [Course] </strong></code>&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getCoursesByDepartment(department: String!): [Course]&nbsp;</strong></code></span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getInstructorsByDepartment(department: String!): [Instructor] </strong></code>&nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>getStudentsByMajor(major: String!): [Student]</strong></code> &nbsp;</span></li>\n<li><span style=\"font-family: inherit; font-size: 1rem;\"><code><strong>searchStudentsByLastName(searchTerm: String!): [Student]</strong></code> &nbsp;</span></li>\n</ol>\n<p><span style=\"font-family: inherit; font-size: 1rem;\">So in your resolvers, check the cache first for the data being requested. If it's in the cache, return it from the cache. If it's not in the cache, then query Mongo, store it in the cache and respond with it from Mongo.&nbsp;</span></p>\n<p><span style=\"font-family: inherit; font-size: 1rem;\">Now for what do to when data is mutated: Mutating the data, will mean that the data in the cache will be stale. To make things simpler, anytime a mutation is run, just flush the entire cache so it will be rebuilt the next time the data is requested. Otherwise, it would be a lot of work. &nbsp;Meaning, every time you updated a student, you would have to clear whatever lists that student appeared on from one of the other queries in the cache. So, it make it easier, any time a mutation is executed, just flush all the data in Redis.&nbsp;</span></p>\n<h2 id=\"toc_8\">Notes</h2>\n<ol>\n<li>Remember to submit your <code>package.json</code> file but <strong>not</strong> your <code>node_modules</code> folder.</li>\n<li>Remember to add the start command!</li>\n<li>Submit your zip file as: LastName_FirstName_Section_Lab3.zip &nbsp;ie: Hill_Patrick_A_Lab3.zip&nbsp;</li>\n</ol></div>"
 					}
-				]
-			}
-		]
-	},
-	{
-		name: "Company Internal Documentation",
-		description: "Confidential company processes and procedures",
-		urlName: "company-internal-docs",
-		ownerUid: SEED_USER_UIDS[5],
-		access: "private",
-		pages: [
-			{
-				name: "Onboarding Process",
-				category: "UNCATEGORIZED",
-				content: [
-					{
-						editorType: "text",
-						contentString:
-							"# Employee Onboarding Process\n\n## Week 1\n\n- **Day 1**: HR orientation, IT setup\n- **Day 2-3**: Team introductions, codebase overview\n- **Day 4-5**: First small tasks, pair programming"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"## Required Accounts\n\n| Service | Purpose | Request From |\n|---------|---------|-------------|\n| GitHub | Code repository | IT Admin |\n| Slack | Communication | HR |\n| AWS | Cloud access | DevOps Team |\n| Jira | Project management | Team Lead |"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"*Important*: All new hires must complete security training by end of week 1!"
-					}
-				]
+				],
+				"first_created": "12/15/2025, 1:46:25 PM",
+				"last_edited": "12/15/2025, 1:46:59 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
 			},
 			{
-				name: "Security Protocols",
-				category: "UNCATEGORIZED",
-				content: [
+				"name": "Lab 4",
+				"category": "UNCATEGORIZED",
+				"content": [
 					{
-						editorType: "text",
-						contentString:
-							"# Security Protocols\n\n## Access Control\n\n1. **VPN Required**: All remote access must use company VPN\n2. **2FA Mandatory**: Enable on all accounts\n3. **Password Policy**: Minimum 12 characters, rotated every 90 days\n4. **Device Encryption**: All company devices must be encrypted"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"**Incident Response:**\n\nIf you suspect a security breach:\n1. Immediately notify security@company.com\n2. Document what you observed\n3. Do not share details with unauthorized personnel\n4. Await further instructions"
+						"editorType": "text",
+						"contentString": "<div class=\"description user_content student-version enhanced\">\n<h1 id=\"toc_0\">CS-554 Lab 4</h1>\n<h2 id=\"toc_1\">A Simple React Todo App</h2>\n<p>For this lab, you will create a simple Todo tracker using React. The purpose of this lab is to get familiar with using state and passing props into React components. &nbsp;<strong>&nbsp;</strong>It is a very basic application just so you can get some initial practice with React. &nbsp;A bigger more complex React lab is coming after our 2nd React lecture.&nbsp;</p>\n<p>You will be creating a simple React application with just 3 components, <code>App</code> (your main component), <code>TodoList</code> ( will display todos that have not been deleted or marked completed) and <code>CompletedTodos</code> (will display todos that have been completed). &nbsp;Our <code>App</code> component will hold the state off of the Todos, for this assignment, you will hard code 10 todo items (an array with 10 objects) in the initial state of the <code>App</code> component using the <code>useState</code> hook. &nbsp;Each todo will have the following fields:</p>\n<div>\n<pre><code>{<br></code><code>id: 1,</code><br><code>title: 'Pay cable bill',</code><br><code>description: 'Pay the cable bill by the 15th of the month',</code><br><code>due: '3/15/2023',</code><br><code>completed: false</code><br><code>}</code></pre>\n</div>\n<p>You will initially set the completed flag to be false for every item in the state. &nbsp;The id field must be unique for each todo item. &nbsp;You can use numbers like shown above, uuid, whichever you like as long as the id field is unique.&nbsp;</p>\n<div><span style=\"font-size: 24pt;\">Components</span><br>\n<h3 id=\"toc_3\">App.jsx</h3>\n<p><span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\">Your </span></span>app<span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\"> component will hold the state of the todos, they will then be passed to the other components (<code>TodoList</code> and <code>CompletedTodos</code>) as properties (props).</span></span></p>\n<p><span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\">The initial state will be an array of todo objects with the fields shown above. You will set the state to have at least 10 todo objects in the </span></span>initial<span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\"> state. You will also need to create two functions in the <code>App</code> component</span></span></p>\n<p><span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\"><code>deleteTodo (id)</code>: &nbsp;This function will remove a todo object from the array of todo objects in state for the id parameter passed into the function.</span></span></p>\n<p><span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\"><code>toggleCompleted (todo)</code>: This function will toggle the <code>completed</code> boolean for the todo passed into it (pass the entire todo object into this function). Meaning, if the current value was <code>false</code>, this function will make it <code>true</code>, if it was <code>true</code>, then this function will make it <code>false</code>. It should update the <code>App</code> component's state for that todo that was marked complete/</span></span>incomplete<span style=\"font-family: inherit;\"><span style=\"font-size: 1rem;\">. &nbsp;</span></span></p>\n<p>You <code>App</code> component will render both the <code>TodoList</code> and the <code>CompletedTodos</code> components. &nbsp;You will pass the todos from the <code>App</code> component's state into both the <code>TodoList</code> and <code>CompletedTodos</code> components as props. &nbsp;You will also pass in the <code>toggleCompleted</code> and <code>deleteTodo</code> functions into the <code>TodoList</code> component as a prop. You only have to pass in <code>toggleCompleted</code> as a prop to <code>CompletedTodos</code>(you do not have to pass <code>deleteTodo</code> into this component).</p>\n<h3 id=\"toc_4\">TodoList.jsx</h3>\n<p>This component will map through the todos that were passed in a prop and will render the following JSX for each todo item: (<strong>Note</strong>: you should ONLY render todos that are not flagged as completed)</p>\n<pre>&lt;div&gt;<br>  &lt;h1&gt;Pay cable bill&lt;/h1&gt;<br>  &lt;p&gt;Pay the cable bill by the 15th of the month&lt;/p&gt;<br>  &lt;p&gt;Due Date: 3/15/2023&lt;/p&gt;<br>  &lt;p&gt;Completed: No&lt;/p&gt;<br>  &lt;button&gt;Delete&lt;/button&gt;<br>  &lt;button&gt;Complete&lt;/button&gt;<br>&lt;/div&gt;</pre>\n<p>When the user clicks the Delete button, it should call the <code>deleteTodo</code> function that was passed in from the App component as a prop and delete the todo from the <code>App</code> component's state.</p>\n<p>When the user clicks the Complete button, it should call the <code>toggleCompleted</code> function that was passed in as a prop from the App component and then update the App component state, setting the completed field for that todo item to be <code>true</code></p>\n<p>If the todo is past due, display the title of the todo in the h1 element to be red, and also display the due date in red. (remember in React, we use the <code>className</code> attribute to set a class for an element instead of <code>class</code> like we do in normal HTML)</p>\n<h3 id=\"toc_5\">CompletedTodos.jsx</h3>\n<p>This component will map through the todos that were passed in a prop and will render the following JSX for each todo item: (<strong>Note</strong>: you should ONLY show todos that are marked completed)</p>\n<pre>&lt;div&gt;<br>  &lt;h1&gt;Pay cable bill&lt;/h1&gt;<br>  &lt;p&gt;Pay the cable bill by the 15th of the month&lt;/p&gt;<br>  &lt;p&gt;Due Date: 3/15/2023&lt;/p&gt;<br>  &lt;p&gt;Completed: Yes&lt;/p&gt;<br>  &lt;button&gt;Mark Incomplete&lt;/button&gt;<br>&lt;/div&gt;</pre>\n<p>When the user clicks the <code>Mark Incomplete</code> button, it should call the <code>toggleCompleted</code> function that was passed in as a prop from the <code>App</code> component and then update the <code>App</code> component state, setting the completed field for that todo item to be <code>false</code></p>\n<span style=\"font-size: 24pt;\">Extra Credit</span></div>\n<div>This extra credit is worth 10%. &nbsp;I know we have not gone over form processing yet and that is why this functionality is extra credit and not required functionality. You will create another component called <code>AddTodo</code> that will also be rendered into the <code>App</code> component. &nbsp;This component will have a form with the following inputs: <code>title:</code> which is input type <code>text</code>, <code>description:</code> which is a <code>textarea</code>, and <code>due</code>: which is input with a type <code>date</code>. &nbsp;You must set the <code>min</code> attribute for the date input to be the current day's date(they shouldn't be able to select dates in the past). &nbsp;The completed boolean and ID will be handled by the function you pass into this component from the <code>App</code> component.&nbsp;</div>\n<div>In your <code>App</code> component, you will create a new function. <code>addTodo</code>, this function will be passed to the <code>AddTodo</code> component as a prop. &nbsp;When the user fills out the form and submits it (You must make sure the form has values and is not empty!!!! and validate the form fields), you will then call the <code>addTodo</code> function passed in from the <code>App</code> component as a prop, passing in the values from the form that was filled out.</div>\n<br>\n<div>In the addTodo function in the <code>App</code> component, you will construct an object from the form values passed to it, you will increment the ID and also set <code>completed</code> property to be <code>false</code>. &nbsp;You will then add this object to your <code>App</code> component state.</div>\n<br>\n<div>Also, do not forget to reset the form after a successful form submission!</div>\n<br>\n<div><strong>Form Field Constraints:</strong></div>\n<div>Title: Should be at least 5 characters long, and should not be an empty string or string with just spaces. &nbsp;Also, &nbsp;do not forget to trim your input!</div>\n<div>Description: Should be at least 25 characters long and should not be an empty string or string with just spaces. Also, do not forget to trim your input!</div>\n<div>Due: Must be a valid date in mm/dd/yyyy format (the default display format for the input type of date, but the value will be in yyyy-mm-dd format. &nbsp;Convert the value to mm/dd/yyyy before saving it in state) and should not allow the user to select dates before today's (the current) date.</div>\n<div><br>\n<h2 id=\"toc_12\">General Requirements</h2>\n<ol>\n<li>Remember to submit your <code>package.json</code> file but <strong>not</strong> your <code>node_modules</code> folder.</li>\n<li>Remember to have fun with the content.</li>\n</ol>\n</div>\n</div>"
 					}
-				]
-			}
-		]
-	},
-	{
-		name: "Research Project Alpha",
-		description: "Confidential research notes and findings",
-		urlName: "research-project-alpha",
-		ownerUid: SEED_USER_UIDS[6],
-		access: "private",
-		pages: [
-			{
-				name: "Experiment Results",
-				category: "UNCATEGORIZED",
-				content: [
-					{
-						editorType: "text",
-						contentString:
-							"# Experiment Results - Phase 1\n\n## Hypothesis\n\nIncreasing the cache hit ratio will reduce database load by 40%.\n\n## Methodology\n\n- **Test Duration**: 30 days\n- **Sample Size**: 10,000 requests/day\n- **Control Group**: Standard caching\n- **Test Group**: Enhanced caching strategy"
-					},
-					{
-						editorType: "table",
-						contentString:
-							"| Metric | Control | Test | Improvement |\n|--------|---------|------|-------------|\n| DB Queries | 8,500/day | 4,200/day | 50.6% |\n| Response Time | 245ms | 128ms | 47.8% |\n| Cache Hit Rate | 62% | 89% | 27% points |"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"**Conclusion**: The enhanced caching strategy exceeded our initial hypothesis. Recommend rollout to production."
-					}
-				]
+				],
+				"first_created": "12/15/2025, 1:47:09 PM",
+				"last_edited": "12/15/2025, 1:47:35 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
 			},
 			{
-				name: "Next Steps",
-				category: "UNCATEGORIZED",
-				content: [
+				"name": "Lab 5",
+				"category": "UNCATEGORIZED",
+				"content": [
 					{
-						editorType: "text",
-						contentString:
-							"# Project Roadmap\n\n## Q1 2026\n\n- [ ] Complete Phase 2 testing\n- [ ] Security audit of caching layer\n- [ ] Performance benchmarking\n- [ ] Documentation for operations team"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"## Team Members\n\n- **Lead**: DavidMiller\n- **Backend**: AlexJohnson, JamesMartinez\n- **Infrastructure**: SarahDavis\n- **QA**: EmilyBrown"
+						"editorType": "text",
+						"contentString": "<div class=\"description user_content enhanced\" data-resource-type=\"assignment.body\" data-resource-id=\"613885\"><h3 data-start=\"359\" data-end=\"377\">CS-554 Lab 5</h3>\n<p data-start=\"378\" data-end=\"406\"><strong data-start=\"378\" data-end=\"406\">React Rick and Morty API</strong></p>\n<p data-start=\"408\" data-end=\"635\">For this lab, you will create a <strong data-start=\"440\" data-end=\"486\">Rick and Morty API Single Page Application</strong> using React and Vite. For this Lab you should use <strong data-start=\"537\" data-end=\"560\">Function Components</strong> with the <strong data-start=\"570\" data-end=\"582\">useState</strong> and <strong data-start=\"587\" data-end=\"600\">useEffect</strong> Hooks along with <strong data-start=\"618\" data-end=\"634\">React Router</strong>.</p>\n<p data-start=\"637\" data-end=\"754\">You will be creating a Single Page Application using React and React Router Dom that implements the following routes.</p>\n<p data-start=\"756\" data-end=\"844\">You will be using the public <strong data-start=\"785\" data-end=\"807\">Rick and Morty API</strong>:<br data-start=\"808\" data-end=\"811\"><a class=\"decorated-link cursor-pointer\" target=\"_new\" data-start=\"811\" data-end=\"842\">https://rickandmortyapi.com</a></p>\n<p data-start=\"846\" data-end=\"1042\">You do <strong data-start=\"853\" data-end=\"860\">not</strong> need an API key, as this API is completely open and read-only.<br data-start=\"923\" data-end=\"926\">You will use the following endpoints for your React components:<br data-start=\"989\" data-end=\"992\"><strong data-start=\"992\" data-end=\"1006\">Characters</strong>, <strong data-start=\"1008\" data-end=\"1021\">Locations</strong>, and <strong data-start=\"1027\" data-end=\"1039\">Episodes</strong>.</p>\n<p data-start=\"846\" data-end=\"1042\"><strong>Please make sure you FULLY READ THE API DOCUMENTATION!!</strong></p>\n<p data-start=\"1044\" data-end=\"1269\">Please look at the data returned so you know the schema of the data and the objects it returns. These endpoints provide lists, and you can get individual items using the same base URLs with an <code data-start=\"1237\" data-end=\"1243\">/:id</code> parameter. For example:</p>\n<ul data-start=\"1270\" data-end=\"1456\">\n<li data-start=\"1270\" data-end=\"1349\">\n<p data-start=\"1272\" data-end=\"1349\"><code data-start=\"1272\" data-end=\"1315\">https://rickandmortyapi.com/api/character</code> gives you a list of characters.</p>\n</li>\n<li data-start=\"1350\" data-end=\"1456\">\n<p data-start=\"1352\" data-end=\"1456\"><code data-start=\"1352\" data-end=\"1397\">https://rickandmortyapi.com/api/character/1</code> gives you the details for the character with an ID of 1.</p>\n</li>\n</ul>\n<p data-start=\"1458\" data-end=\"1501\">The same applies to locations and episodes.</p>\n<p data-start=\"1503\" data-end=\"1977\">It’s important to recognize the interconnected nature of the data you’re dealing with. For example, a character is linked to an <strong data-start=\"1631\" data-end=\"1641\">origin</strong> (location), a <strong data-start=\"1656\" data-end=\"1676\">current location</strong>, and an array of <strong data-start=\"1694\" data-end=\"1710\">episode URLs</strong>. Similarly, each episode has an array of character URLs, and each location lists all the residents (characters) there. Whenever an ID or URL appears that references another resource, you must provide a clickable <code data-start=\"1923\" data-end=\"1931\">&lt;Link&gt;</code> to its corresponding details route/component.</p>\n<p data-start=\"1979\" data-end=\"2149\"><strong data-start=\"1979\" data-end=\"2008\">Do NOT just dump raw JSON</strong> to the page! You will lose major points for that. Render all the data in proper JSX elements that make sense for the data you’re displaying.</p>\n<hr data-start=\"2151\" data-end=\"2154\">\n<h3 data-start=\"2156\" data-end=\"2165\">Pages</h3>\n<h4 data-start=\"2167\" data-end=\"2175\"><code data-start=\"2172\" data-end=\"2175\">/</code></h4>\n<p data-start=\"2176\" data-end=\"2347\">The root directory of your application will be a simple landing page explaining the purpose of your site (to talk about Rick and Morty, the API, and the data available).</p>\n<p data-start=\"2349\" data-end=\"2407\">This page must include <code data-start=\"2372\" data-end=\"2380\">&lt;Link&gt;</code> elements to navigate to:</p>\n<ul data-start=\"2408\" data-end=\"2477\">\n<li data-start=\"2408\" data-end=\"2432\">\n<p data-start=\"2410\" data-end=\"2432\"><code data-start=\"2410\" data-end=\"2430\">/characters/page/1</code></p>\n</li>\n<li data-start=\"2433\" data-end=\"2456\">\n<p data-start=\"2435\" data-end=\"2456\"><code data-start=\"2435\" data-end=\"2454\">/locations/page/1</code></p>\n</li>\n<li data-start=\"2457\" data-end=\"2477\">\n<p data-start=\"2459\" data-end=\"2477\"><code data-start=\"2459\" data-end=\"2477\">/episodes/page/1</code></p>\n</li>\n</ul>\n<hr data-start=\"2479\" data-end=\"2482\">\n<h4 data-start=\"2484\" data-end=\"2513\"><code data-start=\"2489\" data-end=\"2513\">/characters/page/:page</code></h4>\n<p data-start=\"2514\" data-end=\"2754\">This route will render a <strong data-start=\"2539\" data-end=\"2572\">paginated list of characters.</strong><br data-start=\"2572\" data-end=\"2575\">You will display <strong data-start=\"2592\" data-end=\"2619\">10 characters per page.</strong><br data-start=\"2619\" data-end=\"2622\">Use the <code data-start=\"2630\" data-end=\"2637\">:page</code> parameter to determine what page to fetch from the API (<code data-start=\"2694\" data-end=\"2750\">https://rickandmortyapi.com/api/character/?page={page}</code>).</p>\n<p data-start=\"2756\" data-end=\"2775\">Pagination rules:</p>\n<ul data-start=\"2776\" data-end=\"3008\">\n<li data-start=\"2776\" data-end=\"2822\">\n<p data-start=\"2778\" data-end=\"2822\">On page 1: show only a “Next Page” button.</p>\n</li>\n<li data-start=\"2823\" data-end=\"2899\">\n<p data-start=\"2825\" data-end=\"2899\">On page 2 and beyond: show both “Previous Page” and “Next Page” buttons.</p>\n</li>\n<li data-start=\"2900\" data-end=\"2957\">\n<p data-start=\"2902\" data-end=\"2957\">On the last page: show only a “Previous Page” button.</p>\n</li>\n<li data-start=\"2958\" data-end=\"3008\">\n<p data-start=\"2960\" data-end=\"3008\">If the page does not exist, render a 404 page.</p>\n</li>\n</ul>\n<p data-start=\"3010\" data-end=\"3061\">For each character in the list, display at least:</p>\n<ul data-start=\"3062\" data-end=\"3139\">\n<li data-start=\"3062\" data-end=\"3080\">\n<p data-start=\"3064\" data-end=\"3080\">their <strong data-start=\"3070\" data-end=\"3078\">name</strong></p>\n</li>\n<li data-start=\"3081\" data-end=\"3122\">\n<p data-start=\"3083\" data-end=\"3122\">their <strong data-start=\"3089\" data-end=\"3099\">status</strong> (Alive/Dead/Unknown)</p>\n</li>\n<li data-start=\"3123\" data-end=\"3139\">\n<p data-start=\"3125\" data-end=\"3139\">an <strong data-start=\"3128\" data-end=\"3137\">image</strong></p>\n</li>\n</ul>\n<p data-start=\"3141\" data-end=\"3184\">Each name should link to <code data-start=\"3166\" data-end=\"3183\">/characters/:id</code>.</p>\n<hr data-start=\"3186\" data-end=\"3189\">\n<h4 data-start=\"3191\" data-end=\"3213\"><code data-start=\"3196\" data-end=\"3213\">/characters/:id</code></h4>\n<p data-start=\"3214\" data-end=\"3344\">This route will show details about a <strong data-start=\"3251\" data-end=\"3271\">single character</strong>.<br data-start=\"3272\" data-end=\"3275\">If the character does not exist, the SPA should display a 404 page.</p>\n<p data-start=\"3346\" data-end=\"3400\">You should show as much data as possible, including:</p>\n<ul data-start=\"3401\" data-end=\"3591\">\n<li data-start=\"3401\" data-end=\"3434\">\n<p data-start=\"3403\" data-end=\"3434\">name, species, status, gender</p>\n</li>\n<li data-start=\"3435\" data-end=\"3444\">\n<p data-start=\"3437\" data-end=\"3444\">image</p>\n</li>\n<li data-start=\"3445\" data-end=\"3482\">\n<p data-start=\"3447\" data-end=\"3482\">origin (link to <code data-start=\"3463\" data-end=\"3479\">/locations/:id</code>)</p>\n</li>\n<li data-start=\"3483\" data-end=\"3530\">\n<p data-start=\"3485\" data-end=\"3530\">current location name (link to <code data-start=\"3511\" data-end=\"3527\">/locations/:id</code>)</p>\n</li>\n<li data-start=\"3531\" data-end=\"3591\">\n<p data-start=\"3533\" data-end=\"3591\">episodes they appear in (each linked to <code data-start=\"3573\" data-end=\"3588\">/episodes/:id</code>)</p>\n</li>\n<li data-start=\"3531\" data-end=\"3591\">created</li>\n</ul>\n<p data-start=\"3593\" data-end=\"3683\">All related IDs/URLs must be turned into links to their corresponding detail components.</p>\n<p data-start=\"3685\" data-end=\"3786\">Do not just dump JSON — present the information clearly using JSX elements (image tags, lists, etc.).</p>\n<hr data-start=\"3788\" data-end=\"3791\">\n<h4 data-start=\"3793\" data-end=\"3821\"><code data-start=\"3798\" data-end=\"3821\">/locations/page/:page</code></h4>\n<p data-start=\"3822\" data-end=\"3976\">This route will render a <strong data-start=\"3847\" data-end=\"3879\">paginated list of locations.</strong><br data-start=\"3879\" data-end=\"3882\">Display 5 locations per page using <code data-start=\"3918\" data-end=\"3973\">https://rickandmortyapi.com/api/location/?page={page}</code>.</p>\n<p data-start=\"3978\" data-end=\"4082\">Pagination behavior should follow the same rules as the characters list.<br data-start=\"4050\" data-end=\"4053\">For each location, display:</p>\n<ul data-start=\"4083\" data-end=\"4114\">\n<li data-start=\"4083\" data-end=\"4091\">\n<p data-start=\"4085\" data-end=\"4091\">name</p>\n</li>\n</ul>\n<p data-start=\"4116\" data-end=\"4158\">Each name should link to <code data-start=\"4141\" data-end=\"4157\">/locations/:id</code>.</p>\n<hr data-start=\"4160\" data-end=\"4163\">\n<h4 data-start=\"4165\" data-end=\"4186\"><code data-start=\"4170\" data-end=\"4186\">/locations/:id</code></h4>\n<p data-start=\"4187\" data-end=\"4315\">This route will show details about a <strong data-start=\"4224\" data-end=\"4244\">single location.</strong><br data-start=\"4244\" data-end=\"4247\">If the location does not exist, the SPA should display a 404 page.</p>\n<p data-start=\"4317\" data-end=\"4363\">Display as much data as possible, including:</p>\n<ul data-start=\"4364\" data-end=\"4457\">\n<li data-start=\"4364\" data-end=\"4393\">\n<p data-start=\"4366\" data-end=\"4393\">name, type, and dimension</p>\n</li>\n<li data-start=\"4394\" data-end=\"4457\">\n<p data-start=\"4396\" data-end=\"4457\">a list of <strong data-start=\"4406\" data-end=\"4419\">residents</strong> (each linking to <code data-start=\"4437\" data-end=\"4454\">/characters/:id</code>)</p>\n</li>\n</ul>\n<p data-start=\"4459\" data-end=\"4545\">Do not dump JSON — use structured JSX elements such as <code data-start=\"4514\" data-end=\"4520\">&lt;ul&gt;</code> or <code data-start=\"4524\" data-end=\"4530\">&lt;ol&gt;</code> for residents.</p>\n<hr data-start=\"4547\" data-end=\"4550\">\n<h4 data-start=\"4552\" data-end=\"4579\"><code data-start=\"4557\" data-end=\"4579\">/episodes/page/:page</code></h4>\n<p data-start=\"4580\" data-end=\"4731\">This route will render a <strong data-start=\"4605\" data-end=\"4636\">paginated list of episodes.</strong><br data-start=\"4636\" data-end=\"4639\">Display 5 episodes per page using <code data-start=\"4674\" data-end=\"4728\">https://rickandmortyapi.com/api/episode/?page={page}</code>.</p>\n<p data-start=\"4733\" data-end=\"4822\">Pagination behavior should follow the same rules as above.<br data-start=\"4791\" data-end=\"4794\">For each episode, display:</p>\n<ul data-start=\"4823\" data-end=\"4885\">\n<li data-start=\"4823\" data-end=\"4831\">\n<p data-start=\"4825\" data-end=\"4831\">name</p>\n</li>\n<li data-start=\"4832\" data-end=\"4872\">\n<p data-start=\"4834\" data-end=\"4872\">episode code (for example, “S01E05”)</p>\n</li>\n<li data-start=\"4873\" data-end=\"4885\">\n<p data-start=\"4875\" data-end=\"4885\">air date</p>\n</li>\n</ul>\n<p data-start=\"4887\" data-end=\"4928\">Each name should link to <code data-start=\"4912\" data-end=\"4927\">/episodes/:id</code>.</p>\n<hr data-start=\"4930\" data-end=\"4933\">\n<h4 data-start=\"4935\" data-end=\"4955\"><code data-start=\"4940\" data-end=\"4955\">/episodes/:id</code></h4>\n<p data-start=\"4956\" data-end=\"5082\">This route will show details about a <strong data-start=\"4993\" data-end=\"5012\">single episode.</strong><br data-start=\"5012\" data-end=\"5015\">If the episode does not exist, the SPA should display a 404 page.</p>\n<p data-start=\"5084\" data-end=\"5130\">Display as much data as possible, including:</p>\n<ul data-start=\"5131\" data-end=\"5262\">\n<li data-start=\"5131\" data-end=\"5175\">\n<p data-start=\"5133\" data-end=\"5175\">episode name, air date, and episode code</p>\n</li>\n<li data-start=\"5176\" data-end=\"5262\">\n<p data-start=\"5178\" data-end=\"5262\">a list of characters appearing in that episode (each linking to <code data-start=\"5242\" data-end=\"5259\">/characters/:id</code>)</p>\n</li>\n<li data-start=\"5176\" data-end=\"5262\">created</li>\n</ul>\n<p data-start=\"5264\" data-end=\"5351\">Do not just dump JSON — use structured JSX to present information in a readable layout.</p>\n<hr data-start=\"5353\" data-end=\"5356\">\n<h3 data-start=\"5358\" data-end=\"5372\">Pagination</h3>\n<p data-start=\"5373\" data-end=\"5408\"><strong data-start=\"5373\" data-end=\"5406\">Do NOT hardcode page numbers!</strong></p>\n<ul data-start=\"5410\" data-end=\"5571\">\n<li data-start=\"5410\" data-end=\"5451\">\n<p data-start=\"5412\" data-end=\"5451\">On page 1, show only a “Next” button.</p>\n</li>\n<li data-start=\"5452\" data-end=\"5518\">\n<p data-start=\"5454\" data-end=\"5518\">On page 2 and beyond, show both “Next” and “Previous” buttons.</p>\n</li>\n<li data-start=\"5519\" data-end=\"5571\">\n<p data-start=\"5521\" data-end=\"5571\">On the last page, show only a “Previous” button.</p>\n</li>\n</ul>\n<p data-start=\"5573\" data-end=\"5675\">Use the <code data-start=\"5581\" data-end=\"5593\">info.pages</code> value from the API response to determine the total number of pages dynamically.</p>\n<hr data-start=\"5677\" data-end=\"5680\">\n<h3 data-start=\"5682\" data-end=\"5709\">HTML, Look, and Content</h3>\n<p data-start=\"5710\" data-end=\"5815\">You are free to style your app however you like, as long as it is valid HTML and readable. Be creative!</p>\n<p data-start=\"5817\" data-end=\"5941\">You may use any CSS framework, component library, or custom styling. The UI should display images, text, and lists neatly.</p>\n<p data-start=\"5943\" data-end=\"6089\">Try to <strong data-start=\"5950\" data-end=\"5970\">reuse components</strong> whenever possible — for example, a generic <code data-start=\"6014\" data-end=\"6020\">List</code> component for paginated data, and a shared <code data-start=\"6064\" data-end=\"6076\">Pagination</code> component.</p>\n<hr data-start=\"6091\" data-end=\"6094\">\n<h3 data-start=\"6096\" data-end=\"6112\">Extra Credit</h3>\n<ul data-start=\"6113\" data-end=\"6426\">\n<li data-start=\"6113\" data-end=\"6178\">\n<p data-start=\"6115\" data-end=\"6178\">5 points — Beautiful, polished unique design that impresses your TA. (If you use the same design as the TV Maze lecture code example, you will NOT get the extra points, be original and unique and have fun!)</p>\n</li>\n<li data-start=\"6179\" data-end=\"6304\">\n<p data-start=\"6181\" data-end=\"6304\"><strong data-start=\"105\" data-end=\"183\">15 points — Add filters and search for characters, locations, and episodes</strong><br data-start=\"183\" data-end=\"186\"><span>Use query parameters to build a filter/search feature for each of the three endpoints. Check out the API docs for the available filters:</span> <a href=\"https://rickandmortyapi.com/documentation/#filter-episodes\" class=\"external\" target=\"_blank\" rel=\"noreferrer noopener\"><span>Filter episodes</span><span class=\"external_link_icon\" style=\"margin-inline-start: 5px; display: inline-block; text-indent: initial; \" role=\"presentation\"><svg viewBox=\"0 0 1920 1920\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:1em; height:1em; vertical-align:middle; fill:currentColor\">\n    <path d=\"M1226.667 267c88.213 0 160 71.787 160 160v426.667H1280v-160H106.667v800C106.667 1523 130.56 1547 160 1547h1066.667c29.44 0 53.333-24 53.333-53.333v-213.334h106.667v213.334c0 88.213-71.787 160-160 160H160c-88.213 0-160-71.787-160-160V427c0-88.213 71.787-160 160-160Zm357.706 442.293 320 320c20.8 20.8 20.8 54.614 0 75.414l-320 320-75.413-75.414 228.907-228.906H906.613V1013.72h831.254L1508.96 784.707l75.413-75.414Zm-357.706-335.626H160c-29.44 0-53.333 24-53.333 53.333v160H1280V427c0-29.333-23.893-53.333-53.333-53.333Z\" fill-rule=\"evenodd\"></path>\n</svg>\n<span class=\"screenreader-only\">Links to an external site.</span></span></a> <a href=\"https://rickandmortyapi.com/documentation/#filter-locations\" class=\"external\" target=\"_blank\" rel=\"noreferrer noopener\"><span>Filter locations</span><span class=\"external_link_icon\" style=\"margin-inline-start: 5px; display: inline-block; text-indent: initial; \" role=\"presentation\"><svg viewBox=\"0 0 1920 1920\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:1em; height:1em; vertical-align:middle; fill:currentColor\">\n    <path d=\"M1226.667 267c88.213 0 160 71.787 160 160v426.667H1280v-160H106.667v800C106.667 1523 130.56 1547 160 1547h1066.667c29.44 0 53.333-24 53.333-53.333v-213.334h106.667v213.334c0 88.213-71.787 160-160 160H160c-88.213 0-160-71.787-160-160V427c0-88.213 71.787-160 160-160Zm357.706 442.293 320 320c20.8 20.8 20.8 54.614 0 75.414l-320 320-75.413-75.414 228.907-228.906H906.613V1013.72h831.254L1508.96 784.707l75.413-75.414Zm-357.706-335.626H160c-29.44 0-53.333 24-53.333 53.333v160H1280V427c0-29.333-23.893-53.333-53.333-53.333Z\" fill-rule=\"evenodd\"></path>\n</svg>\n<span class=\"screenreader-only\">Links to an external site.</span></span></a> <a href=\"https://rickandmortyapi.com/documentation/#filter-characters\" class=\"external\" target=\"_blank\" rel=\"noreferrer noopener\"><span>Filter characters</span><span class=\"external_link_icon\" style=\"margin-inline-start: 5px; display: inline-block; text-indent: initial; \" role=\"presentation\"><svg viewBox=\"0 0 1920 1920\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:1em; height:1em; vertical-align:middle; fill:currentColor\">\n    <path d=\"M1226.667 267c88.213 0 160 71.787 160 160v426.667H1280v-160H106.667v800C106.667 1523 130.56 1547 160 1547h1066.667c29.44 0 53.333-24 53.333-53.333v-213.334h106.667v213.334c0 88.213-71.787 160-160 160H160c-88.213 0-160-71.787-160-160V427c0-88.213 71.787-160 160-160Zm357.706 442.293 320 320c20.8 20.8 20.8 54.614 0 75.414l-320 320-75.413-75.414 228.907-228.906H906.613V1013.72h831.254L1508.96 784.707l75.413-75.414Zm-357.706-335.626H160c-29.44 0-53.333 24-53.333 53.333v160H1280V427c0-29.333-23.893-53.333-53.333-53.333Z\" fill-rule=\"evenodd\"></path>\n</svg>\n<span class=\"screenreader-only\">Links to an external site.</span></span></a>. <span>To earn the full 15 points, you must implement all available filters for </span><strong data-start=\"496\" data-end=\"509\">all three</strong><span> endpoints (worth 5 points each). For example, locations can be filtered by <strong data-start=\"585\" data-end=\"593\">name</strong>, <strong data-start=\"595\" data-end=\"603\">type</strong>, and <strong data-start=\"609\" data-end=\"622\">dimension</strong>. &nbsp;So if you only implement all the filters for locations, that's +5 points, if you implement all the filtering for characters, that's another+ 5 points and if you implement all the filters for episodes, that's another +5 points. </span><span>Your implementation should allow users to select a filter category (such as name, type, or dimension using locations again as example) and enter a search value into an input. You may also include a dropdown menu to make filter selection more user-friendly. So using locations again as an example, have a text input and then a dropdown with the options \"Name\", \"Type\", \"Dimension\" and it will filter based on the category selected from the dropdown.&nbsp;</span></p>\n</li>\n</ul>\n<hr data-start=\"6428\" data-end=\"6431\">\n<h3 data-start=\"6433\" data-end=\"6457\">General Requirements</h3>\n<ul data-start=\"6458\" data-end=\"6635\">\n<li data-start=\"6458\" data-end=\"6530\">\n<p data-start=\"6460\" data-end=\"6530\">Submit your <code data-start=\"6472\" data-end=\"6486\">package.json</code> file, but not your <code data-start=\"6506\" data-end=\"6520\">node_modules</code> folder.</p>\n</li>\n<li data-start=\"6531\" data-end=\"6554\">\n<p data-start=\"6533\" data-end=\"6554\">Validate your HTML.</p>\n</li>\n<li data-start=\"6555\" data-end=\"6589\">\n<p data-start=\"6557\" data-end=\"6589\">Use async/await for API calls.</p>\n</li>\n<li data-start=\"6590\" data-end=\"6635\">\n<p data-start=\"6592\" data-end=\"6635\">Have fun building your multiverse explorer!</p>\n</li>\n</ul></div>"
 					}
-				]
-			}
-		]
-	},
-	{
-		name: "Personal Finance Guide",
-		description:
-			"Private notes on investment strategies and financial planning",
-		urlName: "personal-finance-guide",
-		ownerUid: SEED_USER_UIDS[7],
-		access: "private",
-		pages: [
-			{
-				name: "Investment Strategy",
-				category: "UNCATEGORIZED",
-				content: [
-					{
-						editorType: "text",
-						contentString:
-							"# Investment Strategy 2025\n\n## Portfolio Allocation\n\n- **Stocks**: 60% (diversified across sectors)\n- **Bonds**: 25% (government and corporate)\n- **Real Estate**: 10% (REITs)\n- **Cash/Emergency Fund**: 5%"
-					},
-					{
-						editorType: "table",
-						contentString:
-							"| Account | Amount | Purpose |\n|---------|--------|----------|\n| 401(k) | $1,500 | Retirement |\n| Roth IRA | $500 | Tax-free growth |\n| Brokerage | $800 | Long-term investing |\n| Savings | $300 | Emergency fund |"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"*Note*: Rebalance quarterly to maintain target allocation."
-					}
-				]
+				],
+				"first_created": "12/15/2025, 1:47:43 PM",
+				"last_edited": "12/15/2025, 1:47:58 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
 			},
 			{
-				name: "Tax Planning",
-				category: "UNCATEGORIZED",
-				content: [
+				"name": "Lab 6",
+				"category": "UNCATEGORIZED",
+				"content": [
 					{
-						editorType: "text",
-						contentString:
-							"# Tax Planning Checklist\n\n## Annual Tasks\n\n1. Max out tax-advantaged accounts\n2. Harvest tax losses before year-end\n3. Review estimated tax payments\n4. Track charitable donations\n5. Keep receipts for deductible expenses"
-					},
-					{
-						editorType: "text",
-						contentString:
-							"**Important Deadlines:**\n\n- April 15: Tax filing deadline\n- December 31: IRA contribution deadline for current year\n- January 15: Q4 estimated tax payment"
+						"editorType": "text",
+						"contentString": "<div class=\"description user_content enhanced\" data-resource-type=\"assignment.body\" data-resource-id=\"613890\"><h1 id=\"toc_0\">CS-554 Lab 6</h1>\n<h2 id=\"toc_1\">React-Redux or Context API Pokémon API&nbsp;</h2>\n<p>For this assignment, you will make a miniature Pokémon \"catching\" application. &nbsp;You will incorporate Express, Redis and Redux/Context API into the application.</p>\n<p>1 . You will create an Express server with all the routes needed to query the Pokémon API.&nbsp; Your React application will make Axios calls to these routes instead of calling the Pokémon API end-points directly. &nbsp;Your routes will check to see if you have the data being requested in the Redis cache, if you do, your routes will respond with the cached data. &nbsp;If the data is not in the cache, you will then query the API for the data, then store it in the cache and respond with the data.&nbsp;</p>\n<p>2. You will use Redux or the Context API (You can choose which you want to use) to handle the trainer/Pokémon states of your React application.&nbsp;</p>\n<p>You will be using the <a class=\"inline_disabled external\" href=\"https://pokeapi.co/docs/v2\" target=\"_blank\"><span>Pokémon Api</span><span class=\"external_link_icon\" role=\"presentation\"><span class=\"screenreader-only\">Links to an external site.</span></span></a>.&nbsp;&nbsp;</p>\n<p>Here is a video showing how it should work.</p>\n<p><a href=\"https://www.youtube.com/watch?v=l300jR5zC3Q&amp;source_ve_path=MTc4NDI0\" class=\"external youtubed\" target=\"_blank\" rel=\"noreferrer noopener\"><span>https://www.youtube.com/watch?v=l300jR5zC3Q&amp;source_ve_path=MTc4NDI0</span><span class=\"external_link_icon\" style=\"margin-inline-start: 5px; display: inline-block; text-indent: initial; \" role=\"presentation\"><svg viewBox=\"0 0 1920 1920\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:1em; height:1em; vertical-align:middle; fill:currentColor\">\n    <path d=\"M1226.667 267c88.213 0 160 71.787 160 160v426.667H1280v-160H106.667v800C106.667 1523 130.56 1547 160 1547h1066.667c29.44 0 53.333-24 53.333-53.333v-213.334h106.667v213.334c0 88.213-71.787 160-160 160H160c-88.213 0-160-71.787-160-160V427c0-88.213 71.787-160 160-160Zm357.706 442.293 320 320c20.8 20.8 20.8 54.614 0 75.414l-320 320-75.413-75.414 228.907-228.906H906.613V1013.72h831.254L1508.96 784.707l75.413-75.414Zm-357.706-335.626H160c-29.44 0-53.333 24-53.333 53.333v160H1280V427c0-29.333-23.893-53.333-53.333-53.333Z\" fill-rule=\"evenodd\"></path>\n</svg>\n<span class=\"screenreader-only\">Links to an external site.</span></span></a><a href=\"https://www.youtube.com/watch?v=l300jR5zC3Q&amp;source_ve_path=MTc4NDI0\" class=\"youtubed\"><img src=\"/images/play_overlay.png\" class=\"media_comment_thumbnail\" alt=\"\" style=\"background-image: url(&quot;//img.youtube.com/vi/l300jR5zC3Q/2.jpg&quot;);\"></a></p>\n<p>&nbsp;</p>\n<h2 id=\"toc_2\">Routes You Will Need for Your Express Server. All routes should return JSON.</h2>\n<h3 id=\"toc_7\">/pokemon/page/:pagenum</h3>\n<p><span>This route will respond with JSON data a paginated list of Pokémon, to be used in the corresponding frontend route. It will use the :pagenum param to determine what page to request from the API</span><span>.&nbsp;</span><strong>If the Page does not contain any more Pokémon in the list, the route will respond with a 404 status code.</strong></p>\n<h3 id=\"toc_5\">/pokemon/:id</h3>\n<p><span>This route will send more detailed JSON data about a single Pokémon, to be used in the corresponding frontend route. </span><strong>If the Pokémon does not exist, the route will respond with a 404 status code.</strong></p>\n<div>\n<h2 id=\"toc_2\">Routes You Will Need for Your Frontend.</h2>\n<h3 id=\"toc_7\">/</h3>\n<p>This route will explain the purpose of the site.</p>\n<h3 id=\"toc_4\">/pokemon/page/:pagenum</h3>\n<p>This route will display a paginated list of Pokémon. It will use the :pagenum param to determine what page to request from the backend. If you are on page 0, you will show a button to go to the <em>next</em> page on the client side application. If you are on page 1+, you will show a <em>next</em> button and a <em>previous</em> button, that will take you to the previous page. If you are on the last page, then you will show a&nbsp;<em>previous</em> button.&nbsp;Each Pokémon will have the option of \"catching\" or \"releasing\" that Pokémon from the currently selected Trainer's \"team\". An individual Trainer can have at most 6 Pokémon in their team at a time. If a Trainer's team is full, then they are unable to \"catch\" any additional Pokémon until a Pokémon from the team is \"released.\" Clicking on a Pokémon should take you to the corresponding /pokemon/:id page. <strong>If the Page does not contain any more Pokémon in the list, the backend will respond with a 404 status code, which should be displayed on the frontend application.</strong></p>\n<h3 id=\"toc_5\">/pokemon/:id</h3>\n<p>This route will show details about a single Pokémon. You should also be able to \"catch\" or \"release\" the Pokémon from the currently selected Trainer's \"team.\" <strong>If the Pokémon does not exist, the backend will respond with a 404 status code, which should be displayed on the frontend application.</strong></p>\n<h3 id=\"toc_6\">/trainers</h3>\n<p>This route will render a single, scrollable list of all the current sessions' created trainers and their Pokemon \"teams\". On this page, a user can add and delete trainers to a list of trainers in the redux store. You will also be able to \"select\" a \"Trainer\", whose team all caught/released Pokémon will be assigned to. One and only one trainer can be considered the \"selected\" Trainer at any given moment, and you cannot delete the currently selected Trainer. Clicking on a Pokémon in a Trainer's \"team\" should take you to the corresponding /pokemon/:id page.</p>\n<h2 id=\"toc_11\">HTML, Look, and Content</h2>\n<p>Besides the specified settings, as long as your HTML is valid and your page runs passes a <a class=\"external\" href=\"http://khan.github.io/tota11y/\" target=\"_blank\"><span>tota11y</span><span class=\"external_link_icon\" role=\"presentation\"><span class=\"screenreader-only\">Links to an external site.</span></span></a> test, the general look and feel is up to you. Feel free to re-use the same general format as one of your previous labs, if you'd like.</p>\n<p>I do, however, recommend using <a class=\"external\" href=\"https://react-bootstrap.github.io/getting-started/introduction/\" target=\"_blank\"><span>React-Bootstrap </span><span class=\"external_link_icon\" role=\"presentation\"><span class=\"screenreader-only\">Links to an external site.</span></span></a>to make your life easier if you need any UI elements.</p>\n<p>As for the data that you choose to display on the Pokemon details pages, that is up to you. You should show as much of the data as possible. At minimum, every Pokémon's individual page should show its name, an Image, and their type(s).</p>\n<h2 id=\"toc_12\">Redux/Context API</h2>\n<p>You will use either Redux or the Context API to store the state of all the session's current trainers, and their Pokémon \"teams\". You should be able to create/delete trainers, assign a trainer the \"selected\" status, and catch/release Pokémon from a trainer's team. This entails creating the action creators, actions, reducers and dispatch the actions.</p>\n<p>Keep in mind, that as Redux/Context API states are associated with an individual session, if your page refreshes, all created Trainers, and caught Pokémon will be reset to their original state. As such, you must ensure that your site is a Single Page Application.</p>\n<h2 id=\"toc_12\">Extra Credit</h2>\n<div>\n<div>1. If your pagination displays each Pokémon's \"official-artwork\" (WITHOUT performing an additional axios/backend query for every Pokémon), you will get 5 extra credit points.</div>\n</div>\n<div>2. Those who complete the above step may notice that some Pokémon in the later pages do not have \"official-artwork\" in the API. If you display an alternative image of the Pokémon when \"official-artwork\" is not available, you will get and additional 5 points.&nbsp;</div>\n</div>\n<div>3. If you implement your own custom GraphQL backend instead of an Express backend, you will get 15 extra credit points.&nbsp;</div>\n<div>\n<h2 id=\"toc_12\">General Requirements</h2>\n<ol>\n<li>Remember to submit your <code>package.json</code> file but <strong>not</strong> your <code>node_modules</code> folder.</li>\n<li>Remember to run HTML Validator and tota11y tests!</li>\n<li>Remember to have fun with the content.</li>\n<li>Remember to practice usage of async / await!</li>\n</ol>\n</div></div>"
 					}
-				]
+				],
+				"first_created": "12/15/2025, 1:48:19 PM",
+				"last_edited": "12/15/2025, 1:48:24 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
+			},
+			{
+				"name": "Lab 7",
+				"category": "UNCATEGORIZED",
+				"content": [
+				{
+					"editorType": "text",
+					"contentString": "<div class=\"description user_content enhanced\" data-resource-type=\"assignment.body\" data-resource-id=\"613886\"><h1><span>CS-554 Lab 7</span></h1>\n<p><span>For this assignment, we’re going to apply what we’ve learned with Redis, React, and now finally GraphQL to make a Student Information System (SIS).</span></p>\n<h2><span>Data and Backend</span></h2>\n<p><span>The backend will consist of the GraphQL server you made in <a title=\"Lab 3\" href=\"https://sit.instructure.com/courses/82424/assignments/613883\" data-course-type=\"assignments\" data-published=\"true\" data-api-endpoint=\"https://sit.instructure.com/api/v1/courses/82424/assignments/613883\" data-api-returntype=\"Assignment\">Lab 3</a>. The data types, queries, and mutations will all stay the same (and if you did the extra credit, that will stay the same as well). In this lab, all you are going to do is make a React frontend for Lab 3, so do not change anything (besides fixing the issues your server had with lab 3). You must utilize <strong>ALL</strong>&nbsp;of your queries and mutations from Lab 3! The main change is the make sure you <strong>do not </strong>just dump JSON payloads to the frontend, you will lose major points!</span></p>\n<p><strong>NOTE: If you did the extra credit for Lab 3, read the extra credit</strong> <strong>section!!!!</strong></p>\n<h2><span>Frontend Routes</span></h2>\n<p><span>Now that we have written our backend queries and mutation, we can now move onto the frontend!</span></p>\n<p><span>Here, we need to use </span><a class=\"external\" href=\"https://www.apollographql.com/docs/react/\" target=\"_blank\"><span>Apollo Client</span></a><span> to interact with our backend to provide data to our frontend.</span></p>\n<ul>\n<li aria-level=\"1\"><code><span>/</span></code>\n<ul>\n<li aria-level=\"2\">This route will explain the purpose of the website.</li>\n</ul>\n</li>\n<li aria-level=\"1\"><code><span>/instructors</span></code>\n<ul>\n<li aria-level=\"1\">This route will display a list of results from the <span>instructors </span><span>query.&nbsp;</span></li>\n<li aria-level=\"1\">The list of instructors will have some information on each Instructor (make sure you have the first name, last name, department, and number of courses taught for each Instructor).</li>\n<li aria-level=\"1\">Each Instructor will also have an edit and delete button, to run the <code>editInstructor </code>and <code>removeInstructor</code> mutations.</li>\n<li aria-level=\"1\">The route should also have a button called \"Add Instructor\" that handles the <code>addInstructor</code> mutation. The add instructor and edit buttons should show a modal where the user can fill in the relevant information for the mutations. For Add/Edit all of the same constraints for the fields apply that applied to your GraphQL server.</li>\n<li aria-level=\"1\">You should also be able to click the instructor's name to be sent to the /instructors/:id route to display that instructor's details.&nbsp;</li>\n<li aria-level=\"1\">This route will also have two filter options, one to get instructors for a specific department and one to get instructors hired between a certain period, which will use the <code>getInstructorByDepartment</code> and <code>getInstructorsHiredBetween</code> queries, respectively.</li>\n</ul>\n</li>\n<li aria-level=\"1\"><code><span>/instructors/:id</span></code>\n<ul>\n<li aria-level=\"1\"><span>This route will display information on an individual Instructor through calling the <code>getInstructorById</code>&nbsp;query. </span></li>\n<li aria-level=\"1\"><span>The individual instructor page will have all information on the instructor from the query, including the number of courses taught, date hired, office, etc. </span></li>\n<li aria-level=\"1\"><span>The page should also display the results of the <code>getCoursesByInstructorId </code>query. </span></li>\n<li aria-level=\"1\"><span>You should also be able to edit or delete the instructor from this page so it will also have an edit and delete button, to run the <code>editInstructor </code>and <code>removeInstructor </code>mutations.</span></li>\n<li aria-level=\"1\"><span>Clicking on a curse should link to that course's <code>/courses/:id</code> page.</span></li>\n</ul>\n</li>\n<li aria-level=\"1\"><code><span>/courses</span></code>\n<ul>\n<li aria-level=\"1\">This route will display a list of results from the <span>courses </span><span>query.&nbsp;</span></li>\n<li aria-level=\"1\">The list of courses will have some information on each Course (make sure you have the name, department, and instructor of each Course).</li>\n<li aria-level=\"1\">Each Course will also have an edit and delete button, to run the <code>editCourse </code>and <code>removeCourse</code>&nbsp;mutations.</li>\n<li aria-level=\"1\">The route should also have a button called \"Add Course\" that handles the <code>addCourse</code> mutation. The add course and edit buttons should show a modal where the user can fill in the relevant information for the mutations. For Add/Edit all of the same constraints for the fields apply that applied to your GraphQL server.</li>\n<li aria-level=\"1\">You should also be able to click the course's name to be sent to the /courses/:id route to display that course's details.</li>\n<li>This route will also have two filter options, one to get courses for a specific department and one to get courses between a certain date range, which will use the <code>getCoursesByDepartment</code> and <code>getCoursesByDateRange</code> queries, respectively.</li>\n</ul>\n</li>\n<li aria-level=\"1\"><code><span>/courses/:id</span></code>\n<ul>\n<li aria-level=\"1\"><span>This route will display information on an individual Course through calling the <code>getCourseById</code>&nbsp;query. </span></li>\n<li aria-level=\"1\"><span>The individual Course page will have all information on the Course from the query, including the instructor, credits, and a list of its students.</span></li>\n<li aria-level=\"1\"><span>The list of students should be populated using the <code>getStudentsByCourseId query.</code></span></li>\n<li aria-level=\"1\"><span>You should also be able to edit or delete the Course from this page so it will also have an edit and delete button, to run the <code>editCourse </code>and <code>removeCourse </code>mutations.</span></li>\n<li aria-level=\"1\"><span>The route should also have a \"Update Instructor\" button that handles the <code>updateCourseInstructor mutation.</code></span></li>\n<li aria-level=\"1\"><span>Clicking on either the instructor or a student should link to the /instructors/:id or /students/:id page respectively.</span></li>\n</ul>\n</li>\n<li aria-level=\"1\"><code><span>/students</span></code>\n<ul>\n<li aria-level=\"1\">This route will display a list of results from the <span>students </span><span>query.&nbsp;</span></li>\n<li aria-level=\"1\">The list of students will have some information on each Student (make sure you have the first name, last name, major, and number of enrolled courses of each Student).</li>\n<li aria-level=\"1\">Each Student will also have an edit and delete button, to run the <code>editStudent </code>and <code>removeStudent</code>&nbsp;mutations.</li>\n<li aria-level=\"1\">The route should also have a button called \"Add Student\" that handles the <code>addStudent</code> mutation. The add student and edit buttons should show a modal where the user can fill in the relevant information for the mutations. For Add/Edit all of the same constraints for the fields apply that applied to your GraphQL server.</li>\n<li aria-level=\"1\">You should also be able to click the student's display name (first name and last name) to be sent to the /students/:id route to display that student's details.</li>\n<li>This route will also have two filter options, one to get students for a specific major and filter students by last name, which will use the <code>getStudentsByMajor</code> and <code>searchStudentsByLastName</code> queries, respectively.</li>\n</ul>\n</li>\n<li aria-level=\"1\"><code><span>/students/:id</span></code>\n<ul>\n<li aria-level=\"1\"><span>This route will display information on an individual Student through calling the <code>getStudentById</code>&nbsp;query. </span></li>\n<li aria-level=\"1\"><span>The individual Student page will have all information on the Student from the query, including the number of enrolled courses and a list of their enrolled courses.</span></li>\n<li aria-level=\"1\"><span>This route will also have \"Enroll\" and \"Drop\" buttons, what will show models where the user can fill in fields to run the <code>enrollStudentsInCourse</code> and <code>removeStudentsFromCourse</code> mutations, respectively.</span></li>\n<li aria-level=\"1\"><span>You should also be able to edit or delete the Student from this page so it will also have an edit and delete button, to run the <code>editStudent </code>and <code>removeStudent </code>mutations.</span></li>\n<li>You should also be able to click a course's name to be sent to the /courses/:id route to display that course's details.</li>\n</ul>\n</li>\n</ul>\n<p><strong>Important Notes:</strong></p>\n<ul>\n<li style=\"list-style-type: none;\">\n<ul>\n<li><span>For filters with time periods, the start/min date should be set to 01/01/1900, if the user leaves it blank</span></li>\n<li><span>Make sure to display useful error messages that indicate which constraint(s) the user input violates</span></li>\n<li><span>When displaying fields, build in fallbacks to show useful context if the value is null, undefined, or missing. A \"null\" means nothing to the user and should be displayed appropriately, for example, show \"No Instructor\", if the instructor is null for a course.</span></li>\n</ul>\n</li>\n</ul>\n<h2><span>Extra Credit!!</span></h2>\n<h4><span>Data:</span></h4>\n<p><span>The university is wondering how to improve its courses, and they think they have just the answer: course ratings, an idea that has never been seen before. You will add a new field to the <code>Course</code> type called <code>rating</code>, which represents the rating of each Course on a scale of 1-10, only allowing whole numbers. Each <code>Course</code> will have their rating initialized to 0, meaning not rated yet, but you should only allow a user to change it to a number from 1-10. Rating an Course should now add it to a list in Redis for future use. The new type schema is below:&nbsp;</span></p>\n<pre><code>type Course {</code><br><code>  _id: String!</code><br><code>  course_name: String</code><br><code>  department: String</code><br><code>  credits: Int</code><br><code>  instructor: Instructor<br>  start_date: String<br></code><code>  end_date: String&nbsp; <br>  students: [Student]<br>  numOfStudentsEnrolled: Int<br>  rating: Int</code><br><code>}<br><br></code><span>Backend:</span></pre>\n<p><span>Now, you need to implement a new query function:</span></p>\n<ul>\n<li aria-level=\"1\"><code><span>getTopTenRatedCourses() -&gt; [Course]</span></code><span>: This query is what our bosses are looking for. The query will look through our rated curses in Redis and return the top 10 courses in terms of highest rating. If two courses have the same rating, they can be in any order. Look at the </span><a class=\"external\" href=\"https://redis.io/commands/zrange/\" target=\"_blank\"><span>Z family of functions in Redis</span></a> <a class=\"external\" href=\"https://redis.io/commands/zrevrange\" target=\"_blank\"></a><span>to see how to perform a query to get the top and highest rated courses.</span></li>\n</ul>\n<p><span>And a new mutation:</span></p>\n<ul>\n<li aria-level=\"1\"><code><span>updateCourseRating(courseId: String!, rating: Int!) -&gt; [Course]</span></code><span>: This mutation will update a course's rating to the given rating. Validate that the rating is between 1 and 10, inclusive. The rated course should be added to a list in Redis.</span></li>\n</ul>\n<h4><span>Frontend:</span></h4>\n<p>You are going to making a few changes to show off our new money-maker:</p>\n<ul>\n<li aria-level=\"1\"><code><span>/rating</span></code>\n<ul>\n<li aria-level=\"2\">This route will show a list of the top 10 rated courses in order from highest rated to lowest rated.</li>\n<li aria-level=\"2\">The information about each Course should be the same information as the /courses route with the addition of the Course rating and its quality label.</li>\n<li aria-level=\"2\">If an course has a rating of 10, it should be labeled as a \"Gold\".</li>\n<li aria-level=\"2\">If an course has a rating of 8 or 9, it should be labeled as \"Silver\".</li>\n<li aria-level=\"2\">If an course has a rating of &lt;8, it should be labeled as \"Bronze\".</li>\n</ul>\n</li>\n<li aria-level=\"2\"><code><span>/course/:id</span></code>\n<ul>\n<li aria-level=\"2\"><span>This route will have an additional button \"Update Rating\" which will show a model that accept a rating input and run the <code>updateCourseRating</code> mutation. The modal should validate the rating is between 1 and 10, inclusive.</span></li>\n</ul>\n</li>\n</ul>\n<p>While not required, it's heavily encouraged to be creative with styling! A \"Gold\" or \"Silver\" rated course should visually look standout, shouldn't it? Consider adding some extra visual indicator to show the courses's quality.</p>\n<h2 id=\"toc_8\">Notes</h2>\n<ol>\n<li>Remember to submit your<span>&nbsp;</span><code>package.json</code><span>&nbsp;</span>file but<span>&nbsp;</span><strong>not</strong><span>&nbsp;</span>your<span>&nbsp;</span><code>node_modules</code><span>&nbsp;</span>folder.</li>\n<li>Remember to add the start command!</li>\n<li>Submit your zip file as: LastName_FirstName_Section_Lab3.zip &nbsp;ie: Hill_Patrick_A_Lab3.zip&nbsp;</li>\n</ol></div>"
+				}
+				],
+				"first_created": "12/15/2025, 1:48:45 PM",
+				"last_edited": "12/15/2025, 1:48:51 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
+			},
+			{
+				"name": "Optional Assignment Lab 5",
+				"category": "UNCATEGORIZED",
+				"content": [
+					{
+						"editorType": "text",
+						"contentString": "<div class=\"description user_content enhanced\" data-resource-type=\"assignment.body\" data-resource-id=\"613892\"><p><span style=\"text-decoration: underline; color: #e03e2d;\"><strong>This is an optional assignment. If you complete it, the grade you get on this assignment will replace your lowest lab grade. If your lowest lab grade is higher than your score on this assignment, you'll keep your original lab grade</strong></span></p>\n<h1 id=\"toc_0\" style=\"margin: 0px 0px 10px; padding: 0px; cursor: text; position: relative; font-size: 28px; color: #000000; font-family: Helvetica, arial, sans-serif; font-style: normal; text-align: start; text-indent: 0px; white-space: normal; background-color: #ffffff;\">CS-554 Optional Assignment</h1>\n<h2 id=\"toc_1\" style=\"margin: 0px 0px 10px; padding: 0px; cursor: text; position: relative; font-size: 24px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: #cccccc; color: #000000; font-family: Helvetica, arial, sans-serif; font-style: normal; text-align: start; text-indent: 0px; white-space: normal; background-color: #ffffff;\">NextJS Rick and Morty API</h2>\n<p data-start=\"408\" data-end=\"635\">For this lab, you will create a <strong data-start=\"440\" data-end=\"486\">Rick and Morty API Single Page Application</strong> using NextJs<span style=\"text-decoration: underline;\"><strong> using the App Router!</strong></span></p>\n<p data-start=\"637\" data-end=\"754\">You will be creating a Single Page Application using NextJs &nbsp;that implements the following routes.</p>\n<p data-start=\"756\" data-end=\"844\">You will be using the public <strong data-start=\"785\" data-end=\"807\">Rick and Morty API</strong>:<br data-start=\"808\" data-end=\"811\"><a class=\"decorated-link cursor-pointer\" target=\"_new\" data-start=\"811\" data-end=\"842\">https://rickandmortyapi.com</a></p>\n<p data-start=\"846\" data-end=\"1042\">You do <strong data-start=\"853\" data-end=\"860\">not</strong> need an API key, as this API is completely open and read-only.<br data-start=\"923\" data-end=\"926\">You will use the following endpoints for your NextJS components:<br data-start=\"989\" data-end=\"992\"><strong data-start=\"992\" data-end=\"1006\">Characters</strong>, <strong data-start=\"1008\" data-end=\"1021\">Locations</strong>, and <strong data-start=\"1027\" data-end=\"1039\">Episodes</strong>.</p>\n<p data-start=\"846\" data-end=\"1042\"><strong>Please make sure you FULLY READ THE API DOCUMENTATION!!</strong></p>\n<p data-start=\"1044\" data-end=\"1269\">Please look at the data returned so you know the schema of the data and the objects it returns. These endpoints provide lists, and you can get individual items using the same base URLs with an <code data-start=\"1237\" data-end=\"1243\">/:id</code> parameter. For example:</p>\n<ul data-start=\"1270\" data-end=\"1456\">\n<li data-start=\"1270\" data-end=\"1349\">\n<p data-start=\"1272\" data-end=\"1349\"><code data-start=\"1272\" data-end=\"1315\">https://rickandmortyapi.com/api/character</code> gives you a list of characters.</p>\n</li>\n<li data-start=\"1350\" data-end=\"1456\">\n<p data-start=\"1352\" data-end=\"1456\"><code data-start=\"1352\" data-end=\"1397\">https://rickandmortyapi.com/api/character/1</code> gives you the details for the character with an ID of 1.</p>\n</li>\n</ul>\n<p data-start=\"1458\" data-end=\"1501\">The same applies to locations and episodes.</p>\n<p data-start=\"1503\" data-end=\"1977\">It’s important to recognize the interconnected nature of the data you’re dealing with. For example, a character is linked to an <strong data-start=\"1631\" data-end=\"1641\">origin</strong> (location), a <strong data-start=\"1656\" data-end=\"1676\">current location</strong>, and an array of <strong data-start=\"1694\" data-end=\"1710\">episode URLs</strong>. Similarly, each episode has an array of character URLs, and each location lists all the residents (characters) there. Whenever an ID or URL appears that references another resource, you must provide a clickable <code data-start=\"1923\" data-end=\"1931\">&lt;Link&gt;</code> to its corresponding details route/component.</p>\n<p data-start=\"1979\" data-end=\"2149\"><strong data-start=\"1979\" data-end=\"2008\">Do NOT just dump raw JSON</strong> to the page! You will lose major points for that. Render all the data in proper JSX elements that make sense for the data you’re displaying.</p>\n<hr data-start=\"2151\" data-end=\"2154\">\n<h3 data-start=\"2156\" data-end=\"2165\">Pages</h3>\n<h4 data-start=\"2167\" data-end=\"2175\"><code data-start=\"2172\" data-end=\"2175\">/</code></h4>\n<p data-start=\"2176\" data-end=\"2347\">The root directory of your application will be a simple landing page explaining the purpose of your site (to talk about Rick and Morty, the API, and the data available).</p>\n<p data-start=\"2349\" data-end=\"2407\">This page must include <code data-start=\"2372\" data-end=\"2380\">&lt;Link&gt;</code> elements to navigate to:</p>\n<ul data-start=\"2408\" data-end=\"2477\">\n<li data-start=\"2408\" data-end=\"2432\">\n<p data-start=\"2410\" data-end=\"2432\"><code data-start=\"2410\" data-end=\"2430\">/characters/page/1</code></p>\n</li>\n<li data-start=\"2433\" data-end=\"2456\">\n<p data-start=\"2435\" data-end=\"2456\"><code data-start=\"2435\" data-end=\"2454\">/locations/page/1</code></p>\n</li>\n<li data-start=\"2457\" data-end=\"2477\">\n<p data-start=\"2459\" data-end=\"2477\"><code data-start=\"2459\" data-end=\"2477\">/episodes/page/1</code></p>\n</li>\n</ul>\n<hr data-start=\"2479\" data-end=\"2482\">\n<h4 data-start=\"2484\" data-end=\"2513\"><code data-start=\"2489\" data-end=\"2513\">/characters/page/:page</code></h4>\n<p data-start=\"2514\" data-end=\"2754\">This route will render a <strong data-start=\"2539\" data-end=\"2572\">paginated list of characters.</strong><br data-start=\"2572\" data-end=\"2575\">You will display <strong data-start=\"2592\" data-end=\"2619\">10 characters per page.</strong><br data-start=\"2619\" data-end=\"2622\">Use the <code data-start=\"2630\" data-end=\"2637\">:page</code> parameter to determine what page to fetch from the API (<code data-start=\"2694\" data-end=\"2750\">https://rickandmortyapi.com/api/character/?page={page}</code>).</p>\n<p data-start=\"2756\" data-end=\"2775\">Pagination rules:</p>\n<ul data-start=\"2776\" data-end=\"3008\">\n<li data-start=\"2776\" data-end=\"2822\">\n<p data-start=\"2778\" data-end=\"2822\">On page 1: show only a “Next Page” button.</p>\n</li>\n<li data-start=\"2823\" data-end=\"2899\">\n<p data-start=\"2825\" data-end=\"2899\">On page 2 and beyond: show both “Previous Page” and “Next Page” buttons.</p>\n</li>\n<li data-start=\"2900\" data-end=\"2957\">\n<p data-start=\"2902\" data-end=\"2957\">On the last page: show only a “Previous Page” button.</p>\n</li>\n<li data-start=\"2958\" data-end=\"3008\">\n<p data-start=\"2960\" data-end=\"3008\">If the page does not exist, render a 404 page.</p>\n</li>\n</ul>\n<p data-start=\"3010\" data-end=\"3061\">For each character in the list, display at least:</p>\n<ul data-start=\"3062\" data-end=\"3139\">\n<li data-start=\"3062\" data-end=\"3080\">\n<p data-start=\"3064\" data-end=\"3080\">their <strong data-start=\"3070\" data-end=\"3078\">name</strong></p>\n</li>\n<li data-start=\"3081\" data-end=\"3122\">\n<p data-start=\"3083\" data-end=\"3122\">their <strong data-start=\"3089\" data-end=\"3099\">status</strong> (Alive/Dead/Unknown)</p>\n</li>\n<li data-start=\"3123\" data-end=\"3139\">\n<p data-start=\"3125\" data-end=\"3139\">an <strong data-start=\"3128\" data-end=\"3137\">image</strong></p>\n</li>\n</ul>\n<p data-start=\"3141\" data-end=\"3184\">Each name should link to <code data-start=\"3166\" data-end=\"3183\">/characters/:id</code>.</p>\n<hr data-start=\"3186\" data-end=\"3189\">\n<h4 data-start=\"3191\" data-end=\"3213\"><code data-start=\"3196\" data-end=\"3213\">/characters/:id</code></h4>\n<p data-start=\"3214\" data-end=\"3344\">This route will show details about a <strong data-start=\"3251\" data-end=\"3271\">single character</strong>.<br data-start=\"3272\" data-end=\"3275\">If the character does not exist, the SPA should display a 404 page.</p>\n<p data-start=\"3346\" data-end=\"3400\">You should show as much data as possible, including:</p>\n<ul data-start=\"3401\" data-end=\"3591\">\n<li data-start=\"3401\" data-end=\"3434\">\n<p data-start=\"3403\" data-end=\"3434\">name, species, status, gender</p>\n</li>\n<li data-start=\"3435\" data-end=\"3444\">\n<p data-start=\"3437\" data-end=\"3444\">image</p>\n</li>\n<li data-start=\"3445\" data-end=\"3482\">\n<p data-start=\"3447\" data-end=\"3482\">origin (link to <code data-start=\"3463\" data-end=\"3479\">/locations/:id</code>)</p>\n</li>\n<li data-start=\"3483\" data-end=\"3530\">\n<p data-start=\"3485\" data-end=\"3530\">current location name (link to <code data-start=\"3511\" data-end=\"3527\">/locations/:id</code>)</p>\n</li>\n<li data-start=\"3531\" data-end=\"3591\">\n<p data-start=\"3533\" data-end=\"3591\">episodes they appear in (each linked to <code data-start=\"3573\" data-end=\"3588\">/episodes/:id</code>)</p>\n</li>\n<li data-start=\"3531\" data-end=\"3591\">created</li>\n</ul>\n<p data-start=\"3593\" data-end=\"3683\">All related IDs/URLs must be turned into links to their corresponding detail components.</p>\n<p data-start=\"3685\" data-end=\"3786\">Do not just dump JSON — present the information clearly using JSX elements (image tags, lists, etc.).</p>\n<hr data-start=\"3788\" data-end=\"3791\">\n<h4 data-start=\"3793\" data-end=\"3821\"><code data-start=\"3798\" data-end=\"3821\">/locations/page/:page</code></h4>\n<p data-start=\"3822\" data-end=\"3976\">This route will render a <strong data-start=\"3847\" data-end=\"3879\">paginated list of locations.</strong><br data-start=\"3879\" data-end=\"3882\">Display 5 locations per page using <code data-start=\"3918\" data-end=\"3973\">https://rickandmortyapi.com/api/location/?page={page}</code>.</p>\n<p data-start=\"3978\" data-end=\"4082\">Pagination behavior should follow the same rules as the characters list.<br data-start=\"4050\" data-end=\"4053\">For each location, display:</p>\n<ul data-start=\"4083\" data-end=\"4114\">\n<li data-start=\"4083\" data-end=\"4091\">\n<p data-start=\"4085\" data-end=\"4091\">name</p>\n</li>\n</ul>\n<p data-start=\"4116\" data-end=\"4158\">Each name should link to <code data-start=\"4141\" data-end=\"4157\">/locations/:id</code>.</p>\n<hr data-start=\"4160\" data-end=\"4163\">\n<h4 data-start=\"4165\" data-end=\"4186\"><code data-start=\"4170\" data-end=\"4186\">/locations/:id</code></h4>\n<p data-start=\"4187\" data-end=\"4315\">This route will show details about a <strong data-start=\"4224\" data-end=\"4244\">single location.</strong><br data-start=\"4244\" data-end=\"4247\">If the location does not exist, the SPA should display a 404 page.</p>\n<p data-start=\"4317\" data-end=\"4363\">Display as much data as possible, including:</p>\n<ul data-start=\"4364\" data-end=\"4457\">\n<li data-start=\"4364\" data-end=\"4393\">\n<p data-start=\"4366\" data-end=\"4393\">name, type, and dimension</p>\n</li>\n<li data-start=\"4394\" data-end=\"4457\">\n<p data-start=\"4396\" data-end=\"4457\">a list of <strong data-start=\"4406\" data-end=\"4419\">residents</strong> (each linking to <code data-start=\"4437\" data-end=\"4454\">/characters/:id</code>)</p>\n</li>\n</ul>\n<p data-start=\"4459\" data-end=\"4545\">Do not dump JSON — use structured JSX elements such as <code data-start=\"4514\" data-end=\"4520\">&lt;ul&gt;</code> or <code data-start=\"4524\" data-end=\"4530\">&lt;ol&gt;</code> for residents.</p>\n<hr data-start=\"4547\" data-end=\"4550\">\n<h4 data-start=\"4552\" data-end=\"4579\"><code data-start=\"4557\" data-end=\"4579\">/episodes/page/:page</code></h4>\n<p data-start=\"4580\" data-end=\"4731\">This route will render a <strong data-start=\"4605\" data-end=\"4636\">paginated list of episodes.</strong><br data-start=\"4636\" data-end=\"4639\">Display 5 episodes per page using <code data-start=\"4674\" data-end=\"4728\">https://rickandmortyapi.com/api/episode/?page={page}</code>.</p>\n<p data-start=\"4733\" data-end=\"4822\">Pagination behavior should follow the same rules as above.<br data-start=\"4791\" data-end=\"4794\">For each episode, display:</p>\n<ul data-start=\"4823\" data-end=\"4885\">\n<li data-start=\"4823\" data-end=\"4831\">\n<p data-start=\"4825\" data-end=\"4831\">name</p>\n</li>\n<li data-start=\"4832\" data-end=\"4872\">\n<p data-start=\"4834\" data-end=\"4872\">episode code (for example, “S01E05”)</p>\n</li>\n<li data-start=\"4873\" data-end=\"4885\">\n<p data-start=\"4875\" data-end=\"4885\">air date</p>\n</li>\n</ul>\n<p data-start=\"4887\" data-end=\"4928\">Each name should link to <code data-start=\"4912\" data-end=\"4927\">/episodes/:id</code>.</p>\n<hr data-start=\"4930\" data-end=\"4933\">\n<h4 data-start=\"4935\" data-end=\"4955\"><code data-start=\"4940\" data-end=\"4955\">/episodes/:id</code></h4>\n<p data-start=\"4956\" data-end=\"5082\">This route will show details about a <strong data-start=\"4993\" data-end=\"5012\">single episode.</strong><br data-start=\"5012\" data-end=\"5015\">If the episode does not exist, the SPA should display a 404 page.</p>\n<p data-start=\"5084\" data-end=\"5130\">Display as much data as possible, including:</p>\n<ul data-start=\"5131\" data-end=\"5262\">\n<li data-start=\"5131\" data-end=\"5175\">\n<p data-start=\"5133\" data-end=\"5175\">episode name, air date, and episode code</p>\n</li>\n<li data-start=\"5176\" data-end=\"5262\">\n<p data-start=\"5178\" data-end=\"5262\">a list of characters appearing in that episode (each linking to <code data-start=\"5242\" data-end=\"5259\">/characters/:id</code>)</p>\n</li>\n<li data-start=\"5176\" data-end=\"5262\">created</li>\n</ul>\n<p data-start=\"5264\" data-end=\"5351\">Do not just dump JSON — use structured JSX to present information in a readable layout.</p>\n<hr data-start=\"5353\" data-end=\"5356\">\n<h3 data-start=\"5358\" data-end=\"5372\">Pagination</h3>\n<p data-start=\"5373\" data-end=\"5408\"><strong data-start=\"5373\" data-end=\"5406\">Do NOT hardcode page numbers!</strong></p>\n<ul data-start=\"5410\" data-end=\"5571\">\n<li data-start=\"5410\" data-end=\"5451\">\n<p data-start=\"5412\" data-end=\"5451\">On page 1, show only a “Next” button.</p>\n</li>\n<li data-start=\"5452\" data-end=\"5518\">\n<p data-start=\"5454\" data-end=\"5518\">On page 2 and beyond, show both “Next” and “Previous” buttons.</p>\n</li>\n<li data-start=\"5519\" data-end=\"5571\">\n<p data-start=\"5521\" data-end=\"5571\">On the last page, show only a “Previous” button.</p>\n</li>\n</ul>\n<p data-start=\"5573\" data-end=\"5675\">Use the <code data-start=\"5581\" data-end=\"5593\">info.pages</code> value from the API response to determine the total number of pages dynamically.</p>\n<hr data-start=\"5677\" data-end=\"5680\">\n<h3 data-start=\"5682\" data-end=\"5709\">HTML, Look, and Content</h3>\n<p data-start=\"5710\" data-end=\"5815\">You are free to style your app however you like, as long as it is valid HTML and readable. Be creative!</p>\n<p data-start=\"5817\" data-end=\"5941\">You may use any CSS framework, component library, or custom styling. The UI should display images, text, and lists neatly.</p>\n<p data-start=\"5943\" data-end=\"6089\">Try to <strong data-start=\"5950\" data-end=\"5970\">reuse components</strong> whenever possible — for example, a generic <code data-start=\"6014\" data-end=\"6020\">List</code> component for paginated data, and a shared <code data-start=\"6064\" data-end=\"6076\">Pagination</code> component.</p>\n<hr data-start=\"6091\" data-end=\"6094\">\n<p data-start=\"6181\" data-end=\"6304\">&nbsp;</p>\n<hr data-start=\"6428\" data-end=\"6431\">\n<h3 data-start=\"6433\" data-end=\"6457\">General Requirements</h3>\n<ul data-start=\"6458\" data-end=\"6635\">\n<li data-start=\"6458\" data-end=\"6530\">\n<p data-start=\"6460\" data-end=\"6530\">Submit your <code data-start=\"6472\" data-end=\"6486\">package.json</code> file, but not your <code data-start=\"6506\" data-end=\"6520\">node_modules</code> folder.</p>\n</li>\n<li data-start=\"6531\" data-end=\"6554\">\n<p data-start=\"6533\" data-end=\"6554\">Validate your HTML.</p>\n</li>\n<li data-start=\"6555\" data-end=\"6589\">\n<p data-start=\"6557\" data-end=\"6589\">Use async/await for API calls.</p>\n</li>\n<li data-start=\"6590\" data-end=\"6635\">\n<p data-start=\"6592\" data-end=\"6635\">Have fun building your multiverse explorer!</p>\n</li>\n</ul></div>"
+					}
+				],
+				"first_created": "12/15/2025, 1:50:13 PM",
+				"last_edited": "12/15/2025, 1:50:20 PM",
+				"first_created_by": "N/A",
+				"last_edited_by": "N/A"
 			}
 		]
 	}
 ];
 
-async function seedDatabase() {
+// This is just to pad out the wikis with more stuff.
+const shared_pages = [];
+
+async function seed() {
+
+	// Wipe database and cache.
 	try {
-		// Connect to MongoDB
+		
+		// Connect to MongoDB database.
 		await databaseConnection();
-		console.log("Connected to MongoDB");
 
-		// Clear existing data
-		console.log("\n--- Clearing Existing Data ---");
-		const usersCollection = await users();
-		const wikisCollection = await wikis();
+		// Drop the users and wikis collections.
+		(await usersCollection()).drop();
+		(await wikisCollection()).drop();
 
-		const deletedUsers = await usersCollection.deleteMany({});
-		const deletedWikis = await wikisCollection.deleteMany({});
-
-		console.log(`Deleted ${deletedUsers.deletedCount} users`);
-		console.log(`Deleted ${deletedWikis.deletedCount} wikis`);
-
-		// Clear Redis cache
+		// Clear the Redis cache.
 		await redisFunctions.clear_all();
 
-		// Delete and recreate Elasticsearch index
-		console.log("\n--- Resetting Elasticsearch Index ---");
+		// Clear the Elasticsearch index.
 		try {
 			await esClient.indices.delete({ index: WIKI_INDEX });
-			console.log("Deleted existing Elasticsearch index");
+			//console.log("Deleted existing Elasticsearch index");
 		} catch (err: any) {
 			if (err.statusCode === 404) {
-				console.log("No existing index to delete");
+				//console.log("No existing index to delete");
 			} else {
 				throw err;
 			}
 		}
 
 		await ensureIndex();
-		console.log("Created fresh Elasticsearch index");
+		//console.log("Created fresh Elasticsearch index");
+	
+	} catch (e) {
+		console.log(`Initial database set up could not be completed: ${e}`);
+	}
 
-		console.log("\n--- Seeding Users ---");
-		const createdUsers: SeedUser[] = [];
+	for (let user of users_to_seed) {
 
-		for (const seedUser of seedUsers) {
-			try {
-				// Check if user already exists in backend
-				let existingUser;
-				try {
-					existingUser = await userDataFunctions.getUserByFirebaseUID(
-						seedUser.uid
-					);
-				} catch (e) {
-					existingUser = null;
-				}
-
-				if (existingUser) {
-					console.log(`User ${seedUser.username} already exists, skipping...`);
-					createdUsers.push(seedUser);
-				} else {
-					// Create user in backend database
-					await userDataFunctions.createUser(seedUser.email, seedUser.uid);
-					// Update username
-					await userDataFunctions.changeUsername(
-						seedUser.uid,
-						seedUser.username
-					);
-					console.log(`Created user: ${seedUser.username} (${seedUser.email})`);
-					createdUsers.push(seedUser);
-				}
-			} catch (error) {
-				console.error(`Error creating user ${seedUser.username}:`, error);
-			}
+		// Create the users.
+		try {
+			await userDataFunctions.createUser(
+				user.email,
+				user.firebaseUID
+			);
+		} catch (e) {
+			console.log(`User ${user.email} could not be created: ${e}`);
 		}
 
-		console.log("\n--- Seeding Wikis and Pages ---");
+		// Change their usernames.
+		try {
+			await userDataFunctions.changeUsername(
+				user.firebaseUID,
+				user.username
+			);
+		} catch (e) {
+			console.log(`Username of ${user.email} could not be updated: ${e}`);
+		}
+	}
 
-		for (const seedWiki of seedWikis) {
-			try {
-				// Create wiki
-				const newWiki = await wikiDataFunctions.createWiki(
-					seedWiki.name,
-					seedWiki.urlName,
-					seedWiki.description,
-					seedWiki.access,
-					seedWiki.ownerUid
-				);
-				console.log(`Created wiki: ${seedWiki.name}`);
+	// Create the wiki documents and page subdocuments.
+	for (let wiki of wikis_to_seed) {
 
-				// Create pages and index them
-				for (const pageData of seedWiki.pages) {
-					try {
-						const newPage = await pageDataFunctions.createPage(
-							newWiki._id.toString(),
-							pageData.name,
-							pageData.category
-						);
+		let wikiId;
 
-						// Update page content (this will also re-index the page in Elasticsearch)
-						await pageDataFunctions.changePageContent(
-							newWiki._id.toString(),
-							newPage.pages[newPage.pages.length - 1]._id.toString(),
-							pageData.content
-						);
+		// Create the wikis.
+		try {
+			wikiId = (await wikiDataFunctions.createWiki(
+				wiki.name,
+				wiki.urlName,
+				wiki.description,
+				wiki.access,
+				wiki.owner
+			))._id;
+		} catch (e) {
+			console.log(`Wiki ${wiki.name} could not be created: ${e}`);
+		}
 
-						console.log(`  Created and indexed page: ${pageData.name}`);
-					} catch (error) {
-						console.error(`  Error creating page ${pageData.name}:`, error);
+		// Add collaborators.
+		try {
+			for (let collaborator of wiki.collaborators) {
+				await wikiDataFunctions.addCollaborator(wikiId, collaborator);
+			}
+		} catch (e) {
+			console.log(`Could not add collaborator to ${wiki.name}: ${e}`);
+		}
+
+		// Add private viewers.
+		try {
+			for (let viewer of wiki.private_viewers) {
+				await wikiDataFunctions.addPrivateViewer(wikiId, viewer);
+			}
+		} catch (e) {
+			console.log(`Could not add private viewer to ${wiki.name}: ${e}`);
+		}
+
+		// Add categories.
+		try {
+			for (let category of wiki.categories) {
+				await wikiDataFunctions.createCategory(wikiId, category);
+			}
+		} catch (e) {
+			console.log(`Could not create category for ${wiki.name}: ${e}`);
+		}
+
+		// Create pages and add content.
+		try {
+			for (let page of wiki.pages) {
+
+				console.log(page.name);
+
+				let updatedWiki = (await pageDataFunctions.createPage(
+					wikiId,
+					page.name,
+					page.category,
+					wiki.owner
+				));
+
+				let pageId;
+				for (let p of updatedWiki.pages) {
+					if (page.name === p.name) {
+						pageId = p._id.toString();
 					}
 				}
-			} catch (error) {
-				console.error(`Error creating wiki ${seedWiki.name}:`, error);
+				if (pageId === undefined) {
+					throw "PAGE NOT FOUND: THIS ERROR SHOULD NEVER HAPPEN";
+				}
+
+				await pageDataFunctions.changePageContent(
+					wikiId,
+					pageId,
+					page.content,
+					wiki.owner
+				);
+
 			}
+		} catch (e) {
+			console.log(`Could not create page for ${wiki.name}: ${e}`);
 		}
 
-		console.log("\n--- Seeding Complete ---");
-		console.log(`Total users created: ${createdUsers.length}`);
-		console.log(`Total wikis created: ${seedWikis.length}`);
-		console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		process.exit(0);
-	} catch (error) {
-		console.error("Fatal error during seeding:", error);
-		process.exit(1);
 	}
+
+	console.log("Done seeding database.");
+
+	await closeConnection();
+
+	process.exit(0);
+
 }
 
-// Run the seed script
-seedDatabase();
+seed();

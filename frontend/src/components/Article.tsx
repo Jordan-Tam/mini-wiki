@@ -113,7 +113,7 @@ const Article: React.FC<ArticleProps> = ({
 			: undefined;
 
 		return fullEditUrl ? (
-			<Link className="mb-3" to={fullEditUrl} aria-label="Edit this article">
+			<Link className="mb-3 me-3" to={fullEditUrl} aria-label="Edit this article">
 				<p className="btn btn-warning">Edit</p>
 			</Link>
 		) : (
@@ -145,10 +145,9 @@ const Article: React.FC<ArticleProps> = ({
 				</p>
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
 				{editButton}
-				<br/>
-				<button type="button" className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
+				<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
 					Delete
-				</button>
+				</p>
 			</div>
 
 			<div>

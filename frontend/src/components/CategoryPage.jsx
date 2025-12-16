@@ -67,7 +67,7 @@ function CategoryPage() {
                 }));
 
             } catch (e) {
-
+                console.log(e);
                 setError(`${e}`);
                 setLoading(false);
 
@@ -277,15 +277,16 @@ function CategoryPage() {
                     <tbody className="table-group-divider">
                         {displayedList && displayedList.map((page) => (
                             <tr>
+                                {console.log(page)}
                                 <td>
                                     <Link to={`/${wikiUrlName}/${page.urlName}`}>
                                         {page.name}
                                     </Link>
                                 </td>
                                 <td>{page.last_edited}</td>
-                                <td>{page.last_edited_by}</td>
+                                <td>{page.last_edited_by.username}</td>
                                 <td>{page.first_created}</td>
-                                <td>{page.first_created_by}</td>
+                                <td>{page.first_created_by.username}</td>
                             </tr>
                         ))}
                     </tbody>
