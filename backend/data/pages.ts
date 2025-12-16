@@ -92,12 +92,24 @@ const page_data_functions = {
 			last_edited: new Date().toLocaleString("en-US", {
 				timeZone: "America/New_York"
 			}),
-			first_created_by: userFirebaseUID
-				? await user_data_functions.getUserByFirebaseUID(userFirebaseUID)
-				: "N/A",
-			last_edited_by: userFirebaseUID
-				? await user_data_functions.getUserByFirebaseUID(userFirebaseUID)
-				: "N/A"
+			first_created_by: (userFirebaseUID
+				?
+				{
+					userFirebaseUID,
+					username: (await user_data_functions.getUserByFirebaseUID(userFirebaseUID)).username
+				}
+				:
+				"N/A"
+			),
+			last_edited_by: (userFirebaseUID
+				?
+				{
+					userFirebaseUID,
+					username: (await user_data_functions.getUserByFirebaseUID(userFirebaseUID)).username
+				}
+				:
+				"N/A"
+			)
 		};
 
 		const wikisCollection = await wikis();
@@ -219,9 +231,15 @@ const page_data_functions = {
 					"pages.$.last_edited": new Date().toLocaleString("en-US", {
 						timeZone: "America/New_York"
 					}),
-					"pages.$.last_edited_by": userFirebaseUID
-						? await user_data_functions.getUserByFirebaseUID(userFirebaseUID)
-						: "N/A"
+					"pages.$.last_edited_by": (userFirebaseUID
+						?
+						{
+							userFirebaseUID,
+							username: (await user_data_functions.getUserByFirebaseUID(userFirebaseUID)).username
+						}
+						:
+						"N/A"
+					)
 				}
 			},
 			{ returnDocument: "after" }
@@ -286,3 +304,4 @@ const page_data_functions = {
 };
 
 export default page_data_functions;
+
