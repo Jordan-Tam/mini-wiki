@@ -990,6 +990,14 @@ router
 			return res.status(404).json({error: "Wiki not found"});
 		}
 
+		// 404: Check if wiki exists.
+		let wiki;
+		try {
+			wiki = await wikiDataFunctions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: "Wiki not found"});
+		}
+
 		try {
 			const retVal = await wikiDataFunctions.addCollaborator(wikiId, user);
 
