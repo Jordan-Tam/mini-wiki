@@ -166,7 +166,7 @@ const page_data_functions = {
 		let wiki = await wikiDataFunctions.getWikiById(wikiId);
 
 		for (let i = 0; i < wiki.pages.length; i++) {
-			if (wiki.pages[i]._id === pageId) {
+			if (wiki.pages[i]._id.toString() === pageId) {
 				wiki.pages[i].name = newName;
 				wiki.pages[i].urlName = slugify(newName, { replacement: "_" });
 			}
