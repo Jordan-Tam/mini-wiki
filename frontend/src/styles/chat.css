@@ -1,81 +1,80 @@
-
 .chat-container {
-    position: absolute;
-    display: flex;
-    
-    /* flex-flow: column; */ 
-    flex-direction: column;  
+	position: absolute;
+	display: flex;
 
-    height:90vh;
-    width:100%;
-    padding: 15px;
-    gap: 5px;
+	/* flex-flow: column; */
+	flex-direction: column;
 
+	height: 90vh;
+	width: 100%;
+	padding: 15px;
+	gap: 5px;
 }
 
 .chat-input-container {
-    display: flex;
-    flex-direction: row;
+	display: flex;
+	flex-direction: row;
 }
 
 .chat-container > div {
-    border-radius: 5px;
-    padding: 8px;
+	border-radius: 5px;
+	padding: 8px;
 }
 
-.chat-messages-box { 
-    /* flex:95 1 auto; */
-    flex-grow:95;
-}          
-.chat-input-container { 
-    /* flex:5 1 auto; */
-    flex-grow:5;
+.chat-messages-box {
+	/* flex:95 1 auto; */
+	flex-grow: 95;
+}
+.chat-input-container {
+	/* flex:5 1 auto; */
+	flex-grow: 5;
 }
 
 .chat-text-box {
-    flex-grow: 90;
-    resize: none;
-    margin: 5px;
-    border: 1px solid gray;
+	flex-grow: 90;
+	resize: none;
+	margin: 5px;
+	border: 1px solid gray;
 }
 .chat-send-button {
-    flex-grow:10;
-    margin: 5px;
-    background-color: #2294fb;
-    color: white;
+	flex-grow: 10;
+	margin: 5px;
+	background-color: #2294fb;
+	color: white;
 }
 
 .chat-content {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
+	display: flex;
+	flex-direction: row;
+	width: 100%;
 }
 
 /* default = left */
 .chat-content {
-    justify-content: flex-start;
+	justify-content: flex-start;
 }
 
 /* right-aligned messages */
 .chat-content-right {
-    justify-content: flex-end !important;
+	justify-content: flex-end !important;
 }
 
 .chat-message {
-    background-color: #b4b4bc;
-    border-radius: 100px;
-    padding: 10px;
-    width: fit-content;
-    max-width: 70%;
+	background-color: #b4b4bc;
+	border-radius: 20px;
+	padding: 10px;
+	width: fit-content;
+	max-width: 70%;
+	word-wrap: break-word;
 }
 
 .chat-message-right {
-    background-color: #2294fb;
-    color: white;
+	background-color: #2294fb;
+	color: white;
 }
 
 .timestamp {
-    pointer-events: none;
-    font-size: xx-small;
-    color:gray;
+	pointer-events: none;
+	font-size: xx-small;
+	color: gray;
 }
