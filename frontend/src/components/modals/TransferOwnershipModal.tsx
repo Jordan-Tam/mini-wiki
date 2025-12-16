@@ -5,12 +5,18 @@ import type { User, UserContext, Wiki } from "../../types.js";
 
 Modal.setAppElement("#root");
 
+interface TransferOwnershipFormResponse {
+    wikiId: string;
+    currentOwner_uid: string;
+    newOwner_uid: string;
+}
+
 interface TransferOwnershipModalParams {
     isOpen: boolean;
     wiki: Wiki,
     collaborators: Array<User>;
     onClose: () => any;
-    onSubmit: (uid:string) => any;
+    onSubmit: (response: TransferOwnershipFormResponse) => any;
 }
 
 const customStyles = {
@@ -50,22 +56,11 @@ export const TransferOwnershipModal:React.FC<TransferOwnershipModalParams> = ({
         }
 
         if(prompt(`Are you sure you wish to transfer ownership of "${wiki.name}" to ${selected}? (THIS ACTION CANNOT BE UNDONE BY YOU).\n\nType "Yes" to confirm.`)?.toLocaleLowerCase() === "yes") {
-            const res = await fetch(`/api/wiki/${wiki._id}/transfer/${currentUser.uid}/${collab_username_map[selected].firebaseUID}`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${currentUser.accessToken}`
-                }
-            });
-
-            const data = await res.json();
-
-            if(!res.ok || res.status !== 200) {
-                alert(data.error);
-                return;
-            }
-
-            // reload
-            window.location.reload();
+            onSubmit({
+                wikiId: wiki._id.toString(),
+                currentOwner_uid: currentUser.uid,
+                newOwner_uid: collab_username_map[selected].firebaseUID
+            })
         }
     }
 
