@@ -427,10 +427,10 @@ function WikiHome() {
 								>
 									Hide Collaborators
 								</button>
-								<ul className="list-group mt-2">
+								<ul className="list-group mt-2 p-3">
 									{collaborators && collaborators.length === 0 && (
 										<li className="list-group-item text-muted">
-											This wiki currently has no collaborators!s
+											This wiki currently has no collaborators!
 										</li>
 									)}
 
@@ -484,7 +484,7 @@ function WikiHome() {
 								>
 									Hide Private Viewers
 								</button>
-								<ul className="list-group mt-2">
+								<ul className="list-group mt-2 p-3">
 									{private_viewers && private_viewers.length === 0 && (
 										<li className="list-group-item text-muted">
 											This wiki currently has no Private Viewers!

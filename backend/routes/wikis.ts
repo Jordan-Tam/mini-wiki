@@ -705,8 +705,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the new private viewer so that their home page displays the new wiki they can see.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because this is a private wiki so it doesn't appear in that list.
@@ -761,8 +761,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the removed private viewer so that their home page no longer displays the wiki.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because this is a private wiki so it doesn't appear in that list.
@@ -995,8 +995,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the new collaborator so that their home page displays the new wiki in the COLLABORATOR section.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because the Discover page is not displaying the collaborators lists so the outdated entry is still okay to use.
@@ -1051,8 +1051,8 @@ router
 
 			// REDIS: Update/delete the getWikisByUser entry of the removed collaborator so that their home page no longer displays the wiki in their COLLABORATOR section.
 			await redisFunctions.set_json(
-				`${req.user.uid}/getWikisByUser`,
-				await wikiDataFunctions.getWikisByUser(req.user.uid)
+				`${user}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(user)
 			);
 
 			// REDIS: There is no need to update the publicWikis entry because the Discover page is not displaying the collaborators lists so the outdated entry is still okay to use.
