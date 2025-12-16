@@ -1,18 +1,18 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext.jsx";
-import CreateCategoryModal from "./modals/CreateCategoryModal.jsx";
-import CreatePageModal from "./modals/CreatePageModal.jsx";
-import EditCategoryModal from "./modals/EditCategoryModal.jsx";
-import DeleteCategoryModal from "./modals/DeleteCategoryModal.jsx";
-import AddCollaboratorModal from "./modals/AddCollaboratorModal.jsx";
-import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx";
-import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
-import DeleteWikiModal from "./modals/DeleteWikiModal.jsx";
-import { default as AddPrivateViewerModal } from "../components/modals/addPrivateViewerModal.jsx"
-import type { User, UserContext, Wiki } from "../types.js";
-import { TransferOwnershipModal } from "./modals/TransferOwnershipModal.js";
-import { EditWikiModal } from "./modals/EditWikiModal.js";
+import CreateCategoryModal from "./modals/CreateCategoryModal.tsx";
+import CreatePageModal from "./modals/CreatePageModal.tsx";
+import EditCategoryModal from "./modals/EditCategoryModal.tsx";
+import DeleteCategoryModal from "./modals/DeleteCategoryModal.tsx";
+import AddCollaboratorModal from "./modals/AddCollaboratorModal.tsx";
+import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.tsx";
+import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.tsx";
+import DeleteWikiModal from "./modals/DeleteWikiModal.tsx";
+import { default as AddPrivateViewerModal } from "./modals/addPrivateViewerModal.tsx"
+import type { User, UserContext, Wiki } from "../types.tsx";
+import { TransferOwnershipModal } from "./modals/TransferOwnershipModal.tsx";
+import { EditWikiModal } from "./modals/EditWikiModal.tsx";
 
 let key_val = 0;
 function WikiHome() {

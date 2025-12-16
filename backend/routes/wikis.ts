@@ -868,11 +868,8 @@ router
         let wiki: any;
 		let page: any;
 		let newCategory = req.body.newCategory;
-		let newCategory: any;
 
 		try {
-
-			pageUrl = checkUrlName(pageUrlName)
 			wikiUrlName = checkUrlName(wikiUrlName);
 			newCategory = checkCategory(newCategory, "PATCH ")
 
@@ -884,11 +881,11 @@ router
 
 		try {
 
-			page = getPageByUrlName(pageUrlName)
-			wiki = getWikiByUrlName(wikiUrlName)
-			if (!wiki.categories.includes(newCategory)) {
-				throw "NEW CATEGORY DOES NOT EXIST.";
-			}
+			// page = getPageByUrlName(pageUrlName)
+			// wiki = getWikiByUrlName(wikiUrlName)
+			// if (!wiki.categories.includes(newCategory)) {
+			// 	throw "NEW CATEGORY DOES NOT EXIST.";
+			// }
 
 		} catch (e) {
 
@@ -902,7 +899,7 @@ router
 			return res.json({changed: true})
 		} catch (e) {
 
-			returm res.status(500).json({error: e})
+			return res.status(500).json({error: e})
 			
 		}
 

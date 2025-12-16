@@ -2,7 +2,7 @@ import {useContext, useState} from "react";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
-import TakenCheck from "../TakenCheck";
+import TakenCheck from "../TakenCheck.js";
 import { checkUrlName } from "../../../helpers.ts";
 
 Modal.setAppElement("#root");

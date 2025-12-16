@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
-import TakenCheck from "./TakenCheck";
+import TakenCheck from "./TakenCheck.js";
 import { checkDescription, checkUrlName, checkWikiOrPageName } from "../../helpers.ts";
 
 function CreateWiki() {

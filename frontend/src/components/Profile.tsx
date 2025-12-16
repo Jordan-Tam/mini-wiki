@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.tsx";
 import { FaPlus } from 'react-icons/fa';
-import ChangeBioModal from "./modals/ChangeBioModal"
-import WikiCard from "./cards/WikiCard.jsx";
+import ChangeBioModal from "./modals/ChangeBioModal.tsx"
+import WikiCard from "./cards/WikiCard.tsx";
 import { useParams } from "react-router-dom"
 import { FaLock, FaUnlock } from "react-icons/fa";
 import { Link } from "react-router-dom"
