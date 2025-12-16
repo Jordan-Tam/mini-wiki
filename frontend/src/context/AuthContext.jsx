@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
       if (auth && user) {
         const token = user.accessToken;
         const response = await fetch(
-          `http://localhost:3000/users/${user.uid}`,
+          `/api/users/${user.uid}`,
           {
             method: "GET",
             headers: {

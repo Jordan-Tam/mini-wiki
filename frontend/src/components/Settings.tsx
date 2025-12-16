@@ -42,7 +42,7 @@ function Settings() {
   const handleChangeUsername = async (usernameInput: any) => {
     const obj = { username: usernameInput };
     const response = await fetch(
-      `http://localhost:3000/users/${currentUser.uid}`,
+      `/api/users/${currentUser.uid}`,
       {
         method: "PATCH",
         headers: {
@@ -85,7 +85,7 @@ function Settings() {
           variable={username}
           varName={"Username"}
           setOK={setChangeUsernameOK}
-          serverURL="http://localhost:3000/users/usernameTaken/"
+          serverURL="/api/users/usernameTaken/"
         />
       )}
 

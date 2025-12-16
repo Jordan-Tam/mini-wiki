@@ -262,8 +262,7 @@ router
       let wiki_names = user_owned_wikis.map((w) => w.name);
       return res.status(409).json({error: `You still own ${wiki_names.length} wikis. You must transfer ownership of these wikis or delete them before continuing.\n${wiki_names.join('\n')}`});
     }    
-
-    console.log(`DELETED USER::`);         
+      
     const deleted = await user_data_functions.deleteUser(firebaseUID);
     if (deleted.userDeleted) {
       return res.json(deleted);

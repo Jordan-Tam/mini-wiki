@@ -261,14 +261,6 @@ const user_data_functions = {
 
   },
 
-  async addFollowing() {
-
-  },
-
-  async removeFollowing() {
-
-  },
-
   //do we delete wikis or make the author [deleted] and keep wikis up?
   //TODO: We didn't have a delete user functionality in our project last semester, so I think we can do the same thing for this one and just not let them delete their accounts.
   async deleteUser(firebaseUID: string) {
