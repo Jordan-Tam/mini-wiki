@@ -177,7 +177,6 @@ function CreateWikiModal(props) {
               serverURL="/api/wiki/urlTaken/"
             />
             <div className="form-floating mb-3">
-              {/* //TODO: Change this to a textarea. */}
               <input
                 className="form-control"
                 placeholder="description"

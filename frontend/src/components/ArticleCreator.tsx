@@ -244,7 +244,6 @@ function ArticleCreator() {
 								Editing{" "}
 								<span style={{ fontWeight: "bold" }}>{`${page.name}`}</span>
 							</h2>{" "}
-							{/* TODO */}
 							<div>
 								<Link
 									to={`/${wikiUrlName}/${pageId}`}

@@ -139,7 +139,6 @@ function CreateWiki() {
 		              serverURL="/api/wiki/urlTaken/"
 		            />
 		            <div className="form-floating mb-3" style={{"width": "500px"}}>
-		              {/* //TODO: Change this to a textarea. */}
 		              <input
 		                className="form-control"
 		                placeholder="description"

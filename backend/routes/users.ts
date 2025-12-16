@@ -118,8 +118,6 @@ router
    */
   .post(async (req: any, res) => {
 
-    //TODO:
-
 		let { wikiId } = req.body;
 
 		try {
@@ -153,8 +151,6 @@ router
    * Removes a wiki from the user's favorites array.
    */
   .delete(async (req: any, res) => {
-
-    //TODO:
 
     let { wikiId } = req.body;
 
@@ -194,8 +190,6 @@ router
    * get user by id
    */
   .get(async (req: any, res) => {
-
-    // TODO: REDIS
     
     let firebaseUID = req.params.id;
     let tokenId = req.user.user_id;
