@@ -136,6 +136,9 @@ router
 
 			await user_data_functions.addFavorite(wikiId, req.user.uid);
 
+      // REDIS: The publicWikis entry is now outdated. Update/delete it from the cache.
+      await redisFunctions.del_json("publicWikis");
+
 			return res.json(true);
 			
 		} catch (e) {
@@ -168,6 +171,9 @@ router
 		try {
 
 			await user_data_functions.removeFavorite(wikiId, req.user.uid);
+
+      // REDIS: The publicWikis entry is now outdated. Update/delete it from the cache.
+      await redisFunctions.del_json("publicWikis");
 
 			return res.json(true);
 

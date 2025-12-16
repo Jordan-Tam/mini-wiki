@@ -89,8 +89,8 @@ const wikis_to_seed = [
 				category: "Dates and Times",
 				content: [
 					{
-						editorType: "text",
-						contentString: "..."
+						editorType: "table",
+						contentString: '| Code | Result |\n|------|------|\n|```new Date("2025-01-01")```|```Tue Dec 31 2024 19:00:00 GMT-0500 (Eastern Standard Time)```|\n|```new Date("2025-1-01")```|```Wed Jan 01 2025 00:00:00 GMT-0500 (Eastern Standard Time)```|\n|```new Date("2025-01-1")```|```Wed Jan 01 2025 00:00:00 GMT-0500 (Eastern Standard Time)```|\n|```new Date("2025-1-1")```|```Wed Jan 01 2025 00:00:00 GMT-0500 (Eastern Standard Time)```|'
 					}
 				]
 			},
@@ -387,9 +387,6 @@ const wikis_to_seed = [
 		]
 	}
 ];
-
-// This is just to pad out the wikis with more stuff.
-const shared_pages = [];
 
 async function seed() {
 
