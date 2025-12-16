@@ -151,9 +151,10 @@ router
 			return res.status(400).json({ error: e });
 		}
 
+		let wiki;
 		try {
 
-			let wiki = await wikiDataFunctions.createWiki(
+			wiki = await wikiDataFunctions.createWiki(
 				name,
 				urlName,
 				description,
@@ -178,21 +179,15 @@ router
 			// REDIS: If the wiki is public, update/delete the public wikis entry from the cache.
 			if (wiki.access === "public-edit" || wiki.access === "public-view") {
 				
-				if (redis_policy.publicWikis_policy === "UPDATE") {
-					await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
-				} else {
-					await redisFunctions.del_json("publicWikis");
-				}
+				//await redisFunctions.set_json("publicWikis", await wikiDataFunctions.getAllPublicWikis());
+				await redisFunctions.del_json("publicWikis");
 
 			}
 
 			// REDIS: Add the newly created wiki to the cache.
-			//TODO:
+			// TODO:
 
 			return res.json(wiki);
-
-			// TODO: When adding collaborators/viewers, make sure that the user being added has their personal getWikisByUser key-value updated.
-			// TODO: And if that wiki is also public, update the publicWikis entry as done above.
 			
 
 		} catch (e) {

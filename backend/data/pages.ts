@@ -163,7 +163,8 @@ const page_data_functions = {
 			throw "Page could not be deleted.";
 		}
 
-		// TODO: Elasticsearch indexing!!!
+		// Remove the page from the Elasticsearch index.
+		deletePageFromIndex(pageId);
 
 		return await wikiDataFunctions.getWikiById(wikiId.toString());
 	},
