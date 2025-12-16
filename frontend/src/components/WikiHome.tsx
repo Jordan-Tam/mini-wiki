@@ -697,8 +697,24 @@ function WikiHome() {
 					onClose={handleCloseModals}
 					collaborators={collaborators}
 					wiki={wiki}
-					onSubmit={() => {
-						console.log("wywywywywyw");
+					onSubmit={async (response) => {
+						const res = await fetch(`/api/wiki/${response.wikiId}/transfer/${response.currentOwner_uid}/${response.newOwner_uid}`, {
+							method: "POST",
+							headers: {
+								Authorization: `Bearer ${currentUser.accessToken}`
+							}
+						});
+			
+						const data = await res.json();
+			
+						if(!res.ok || res.status !== 200) {
+							alert(data.error);
+							return;
+						}
+
+						// assign new wiki
+						console.log(`assign new wiki:`, data);
+						setWiki(data);
 					}}
 				/>
 			)};
@@ -732,7 +748,12 @@ function WikiHome() {
 							return;
 						}
 
-						window.location.reload();
+						// update wiki
+						console.log(`new wiki (edit)::`, res_json);
+						setWiki(res_json);
+
+						handleCloseModals();
+						setShowEditWikiModal(false);
 					}}
 				/>
 			)}
