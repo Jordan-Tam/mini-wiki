@@ -283,9 +283,9 @@ function CategoryPage() {
                                     </Link>
                                 </td>
                                 <td>{page.last_edited}</td>
-                                <td>{page.last_edited_by}</td>
+                                <td>{page.last_edited_by.username}</td>
                                 <td>{page.first_created}</td>
-                                <td>{page.first_created_by}</td>
+                                <td>{page.first_created_by.username}</td>
                             </tr>
                         ))}
                     </tbody>
