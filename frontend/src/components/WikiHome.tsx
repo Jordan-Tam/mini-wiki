@@ -415,7 +415,7 @@ function WikiHome() {
 						</button>
 						{!showCollaborators && (
 							<button
-								className="btn btn-info me-3"
+								className="btn btn-primary me-3"
 								onClick={() => setShowCollaborators(true)}
 							>
 								View Collaborators
@@ -424,7 +424,7 @@ function WikiHome() {
 						{showCollaborators && (
 							<>
 								<button
-									className="btn btn-success me-3"
+									className="btn btn-danger me-3"
 									onClick={() => setShowCollaborators(false)}
 								>
 									Hide Collaborators
@@ -473,7 +473,7 @@ function WikiHome() {
 						{!showPVs && (
 							<>
 							<button
-								className="btn btn-info me-3"
+								className="btn btn-primary me-3"
 								onClick={() => setShowPVs(true)}
 							>
 								View Private Viewers
@@ -486,7 +486,7 @@ function WikiHome() {
 						{showPVs && (
 							<>
 								<button
-									className="btn btn-success me-3"
+									className="btn btn-danger me-3"
 									onClick={() => setShowPVs(false)}
 								>
 									Hide Private Viewers
