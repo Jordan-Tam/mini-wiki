@@ -90,9 +90,11 @@ function Profile() {
   return (
     <div className="container-fluid">
       <h2 className="display-5">
-        {user.username}
+        {user.username} 
       </h2>
-
+      { isUserProfile &&
+        <Link to="/settings">change username </Link>
+      }
       <hr/>
       {isUserProfile && user !== null && (
         user.bio === "" ? (
@@ -154,12 +156,14 @@ function Profile() {
       wikis.OWNER?.filter(wiki => wiki.access !== "private").length !== 0
       && (
         <>
-        {wikis.OWNER?.filter(wiki => wiki.access !== "private")
-          .map(wiki => (
-            <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
-              <WikiCard wiki={wiki} />
-            </li>
-          ))}
+          <ul>
+            {wikis.OWNER?.filter(wiki => wiki.access !== "private")
+              .map(wiki => (
+                <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
+                  <WikiCard wiki={wiki} />
+                </li>
+              ))}
+          </ul>
         </>
       )
       }
@@ -168,7 +172,7 @@ function Profile() {
       wikis.OWNER?.filter(wiki => wiki.access !== "private").length === 0
       && (
         <>
-        <p> You have no public wikis! <Link to="/create"> Make one </Link> </p>
+          <p> You have no public wikis! <Link to="/create"> Make one </Link> </p>
         </>
       )
       }
@@ -179,12 +183,14 @@ function Profile() {
       && (
         <>
         <h3><FaLock />{" "}Private Wikis</h3>
-        {wikis.OWNER?.filter(wiki => wiki.access === "private")
-          .map(wiki => (
-            <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
-              <WikiCard wiki={wiki} />
-            </li>
-          ))}
+        <ul>
+          {wikis.OWNER?.filter(wiki => wiki.access === "private")
+            .map(wiki => (
+              <li key={wiki._id ?? wiki} className="list-group-item d-flex justify-content-between align-items-center">
+                <WikiCard wiki={wiki} />
+              </li>
+            ))}
+        </ul>
         </>
       )
       }
