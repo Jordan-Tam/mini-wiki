@@ -257,7 +257,7 @@ const wiki_data_functions = {
 
 	async changeWikiDescription() {},
 
-	async changeWikiOwner(wikiId: string, newOwner: string): Promise<Wiki> {
+	async changeWikiOwner(wikiId: string, oldOwner:string, newOwner: string): Promise<Wiki> {
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "changeWikiOwner");
 
@@ -269,13 +269,16 @@ const wiki_data_functions = {
 			owner: newOwner
 		};
 
-		const wikisCollection = await wikis();
+		let collaborators = (await wiki_data_functions.getWikiById(wikiId)).collaborators;
+		collaborators = collaborators.filter((i) => i !== newOwner); 	// remove new owner from collaborators list
+		collaborators.push(oldOwner);									// push old owner to collab list
 
+		const wikisCollection = await wikis();
 		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			{$set: {owner: newOwner}},
+			{ $set: {owner: newOwner, collaborators: collaborators} },
 			{ returnDocument: "after" }
-		);
+		); 
 
 		if (!updateInfo) {
 			throw "Could not update wiki owner.";
