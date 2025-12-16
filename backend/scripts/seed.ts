@@ -464,6 +464,7 @@ async function seed() {
 			))._id;
 		} catch (e) {
 			console.log(`Wiki ${wiki.name} could not be created: ${e}`);
+			return;
 		}
 
 		// Add collaborators.
