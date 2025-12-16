@@ -907,6 +907,17 @@ router
 		}
 	});
 
+/**
+ * Transfer ownership route
+ */
+router.route("/:urlname/transfer")
+	.post(async (req,res) => {
+		const wikiId = req.params.urlname.trim();
+		/**
+		 * RESUME 
+		 */
+	})
+
 
 //! IGNORE EVERYTHING BELOW THIS LINE
 
