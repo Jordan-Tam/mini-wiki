@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.tsx";
 import { FaPlus } from 'react-icons/fa';
 import ChangeBioModal from "./modals/ChangeBioModal.tsx"
 import WikiCard from "./cards/WikiCard.tsx";
