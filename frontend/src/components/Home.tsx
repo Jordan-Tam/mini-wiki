@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
-import WikiCard from "./cards/WikiCard.jsx";
+import WikiCard from "./cards/WikiCard.tsx";
 import CreateWikiModal from "./modals/CreateWikiModal.jsx";
 
 function Home() {
