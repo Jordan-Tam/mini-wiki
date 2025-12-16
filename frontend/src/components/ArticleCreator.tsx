@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
-import TextEditor from "./editors/TextEditor";
+import TextEditor from "./editors/TextEditor.tsx";
 import TableEditor from "./editors/TableEditor";
 import ImageEditor from "./editors/ImageEditor";
 
