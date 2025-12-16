@@ -862,11 +862,56 @@ router
 		}
 	})
 
+	.patch(async (req: any, res) => {
+		let wikiUrlName = req.params.wikiUrlName;
+        let pageUrlName = req.params.pageUrlName;
+        let wiki: any;
+		let page: any;
+		let newCategory = req.body.newCategory;
+		let newCategory: any;
+
+		try {
+
+			pageUrl = checkUrlName(pageUrlName)
+			wikiUrlName = checkUrlName(wikiUrlName);
+			newCategory = checkCategory(newCategory, "PATCH ")
+
+		} catch (e) {
+
+			return res.status(400).json({error: e})
+
+		}
+
+		try {
+
+			page = getPageByUrlName(pageUrlName)
+			wiki = getWikiByUrlName(wikiUrlName)
+			if (!wiki.categories.includes(newCategory)) {
+				throw "NEW CATEGORY DOES NOT EXIST.";
+			}
+
+		} catch (e) {
+
+			return res.status(404).json({error: e})
+
+		}
+
+		try {
+
+			await pageDataFunctions.changePageCategory(wiki._id, page._id, newCategory);
+			return res.json({changed: true})
+		} catch (e) {
+
+			returm res.status(500).json({error: e})
+			
+		}
+
+	})
 	/**
 	 * ! Delete a page from a wiki.
 	 */
 	.delete(async (req: any, res) => {
-		console.log("DELETE PAGE")
+		//console.log("DELETE PAGE")
 
 		let wikiUrlName = req.params.wikiUrlName;
         let pageUrlName = req.params.pageUrlName;
@@ -904,9 +949,11 @@ router
 		
 		return res.json({message: "Success"})
 
-	})
-	;
+	});
 
+
+
+	
 router
 	.route("/:urlName/pages/:pageId/content")
 
