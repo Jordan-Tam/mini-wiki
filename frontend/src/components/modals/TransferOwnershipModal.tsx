@@ -1,0 +1,186 @@
+import React, { useContext, useRef, useState, type JSX } from "react";
+import { AuthContext } from "../../context/AuthContext.jsx";
+import Modal from "react-modal";
+import type { User, UserContext, Wiki } from "../../types.js";
+
+Modal.setAppElement("#root");
+
+interface TransferOwnershipModalParams {
+    isOpen: boolean;
+    wiki: Wiki,
+    collaborators: Array<User>;
+    onClose: () => any;
+    onSubmit: (uid:string) => any;
+}
+
+const customStyles = {
+	content: {
+		top: "50%",
+		left: "50%",
+		right: "auto",
+		bottom: "auto",
+		marginRight: "-50%",
+		transform: "translate(-50%, -50%)",
+		width: "50%",
+		border: "1px solid #28547a",
+		borderRadius: "4px"
+	}
+};
+
+export const TransferOwnershipModal:React.FC<TransferOwnershipModalParams> = ({
+    isOpen,
+    wiki,
+    collaborators,
+    onClose,
+    onSubmit
+}: TransferOwnershipModalParams): JSX.Element => {
+    const currentUser = (useContext(AuthContext) as any).currentUser as UserContext;
+    const selectRef = useRef<HTMLSelectElement | null>(null);
+
+    // map collaborators to usernames
+    let collab_username_map = {} as {[key:string]: User}
+    for(const user of collaborators) {
+        collab_username_map[user.username] = user;
+    }
+
+    const _handle_submit = async (e:any) => {
+        let selected = selectRef.current?.value;
+        if(!selected || selected.length < 1) {
+            return;
+        }
+
+        if(prompt(`Are you sure you wish to transfer ownership of "${wiki.name}" to ${selected}? (THIS ACTION CANNOT BE UNDONE BY YOU).\n\nType "Yes" to confirm.`)?.toLocaleLowerCase() === "yes") {
+            const res = await fetch(`/api/wiki/${wiki._id}/transfer/${currentUser.uid}/${collab_username_map[selected].firebaseUID}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${currentUser.accessToken}`
+                }
+            });
+
+            const data = await res.json();
+
+            if(!res.ok || res.status !== 200) {
+                alert(data.error);
+                return;
+            }
+
+            // reload
+            window.location.reload();
+        }
+    }
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onRequestClose={onClose}
+            style={customStyles}
+            contentLabel={`Transfer ownership of "${wiki.name}"`}
+        >
+            <h2>Transfer Ownership</h2>
+            <form onSubmit={_handle_submit}>
+                <label>Select a collaborator to make as the owner</label>
+                <select ref={selectRef}>
+                    <option value="">-- Select One --</option>
+                    {collaborators.map((c) => (
+                        <option value={c.username}>{c.username}</option>
+                    ))}
+                </select>
+            </form>
+
+            <button className="btn btn-danger" onClick={_handle_submit}>Select</button>
+        </Modal>
+    );
+}
+
+function AddPrivateViewerModal({ isOpen, onClose, onDone, wikiId }) {
+    const { currentUser } = useContext(AuthContext);
+
+    const [username, setUsername] = useState("");
+    const [error, setError] = useState("");
+    const [disableSubmit, setDisableSubmit] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setDisableSubmit(true);
+        setError("");
+        setSuccess(false);
+
+        try {
+            const response = await fetch(`/api/wiki/${wikiId}/private_viewer`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + currentUser.accessToken
+                },
+                body: JSON.stringify({ username: username })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || "Failed to add private viewer.");
+                setDisableSubmit(false);
+                return;
+            }
+
+            setSuccess(true);
+            setWiki(data);
+            handleClose();
+            alert("Private Viewer successfully added!")
+        } catch (err) {
+            setError("Server error.");
+        } finally {
+            setDisableSubmit(false);
+        }
+    };
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onRequestClose={handleClose}
+            style={customStyles}
+            contentLabel="Add Private Viewer Modal"
+        >
+            <h2>Add Private Viewer</h2>
+
+            <form onSubmit={handleSubmit}>
+                <label>User to grant private viewer status</label>
+                <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Enter username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
+
+                {error && (
+                    <p style={{ color: "red" }}>{error}</p>
+                )}
+
+                {success && (
+                    <p style={{ color: "green" }}>Private Viewer added!</p>
+                )}
+
+                <button
+                    type="submit"
+                    className="btn btn-success me-3"
+                    disabled={disableSubmit}
+                >
+                    Add
+                </button>
+
+                <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleClose}
+                >
+                    Cancel
+                </button>
+            </form>
+        </Modal>
+    );
+}
+
+export default AddPrivateViewerModal;

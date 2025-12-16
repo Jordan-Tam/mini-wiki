@@ -10,15 +10,16 @@ import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.jsx";
 import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.jsx";
 import DeleteWikiModal from "./modals/DeleteWikiModal.jsx";
 import { default as AddPrivateViewerModal } from "../components/modals/addPrivateViewerModal.jsx"
-import Chat from "./Chat";
+import type { User, UserContext, Wiki } from "../types.js";
+import { TransferOwnershipModal } from "./modals/TransferOwnershipModal.js";
 
 let key_val = 0;
 function WikiHome() {
 	const { wikiUrlName } = useParams();
-	const { currentUser } = useContext(AuthContext);
+	let currentUser = (useContext(AuthContext) as any).currentUser as UserContext;
 
 	// Helper function to strip markdown formatting for displaying highlights
-	const stripMarkdown = (text) => {
+	const stripMarkdown = (text:string) => {
 		if (!text) return text;
 
 		return (
@@ -93,7 +94,7 @@ function WikiHome() {
 	};
 
 	// API call
-	const [wiki, setWiki] = useState(null);
+	const [wiki, setWiki] = useState<Wiki | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
@@ -104,7 +105,7 @@ function WikiHome() {
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
 	const [showAddCollabModal, setShowAddCollabModal] = useState(false);
-	const [collaborators, setCollaborators] = useState(undefined);
+	const [collaborators, setCollaborators] = useState<Array<User> | null>(null);
 	const [showCollaborators, setShowCollaborators] = useState(false);
 	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
 	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] =
@@ -113,11 +114,12 @@ function WikiHome() {
 		useState(false);
 	const [showDeletePrivateViewerModal, setShowDeletePrivateViewerModal] =
 		useState(false);
+	const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
 	const [deletePrivateViewer, setDeletePrivateViewer] = useState(false);
 	const [private_viewers, setPrivateViewers] = useState(undefined);
 	const [showPVs, setShowPVs] = useState(false);
 	const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(false);
-	const [owner, setOwner] = useState(undefined)
+	const [owner, setOwner] = useState(undefined);
 	// Search
 	const [searchTerm, setSearchTerm] = useState("");
 	const [searchResults, setSearchResults] = useState(null);
@@ -165,7 +167,7 @@ function WikiHome() {
 				}
 
 				//throw new Error("Failed to fetch wiki");
-				console.log(data)
+				console.log(`collaborators:`,data)
 				setCollaborators(data);
 			} catch (e) {
 				setError(e);
@@ -244,6 +246,7 @@ function WikiHome() {
 		setShowAddPrivateViewerModal(false);
 		setShowDeletePrivateViewerModal(false);
 		setShowDeleteWikiModal(false);
+		setShowTransferModal(false);
 	};
 
 	const handleSearch = async (e) => {
@@ -257,7 +260,7 @@ function WikiHome() {
 		setSearchError(null);
 
 		try {
-			const response = await fetch(`/api/search/${wiki._id}`, {
+			const response = await fetch(`/api/search/${wiki?._id}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -533,6 +536,15 @@ function WikiHome() {
 				>
 					💬 Chat
 				</button>
+				{wiki.owner === currentUser.uid && (
+					<button
+						className="btn btn-danger me-3"
+						onClick={() => setShowTransferModal(true)}
+					>
+						↔ Transfer Ownership
+					</button>
+				)}
+
 				{wiki.owner === currentUser.uid &&
 				<button 
 				className="btn btn-danger me-3"
@@ -666,6 +678,18 @@ function WikiHome() {
 					wikiId={wiki._id}
 				/>
 			)}
+
+			{(showTransferModal && wiki && collaborators) && (
+				<TransferOwnershipModal 
+					isOpen={showTransferModal}
+					onClose={handleCloseModals}
+					collaborators={collaborators}
+					wiki={wiki}
+					onSubmit={() => {
+						console.log("wywywywywyw");
+					}}
+				/>
+			)};
 		</div>
 	);
 }

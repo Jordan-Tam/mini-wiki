@@ -13,14 +13,7 @@ import {
 	checkCategory
 } from "../helpers.ts";
 import { indexPage, deletePageFromIndex } from "../lib/search/indexer.ts";
-
-// This is only used for the authorized() function.
-type Wiki = {
-    owner: string,
-    access: string,
-    collaborators: string[],
-    private_viewers: string[],
-};
+import { Wiki } from "./types.ts";
 
 const wiki_data_functions = {
 	/**
@@ -61,7 +54,7 @@ const wiki_data_functions = {
 	/**
 	 * Retrieves wiki object based on ObjectId and returns it.
 	 */
-	async getWikiById(id: string) {
+	async getWikiById(id: string): Promise<Wiki> {
 		// Input validation.
 		id = checkId(id, "Wiki", "getWikiById");
 
@@ -83,7 +76,7 @@ const wiki_data_functions = {
 	/**
 	 * Returns wiki object based on unique URL Name field and returns it.
 	 */
-	async getWikiByUrlName(urlName: string) {
+	async getWikiByUrlName(urlName: string): Promise<Wiki> {
 		// Input validation.
 		urlName = checkUrlName(urlName, "getWikiByUrl");
 
@@ -264,7 +257,7 @@ const wiki_data_functions = {
 
 	async changeWikiDescription() {},
 
-	async changeWikiOwner(wikiId: string, newOwner: string) {
+	async changeWikiOwner(wikiId: string, newOwner: string): Promise<Wiki> {
 		// Input validation.
 		wikiId = checkId(wikiId, "Wiki", "changeWikiOwner");
 
@@ -278,9 +271,9 @@ const wiki_data_functions = {
 
 		const wikisCollection = await wikis();
 
-		const updateInfo = await wikisCollection.findOneAndReplace(
+		const updateInfo = await wikisCollection.findOneAndUpdate(
 			{ _id: new ObjectId(wikiId) },
-			updatedWiki,
+			{$set: {owner: newOwner}},
 			{ returnDocument: "after" }
 		);
 
@@ -395,7 +388,7 @@ const wiki_data_functions = {
 			if (page.category === oldCategoryName) {
 				await pageDataFunctions.changePageCategory(
 					wiki._id,
-					page._id,
+					page._id.toString(),
 					newCategoryName
 				);
 				// Note: changePageCategory already handles re-indexing

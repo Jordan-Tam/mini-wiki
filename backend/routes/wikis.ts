@@ -16,6 +16,7 @@ import {
 	checkUrlName2
 } from "../helpers.ts";
 import user_data_functions from "../data/users.ts";
+import wiki_data_functions from "../data/wikis.ts";
 
 export const router = Router();
 
@@ -1072,13 +1073,48 @@ router
 /**
  * Transfer ownership route
  */
-router.route("/:urlname/transfer")
+router.route("/:urlname/transfer/:userId/:newOwnerId")
 	.post(async (req,res) => {
 		const wikiId = req.params.urlname.trim();
-		/**
-		 * RESUME 
-		 */
-	})
+		const userId = req.params.userId.trim();
+		const newOwnerId = req.params.newOwnerId.trim();
+
+		let wiki;
+		try {
+			wiki = await wiki_data_functions.getWikiById(wikiId);
+		} catch (e) {
+			return res.status(404).json({error: `Wiki not found!`});
+		}
+
+		console.log(`Transf:: ${userId} ${newOwnerId}`);
+		if(typeof userId !== "string" || typeof newOwnerId !== "string") {
+			return res.status(400).json({error: `Missing fields. Expected userId:string, newOwnerId:string`});
+		}
+
+		// check if user is owner of wiki
+		if(wiki.owner !== userId.trim()) {
+			return res.status(401).json({error: `You must be the owner of the wiki to transfer ownership.`});
+		}
+
+		// transfer wiki owner
+		let newWiki;
+		try {
+			newWiki = await wiki_data_functions.changeWikiOwner(wikiId, newOwnerId);
+			await redisFunctions.set_json(wiki.urlName, newWiki);
+			await redisFunctions.set_json(
+				`${userId}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(userId)
+			);
+			await redisFunctions.set_json(
+				`${newOwnerId}/getWikisByUser`,
+				await wikiDataFunctions.getWikisByUser(newOwnerId)
+			);
+		} catch (e) {
+			return res.status(500).json({error: `Failed to update wiki owner: ${e}`})
+		}
+
+		return res.status(200).json(newWiki);
+	});
 
 
 //! IGNORE EVERYTHING BELOW THIS LINE
