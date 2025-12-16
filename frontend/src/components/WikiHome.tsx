@@ -470,7 +470,7 @@ function WikiHome() {
 						</button>
 						{!showPVs && (
 							<button
-								className="btn btn-success me-3"
+								className="btn btn-success ms-3"
 								onClick={() => setShowPVs(true)}
 							>
 								View Private Viewers
