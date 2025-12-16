@@ -415,7 +415,7 @@ function WikiHome() {
 						</button>
 						{!showCollaborators && (
 							<button
-								className="btn btn-success me-3"
+								className="btn btn-info me-3"
 								onClick={() => setShowCollaborators(true)}
 							>
 								View Collaborators
@@ -424,7 +424,7 @@ function WikiHome() {
 						{showCollaborators && (
 							<>
 								<button
-									className="btn btn-success ms-3"
+									className="btn btn-success me-3"
 									onClick={() => setShowCollaborators(false)}
 								>
 									Hide Collaborators
@@ -471,17 +471,22 @@ function WikiHome() {
 							Add Private Viewer
 						</button>
 						{!showPVs && (
+							<>
 							<button
-								className="btn btn-success ms-3"
+								className="btn btn-info me-3"
 								onClick={() => setShowPVs(true)}
 							>
 								View Private Viewers
 							</button>
+							<br/>
+							<br/>
+							</>
 						)}
+
 						{showPVs && (
 							<>
 								<button
-									className="btn btn-success ms-3"
+									className="btn btn-success me-3"
 									onClick={() => setShowPVs(false)}
 								>
 									Hide Private Viewers
@@ -513,10 +518,12 @@ function WikiHome() {
 												</button>
 											</li>
 										</>
+
 									))}
 								</ul>
 							</>
 						)}
+
 					</>
 				)}
 				<button className="btn btn-warning me-3"
@@ -540,24 +547,8 @@ function WikiHome() {
 				>
 					💬 Chat
 				</button>
-				{wiki.owner === currentUser.uid && (
-					<button
-						className="btn btn-danger me-3"
-						onClick={() => setShowTransferModal(true)}
-					>
-						↔ Transfer Ownership
-					</button>
-				)}
-
-				{wiki.owner === currentUser.uid &&
-				<button 
-				className="btn btn-danger me-3"
-				onClick={() => setShowDeleteWikiModal(true)}
-				>
-					Delete Wiki
-				</button>}
 			</div>
-
+						
 			<div className="mb-3">
 				{wiki?.categories?.map((category, index) => (
 					<div className="card mb-3" key={key_val++}>
@@ -598,6 +589,23 @@ function WikiHome() {
 					</div>
 				))}
 			</div>
+
+			{wiki.owner === currentUser.uid && (
+					<button
+						className="btn btn-danger me-3"
+						onClick={() => setShowTransferModal(true)}
+					>
+						↔ Transfer Ownership
+					</button>
+				)}
+
+				{wiki.owner === currentUser.uid &&
+				<button 
+				className="btn btn-danger me-3"
+				onClick={() => setShowDeleteWikiModal(true)}
+				>
+					Delete Wiki
+				</button>}
 
 			{showNewCategoryModal && (
 				<CreateCategoryModal
