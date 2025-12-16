@@ -373,6 +373,11 @@ router
 		// redis update
 		await redis_functions.set_json(update.urlName, update);
 
+		let redis_target_uids = [...wiki.collaborators, ...wiki.private_viewers, wiki.owner];
+		for(const uid of redis_target_uids) {
+			await redis_functions.del(`${uid}/getWikisByUser`);
+		}
+
 		return res.status(200).json(update);
 	})
 
