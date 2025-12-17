@@ -5,13 +5,6 @@ import type { WikiModalParams, Wiki } from "../../types.js";
 
 Modal.setAppElement("#root");
 
-interface AddCollaboratorModalParams {
-    isOpen: boolean;
-    handleClose: () => any;
-    setWiki: React.Dispatch<React.SetStateAction<Wiki | null>>,
-    wikiId: string;
-}
-
 const customStyles = {
     content: {
         top: "50%",
