@@ -1079,6 +1079,14 @@ router
 			return res.status(404).json({error: "Wiki not found"});
 		}
 
+		// 403: Check to make sure that an owner or collaborator is adding a new collaborator
+		console.log(req.user.uid);
+		console.log(wiki.collaborators);
+		console.log(wiki.owner)
+		if(!(wiki.collaborators.includes(req.user.uid) || wiki.owner === req.user.uid)){
+			return res.status(403).json({error: "You are not permitted to add collaborators to this wiki"})
+		}
+
 		try {
 			const retVal = await wikiDataFunctions.addCollaborator(wikiId, user);
 
