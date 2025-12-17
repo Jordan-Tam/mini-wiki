@@ -1,7 +1,8 @@
 import ReactModal from "react-modal";
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import type { BasicModalParams } from "../../types";
 
 ReactModal.setAppElement("#root");
 const customStyles = {
@@ -18,19 +19,22 @@ const customStyles = {
   },
 };
 
-function DeletePageModal(props) {
+interface p extends BasicModalParams {
+  wikiUrlName: string;
+  pageUrlName: string;
+}
+
+function DeletePageModal(props: p) {
   const [showDeletePageModal, setShowDeletePageModal] = useState(props.isOpen);
   const [error, setError] = useState("");
-  type NewType = FbUserContextWrapper;
 
-  const { currentUser } = useContext(AuthContext) as NewType;
+  const { currentUser } = useContext(AuthContext) as FbUserContext;
 
   let navigate = useNavigate();
 
   return (
     <div>
       <ReactModal
-        name="deletePageModal"
         isOpen={showDeletePageModal}
         contentLabel="Delete Page"
         style={customStyles}

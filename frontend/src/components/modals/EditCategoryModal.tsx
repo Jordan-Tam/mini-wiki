@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { AuthContext, type FbUserContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
+import type { WikiSetterBaseParams } from "../../types.js";
 
 Modal.setAppElement("#root");
 
@@ -18,7 +19,11 @@ const customStyles = {
     }
 };
 
-function EditCategoryModal(props) {
+interface p extends WikiSetterBaseParams {
+    oldCategoryName: string;
+}
+
+function EditCategoryModal(props:p) {
 
     // Auth
     const { currentUser } = useContext(AuthContext) as FbUserContext;
@@ -29,7 +34,7 @@ function EditCategoryModal(props) {
     const [disableSubmit, setDisableSubmit] = useState(false);
 
     // Submit form function
-    const submitForm = async (e) => {
+    const submitForm = async (e:any) => {
         e.preventDefault();
 
         // Basic validation
