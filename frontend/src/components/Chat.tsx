@@ -12,6 +12,7 @@ export interface ChatMessage {
     user: string;
     message: string;
     msgid: string;
+    error?: string;
 }
 
 const useWs = (url: string) => {
@@ -116,6 +117,10 @@ const useWs = (url: string) => {
         }
     
         if (typeof parsed.user !== "string" || typeof parsed.message !== "string") {
+            if(parsed.error) {
+                alert(parsed.error);
+            }
+
             console.error("Chat:: Malformed chat message object:", parsed);
             return;
         }
