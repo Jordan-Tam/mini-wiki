@@ -68,6 +68,11 @@ export interface BasicModalParams {
   handleClose: () => any;
 }
 
+export interface WikiSetterBaseParams extends BasicModalParams {
+  wikiId: string;
+  setWiki: React.Dispatch<React.SetStateAction<Wiki | null>>;
+}
+
 export interface WikiModalParams {
     isOpen: boolean;
     handleClose: () => any;
