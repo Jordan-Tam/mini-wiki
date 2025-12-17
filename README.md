@@ -29,39 +29,9 @@ docker compose up --build
 
 4. Once all services are running, access the application: http://localhost:5173
 
-### Regular Development Workflow
-
-For subsequent runs (when only code changes), and use the `-d` flag to not show all logs for all services:
-
-```bash
-docker compose up [-d]
-```
-
-**Note**: The seed service will run each time, which clears and repopulates the database. If you want to preserve existing data, start only the main services, and use the `-d` flag to not show all logs for all services:
-
-```bash
-docker compose up [-d] elasticsearch mongo redis backend frontend
-```
-
-### When Dependencies Change
-
-If you update `package.json`, `Dockerfile`, or `docker-compose.yml`:
-
-```bash
-docker compose build
-docker compose up [-d]
-```
-
-**Note**: This will also reseed the database. To preserve data while rebuilding, use:
-
-```bash
-docker compose build
-docker compose up [-d] elasticsearch mongo redis backend frontend
-```
-
 ### Viewing Only Specific Service Logs
 
-To reduce log noise and only see backend/frontend logs, use the `-d` flag and then connect to the logs of the specific services you want to see the logs for (in this example, just backend/frontend):
+To reduce log noise and only see backend/frontend logs, use the `-d` flag to run everything in the background and then connect to the logs of the specific services you want to see the logs for (in this example, just backend/frontend):
 
 ```bash
 docker compose up -d
@@ -82,35 +52,20 @@ To stop and remove all volumes (complete cleanup):
 docker compose down -v
 ```
 
-## Hot Reload / Live Development
-
-- **Frontend**: Vite will automatically reload when you save changes to files in `frontend/src/`
-- **Backend**: TypeScript changes are available immediately via the volume mount and `ts-node`. However, the server does not auto-reload. To apply changes, restart the backend container:
-
-```bash
-docker compose restart backend
-```
-
-**Note**: Only rebuild if you change `package.json`, `Dockerfile`, or other build configuration:
-
-```bash
-docker compose up -d --build backend
-```
-
 ## Database Access
 
 ### MongoDB Connection
 
-**From your host machine (e.g., MongoDB Compass):**
+**From your host machine (e.g., MongoDB Compass), connect to : mongodb://localhost:27018/**
 
-- **Linux/Mac**: `mongodb://localhost:27017/`
-- **Windows (WSL)**: `mongodb://{WSL2_IP_ADDRESS}:27017/`
+<!-- - **Linux/Mac**: `mongodb://localhost:27018/` -->
+<!-- - **Windows (WSL)**: `mongodb://{WSL2_IP_ADDRESS}:27017/` -->
 
-To find your WSL2 IP address on Windows, run in PowerShell:
+<!-- To find your WSL2 IP address on Windows, run in PowerShell:
 
 ```powershell
 wsl hostname -I
-```
+``` -->
 
 ### Redis
 
