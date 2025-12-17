@@ -276,6 +276,10 @@ const wikis_to_seed: any = [
 					{
 						editorType: "text",
 						contentString: `**Pierce Dining Hall** is a restaurant located in the 2nd floor of the Howe Center. It serves breakfast, lunch, and dinner.`
+					},
+					{
+						editorType: "image",
+						contentString: "![Pierce Dining Hall in the afternoon](https://www.stevens.edu/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2Fmviowpldu823%2F41klnCv1DtziHVpmeNc0ga%2Fdfc437bb7c8fa978efd6b1eae344dd09%2FPierce_Dining_Hall__9_.jpg%3Fw%3D640%26h%3D360%26f%3Dcenter%26q%3D80%26fit%3Dfill&w=2400&q=80)"
 					}
 				]
 			},
