@@ -28,8 +28,6 @@ function DeletePrivateViewerModal(props:p) {
     
     const { currentUser } = useContext(AuthContext) as FbUserContext;
 
-    const [username, setUsername] = useState(props.username);
-    const [error, setError] = useState("");
     const [disableSubmit, setDisableSubmit] = useState(false);
     
     const submitForm = async (e:any) => {
@@ -57,14 +55,12 @@ function DeletePrivateViewerModal(props:p) {
 
             const result = await response.json();
             props.setWiki(result);
-            setUsername("");
-            setError("");
             alert("Private Viewer successfully removed!");
             props.handleClose();
 
         } catch (e) {
             setDisableSubmit(false);
-            setError(`${e}`);
+            alert(e);
         }
     };
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import rehypeSanitize from "rehype-sanitize";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
