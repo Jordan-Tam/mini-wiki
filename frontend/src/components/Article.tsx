@@ -8,6 +8,7 @@ import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../con
 import DeletePageModal from "./modals/DeletePageModal.jsx";
 import type { Wiki, WikiPage } from "../types.js";
 
+import ChangeCategoryModal from "./modals/ChangeCategoryModal.tsx"
 
 type ArticleProps = {
 	markdown?: Array<{ editorType: string; contentString: string }>;
@@ -65,6 +66,8 @@ const Article: React.FC<ArticleProps> = ({
 		return <p>Invalid page parameters! Missing wiki url or page url</p>
 	}
 
+	const [showChangeCategoryModal, setShowChangeCategoryModal] = useState(false);
+
 	useEffect(() => {
 		if (!fetchFromUrl) return;
 
@@ -94,10 +97,9 @@ const Article: React.FC<ArticleProps> = ({
 				setLoading(false);
 				
 			} catch (e: any) {
-				setError(`${e}`);
-			} finally {
 				setLoading(false);
-			}
+				setError(`${e}`);
+			} 
 		};
 
 		if (wikiUrlName && pageUrlName && currentUser) fetchPage();
@@ -105,7 +107,35 @@ const Article: React.FC<ArticleProps> = ({
 
 	const handleCloseModals = () => {
 		setShowDeletePageModal(false);
+		setShowChangeCategoryModal(false);
   };
+
+  	useEffect(() => {
+
+		const fetchUser = async () => {
+			try {
+				const response = await fetch(`/api/users/${currentUser.uid}`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+
+				if (!response.ok) {
+					throw "Failed to fetch page";
+				}
+
+				const data = await response.json();
+
+				setUser(data);
+				
+			} catch (e: any) {
+				setError(`${e}`);
+			} finally {
+				setLoading(false);
+			}
+		}
+	})
 
 
 	// Memoize the edit button to prevent re-rendering if dependencies don't change
@@ -118,21 +148,33 @@ const Article: React.FC<ArticleProps> = ({
 			: undefined;
 
 		return fullEditUrl ? (
-			<Link className="mb-3 me-3" to={fullEditUrl} aria-label="Edit this article">
+			<Link className="mb-3 me-3" to={fullEditUrl} >
 				<p className="btn btn-warning">Edit</p>
 			</Link>
 		) : (
-			<button type="button" onClick={onEdit} aria-label="Edit this article">
+			<button type="button" onClick={onEdit} >
 				Edit
 			</button>
 		);
 	}, [onEdit, editHref, location.pathname]);
 
+	
+
 
 
 	if (fetchFromUrl && loading) return <p>Loading...</p>;
 	if (fetchFromUrl && error) return <p>Error: {error}</p>;
+	else {
+	const ownerOrCollaborator =
+		currentUser &&
+		wiki &&
+		(
+			wiki.owner === currentUser.uid ||
+			wiki.collaborators?.includes(currentUser.uid)
+		);
 
+	// console.log("WIKI ACCESS: " + wiki.access)
+	// console.log("owner/collab " + ownerOrCollaborator)
 	const displayMarkdown = fetchFromUrl
 		? fetchedPage?.content || []
 		: markdown || [];
@@ -151,11 +193,23 @@ const Article: React.FC<ArticleProps> = ({
 					</p>
 				)}
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
-				{editButton}
-				<br/>
-				<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
-					Delete
-				</p>
+				
+				{ (ownerOrCollaborator || wiki.access.trim().toLowerCase() === "public-edit") && (
+				<div>
+					{editButton}
+					<br/>
+					<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} >
+						Delete
+					</p>
+					<br/>
+					<p className="btn btn-dark" onClick={() => setShowChangeCategoryModal(true)} >
+						Change Category
+					</p>
+				</div>
+				) 
+				}
+				
+
 			</div>
 
 			<div>
@@ -184,8 +238,21 @@ const Article: React.FC<ArticleProps> = ({
 					pageUrlName={pageUrlName}
 				/>
 			)}
+
+			{showChangeCategoryModal && (
+				<>
+				<ChangeCategoryModal
+  					isOpen={showChangeCategoryModal} 
+					handleClose={handleCloseModals}
+					wikiUrlName={wikiUrlName}
+					pageUrlName={pageUrlName}
+					wiki={wiki || { categories: [] } }
+				/>
+				</>
+			)}
 		</article>
 	);
+	}
 };
 
 export default Article;

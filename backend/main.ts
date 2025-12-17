@@ -71,10 +71,6 @@ async function Main(): Promise<any> {
 		return res.json(response);
 	});
 
-	/**
-	 * Routes
-	 */
-	APP.use("/wiki", WikiRouter);
 
 	// Log if server boot worked
 	const server = APP.listen(ServerConfig.port, (e) => {
