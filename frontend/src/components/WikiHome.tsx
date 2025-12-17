@@ -523,8 +523,10 @@ function WikiHome() {
 								</ul>
 							</>
 						)}
-						
-				{ wiki.owner === currentUser.uid || wiki.collaborators.includes(currentUser.uid) || wiki.access === "public-edit" && (
+
+				{ (wiki.owner.toString() === currentUser.uid.toString() 
+				|| wiki.collaborators.includes(currentUser.uid) 
+				|| wiki.access === "public-edit" ) && (
 					<>
 						<button className="btn btn-warning me-3"
 							onClick={() => {setShowEditWikiModal(true)}}

@@ -167,8 +167,8 @@ const Article: React.FC<ArticleProps> = ({
 			wiki.collaborators?.includes(currentUser.uid)
 		);
 
-	console.log("WIKI ACCESS: " + wiki.access)
-	console.log("owner/collab " + ownerOrCollaborator)
+	// console.log("WIKI ACCESS: " + wiki.access)
+	// console.log("owner/collab " + ownerOrCollaborator)
 	const displayMarkdown = fetchFromUrl
 		? fetchedPage?.content || []
 		: markdown || [];
@@ -187,7 +187,7 @@ const Article: React.FC<ArticleProps> = ({
 
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
 				
-				{ ownerOrCollaborator || wiki.access.trim().toLowerCase() === "public-edit" && (
+				{ (ownerOrCollaborator || wiki.access.trim().toLowerCase() === "public-edit") && (
 				<div>
 					{editButton}
 					<br/>
