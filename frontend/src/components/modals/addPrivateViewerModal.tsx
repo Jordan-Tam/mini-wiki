@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
+import type { WikiModalParams } from "../../types.js";
 
 Modal.setAppElement("#root");
 
@@ -18,7 +19,7 @@ const customStyles = {
 	}
 };
 
-function AddPrivateViewerModal({ isOpen, handleClose, setWiki, wikiId }) {
+function AddPrivateViewerModal({ isOpen, handleClose, setWiki, wikiId }: WikiModalParams) {
     const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     const [username, setUsername] = useState("");
@@ -26,7 +27,7 @@ function AddPrivateViewerModal({ isOpen, handleClose, setWiki, wikiId }) {
     const [disableSubmit, setDisableSubmit] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e:any) => {
         e.preventDefault();
         setDisableSubmit(true);
         setError("");

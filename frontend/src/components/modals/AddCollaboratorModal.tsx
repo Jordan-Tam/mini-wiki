@@ -1,16 +1,9 @@
 import { useContext, useState } from "react";
 import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
-import type { Wiki } from "../../types.js";
+import type { WikiModalParams, Wiki } from "../../types.js";
 
 Modal.setAppElement("#root");
-
-interface AddCollaboratorModalParams {
-    isOpen: boolean;
-    handleClose: () => any;
-    setWiki: React.Dispatch<React.SetStateAction<Wiki | null>>,
-    wikiId: string;
-}
 
 const customStyles = {
     content: {
@@ -26,7 +19,7 @@ const customStyles = {
     }
 };
 
-function AddCollaboratorModal({ isOpen, handleClose, setWiki, wikiId }: AddCollaboratorModalParams) {
+function AddCollaboratorModal({ isOpen, handleClose, setWiki, wikiId }: WikiModalParams) {
     const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     const [username, setUsername] = useState("");
