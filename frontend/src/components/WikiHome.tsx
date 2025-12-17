@@ -405,7 +405,7 @@ function WikiHome() {
 			</div>
 
 			<div className="mt-3 mb-3">
-				{(wiki?.access === "private" || wiki?.access === "public-view") && (
+				{((wiki?.access === "private" || wiki?.access === "public-view") && (wiki?.owner === currentUser.uid || wiki?.collaborators.includes(currentUser.uid))) && (
 					<>
 						<button
 							className="btn btn-success me-3"
@@ -460,7 +460,7 @@ function WikiHome() {
 						)}
 					</>
 				)}
-				{wiki.access === "private" && (
+				{((wiki.access === "private") && (wiki?.owner === currentUser.uid || wiki?.collaborators.includes(currentUser.uid))) && (
 					<>
 						<button
 							className="btn btn-success me-3"
