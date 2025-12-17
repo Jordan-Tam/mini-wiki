@@ -6,6 +6,7 @@ export const AuthContext = createContext<FbUserContextMaybe | null>(null);
 interface FbUser extends User {
   accessToken?: string;
   username?: string;
+  email: string;
 }
 
 export interface FbUserContextMaybe {
