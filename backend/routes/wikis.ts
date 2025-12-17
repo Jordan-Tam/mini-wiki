@@ -828,9 +828,7 @@ router
 router
 	.route("/:wikiUrlName/pages/:pageUrlName")
 
-	/**
-	 * TODO: THIS ROUTE IS MARKED FOR DELETION
-	 */
+	
 	.get(async (req: any, res) => {
 
 		let wikiUrlName = req.params.wikiUrlName;
@@ -861,17 +859,18 @@ router
 			return res.status(404).json({ error: `${e}` });
 		}
 	})
-
 	.patch(async (req: any, res) => {
 		let wikiUrlName = req.params.wikiUrlName;
         let pageUrlName = req.params.pageUrlName;
         let wiki: any;
 		let page: any;
+
 		let newCategory = req.body.newCategory;
 
 		try {
+			
 			wikiUrlName = checkUrlName(wikiUrlName);
-			newCategory = checkCategory(newCategory, "PATCH ")
+			newCategory = checkCategory(newCategory, "PATCH")
 
 		} catch (e) {
 
@@ -880,9 +879,9 @@ router
 		}
 
 		try {
-
-			page = pageDataFunctions.getPageByUrlName(pageUrlName)
-			wiki = wikiDataFunctions.getWikiByUrlName(wikiUrlName)
+			
+			wiki = await wikiDataFunctions.getWikiByUrlName(wikiUrlName)
+			page = await pageDataFunctions.getPageByUrlName(wiki._id, pageUrlName)
 			if (!wiki.categories.includes(newCategory)) {
 				throw "NEW CATEGORY DOES NOT EXIST.";
 			}
@@ -895,8 +894,10 @@ router
 
 		try {
 
-			await pageDataFunctions.changePageCategory(wiki._id, page._id, newCategory);
-			return res.json({changed: true})
+			const retVal = await pageDataFunctions.changePageCategory(wiki._id, page._id, newCategory);
+			
+			return res.json({retVal});
+
 		} catch (e) {
 
 			return res.status(500).json({error: e})
@@ -904,9 +905,6 @@ router
 		}
 
 	})
-	/**
-	 * ! Delete a page from a wiki.
-	 */
 	.delete(async (req: any, res) => {
 		//console.log("DELETE PAGE")
 

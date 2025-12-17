@@ -6,7 +6,7 @@ import rehypeSanitize from "rehype-sanitize";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import DeletePageModal from "./modals/DeletePageModal.jsx";
-
+import ChangeCategoryModal from "./modals/ChangeCategoryModal.tsx"
 
 type ArticleProps = {
 	markdown?: Array<{ editorType: string; contentString: string }>;
@@ -60,6 +60,8 @@ const Article: React.FC<ArticleProps> = ({
 	const [loading, setLoading] = useState(fetchFromUrl);
 	const [error, setError] = useState(null);
 
+	const [showChangeCategoryModal, setShowChangeCategoryModal] = useState(false);
+
 	useEffect(() => {
 		if (!fetchFromUrl) return;
 
@@ -100,6 +102,7 @@ const Article: React.FC<ArticleProps> = ({
 
 	const handleCloseModals = () => {
 		setShowDeletePageModal(false);
+		setShowChangeCategoryModal(false);
   };
 
 
@@ -122,6 +125,8 @@ const Article: React.FC<ArticleProps> = ({
 			</button>
 		);
 	}, [onEdit, editHref, location.pathname]);
+
+	
 
 
 
@@ -149,6 +154,11 @@ const Article: React.FC<ArticleProps> = ({
 				<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
 					Delete
 				</p>
+				<br/>
+				<p className="btn btn-danger" onClick={() => setShowChangeCategoryModal(true)} aria-label="Change this article's category">
+					Change Category
+				</p>
+
 			</div>
 
 			<div>
@@ -176,6 +186,19 @@ const Article: React.FC<ArticleProps> = ({
 					wikiUrlName={wikiUrlName}
 					pageUrlName={pageUrlName}
 				/>
+			)}
+
+			{showChangeCategoryModal && (
+				<>
+				<p> Test </p>
+				<ChangeCategoryModal
+  					isOpen={showChangeCategoryModal} 
+					handleClose={handleCloseModals}
+					wikiUrlName={wikiUrlName}
+					pageUrlName={pageUrlName}
+					wiki={wiki || { categories: [] } }
+				/>
+				</>
 			)}
 		</article>
 	);
