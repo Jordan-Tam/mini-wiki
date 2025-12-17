@@ -500,7 +500,7 @@ const wiki_data_functions = {
 
 		// Check if user is already the owner
 		if(wiki.owner === userFirebaseUID){
-			throw "Owner cannot add themself as a collaborator!"
+			throw "Owner cannot be added as a collaborator!"
 		}
 
 		const wikisCollection = await wikis();
