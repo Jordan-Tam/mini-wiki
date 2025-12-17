@@ -56,7 +56,9 @@ docker compose down -v
 
 ### MongoDB Connection
 
-**From your host machine (e.g., MongoDB Compass), connect to : mongodb://localhost:27018/**
+**From your host machine (e.g., MongoDB Compass), connect to :**
+
+`mongodb://localhost:27018/`
 
 <!-- - **Linux/Mac**: `mongodb://localhost:27018/` -->
 <!-- - **Windows (WSL)**: `mongodb://{WSL2_IP_ADDRESS}:27017/` -->
