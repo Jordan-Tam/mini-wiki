@@ -10,6 +10,25 @@ export interface User {
 	username: string;
 }
 
+export interface WikiPage {
+    _id: ObjectId;
+    name: string;
+    urlName: string;
+    category: string;
+    category_slugified: string;
+    content: Array<any>;
+    first_created: string;
+    last_edited: string;
+    first_created_by: {
+      userFirebaseUID: string;
+      username: string;
+    };
+    last_edited_by: {
+      userFirebaseUID: string;
+      username: string;
+    };
+}
+
 export interface Wiki {
     _id: string;
     name: string;
@@ -22,18 +41,7 @@ export interface Wiki {
     collaborators: Array<string>;
     private_viewers: Array<string>;
     favorites: number;
-    pages: Array<{
-        _id: ObjectId;
-        name: string;
-        urlName: string;
-        category: string;
-        category_slugified: string;
-        content: Array<any>;
-        first_created: string;
-        last_edited: string;
-        first_created_by: string;
-        last_edited_by:string;
-    }>;
+    pages: Array<WikiPage>;
 }
 
 export interface UserContext {
