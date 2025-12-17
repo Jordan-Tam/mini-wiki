@@ -92,9 +92,7 @@ const Article: React.FC<ArticleProps> = ({
 				
 			} catch (e: any) {
 				setError(`${e}`);
-			} finally {
-				setLoading(false);
-			}
+			} 
 		};
 
 		if (wikiUrlName && pageUrlName && currentUser) fetchPage();
@@ -104,6 +102,33 @@ const Article: React.FC<ArticleProps> = ({
 		setShowDeletePageModal(false);
 		setShowChangeCategoryModal(false);
   };
+
+  	useEffect(() => {
+
+		const fetchUser = async () => {
+			try {
+				const response = await fetch(`/api/users/${currentUser.uid}`, {
+					method: "GET",
+					headers: {
+						Authorization: "Bearer " + currentUser?.accessToken
+					}
+				});
+
+				if (!response.ok) {
+					throw "Failed to fetch page";
+				}
+
+				const data = await response.json();
+
+				setUser(data);
+				
+			} catch (e: any) {
+				setError(`${e}`);
+			} finally {
+				setLoading(false);
+			}
+		}
+	})
 
 
 	// Memoize the edit button to prevent re-rendering if dependencies don't change
@@ -133,6 +158,15 @@ const Article: React.FC<ArticleProps> = ({
 	if (fetchFromUrl && loading) return <p>Loading...</p>;
 	if (fetchFromUrl && error) return <p>Error: {error}</p>;
 
+	const ownerOrCollaborator =
+		currentUser &&
+		wiki &&
+		(
+			wiki.owner === currentUser.uid ||
+			wiki.collaborators?.includes(currentUser.uid)
+		);
+
+
 	const displayMarkdown = fetchFromUrl
 		? fetchedPage?.content || []
 		: markdown || [];
@@ -148,16 +182,24 @@ const Article: React.FC<ArticleProps> = ({
 					<span style={{fontWeight: "bold"}}>Category: </span>
 					<Link to={`/${wikiUrlName}/category/${fetchedPage.category}`}>{fetchedPage.category}</Link>
 				</p>
+
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
-				{editButton}
-				<br/>
-				<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
-					Delete
-				</p>
-				<br/>
-				<p className="btn btn-danger" onClick={() => setShowChangeCategoryModal(true)} aria-label="Change this article's category">
-					Change Category
-				</p>
+
+				{ ownerOrCollaborator && (
+				<div>
+					{editButton}
+					<br/>
+					<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
+						Delete
+					</p>
+					<br/>
+					<p className="btn btn-dark" onClick={() => setShowChangeCategoryModal(true)} aria-label="Change this article's category">
+						Change Category
+					</p>
+				</div>
+				) 
+				}
+				
 
 			</div>
 

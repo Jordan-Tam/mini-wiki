@@ -27,7 +27,7 @@ services:
     container_name: miniwiki-mongo
     restart: always
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongodata:/data/db
     networks:
