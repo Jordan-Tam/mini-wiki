@@ -73,8 +73,8 @@ export interface WikiModalParams {
 export interface UserModalParams {
   isOpen: boolean;
   handleClose: () => any;
-  setWiki: React.Dispatch<React.SetStateAction<Wiki | null>>,
-  wikiId: string;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>,
+  user: User;
 }
 
 export interface WikisResponse {
