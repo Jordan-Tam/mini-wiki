@@ -512,7 +512,39 @@ const wikis_to_seed: any = [
 				"last_edited_by": "N/A"
 			}
 		]
-	}
+	},
+	// {
+	// 	name: "Colors",
+	// 	description: "An image of various colors.",
+	// 	urlName: "colors",
+	// 	owner: FIREBASE_UIDS[7],
+	// 	access: "private",
+	// 	categories: [],
+	// 	collaborators: [],
+	// 	private_viewers: ["IQtraRRIrOa65GXAyVEizvuIYol2", "fMW5DoXA6CUEd5kKVJWRiWqt6p23"],
+	// 	pages: [
+	// 		{
+	// 			name: "Blue",
+	// 			category: "UNCATEGORIZED",
+	// 			content: [
+	// 				{
+	// 					editorType: "text",
+	// 					contentString: "**React** is a frontend JavaScript library developed Meta"
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: "Node.js Best Practices",
+	// 			category: "UNCATEGORIZED",
+	// 			content: [
+	// 				{
+	// 					editorType: "text",
+	// 					contentString: ""
+	// 				}
+	// 			]
+	// 		}
+	// 	]
+	// },
 ];
 
 async function seed() {

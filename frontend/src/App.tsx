@@ -18,7 +18,7 @@ import Settings from "./components/Settings.tsx";
 import "./styles/editors.css";
 import "./styles/article.css";
 import { ChatPage } from "./components/ChatPage.tsx";
-
+import NotFound from "./components/NotFound.tsx";
 /**
  * FORBIDDEN WIKI URL NAMES:
  * discover, create, home, profile, user, signin, signup, testing
@@ -86,7 +86,10 @@ function App() {
 				  element={<ArticleCreator />}
 				/>
 			  </Route>
+			  	<Route path="/:wikiUrlName/chat" element={<PrivateRoute />}>
 			  <Route path="/:wikiUrlName/chat" element={<ChatPage />}/>
+			  </Route>
+			  <Route path="*" element={<NotFound />} />
 			</Routes>
 		  </AuthProvider>
 		</>
