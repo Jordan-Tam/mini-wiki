@@ -1,7 +1,8 @@
 import { useState, useContext, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
 import WikiCard from "./cards/WikiCard.tsx";
+import type { WikisResponse } from "../types.ts";
 
 function Home() {
 
@@ -14,8 +15,8 @@ function Home() {
 
 	// Fetch
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(undefined);
-	const [wikisData, setWikisData] = useState(undefined);
+	const [error, setError] = useState<string | undefined>(undefined);
+	const [wikisData, setWikisData] = useState<WikisResponse | undefined>(undefined);
 
 	// Modal
 	const [showCreateWikiModal, setShowCreateWikiModal] = useState(false);
