@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import TakenCheck from "./TakenCheck.js";
 import { checkDescription, checkUrlName, checkWikiOrPageName } from "../../helpers.ts";
@@ -14,7 +14,7 @@ function CreateWiki() {
     const [urlName, setUrlName] = useState("");
     const [description, setDescription] = useState("");
     const [access, setAccess] = useState(2);
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const [disableSubmit, setDisableSubmit] = useState(false);
     const [URLOK, setURLOK] = useState(null); 
 
@@ -34,7 +34,7 @@ function CreateWiki() {
     ];
 
     // Submit form function
-    const submitForm = async (e) => {
+    const submitForm = async (e:any) => {
 
         e.preventDefault();
 
@@ -49,9 +49,9 @@ function CreateWiki() {
 		  setName(checkWikiOrPageName(name));
 		  setDescription(checkDescription(description));
 
-        } catch (e) {
+        } catch (error) {
           setDisableSubmit(false);
-          setError(e);
+          setError(String(error));
           return;
         }
 
@@ -77,9 +77,9 @@ function CreateWiki() {
             
             //const result = await response.json();
             //props.setWikisData(prev => [...prev, result])
-        } catch (e) {
+        } catch (error) {
             setDisableSubmit(false);
-            setError(e);
+            setError(String(error));
             return;
         }
 
