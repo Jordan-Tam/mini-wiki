@@ -1,17 +1,18 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext.tsx";
+import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.tsx";
 import { FaPlus } from 'react-icons/fa';
 import ChangeBioModal from "./modals/ChangeBioModal.tsx"
 import WikiCard from "./cards/WikiCard.tsx";
 import { useParams } from "react-router-dom"
 import { FaLock, FaUnlock } from "react-icons/fa";
 import { Link } from "react-router-dom"
+import type { User, Wiki, WikisResponse } from "../types.ts";
 
 function Profile() {
 
   const { id } = useParams();
   
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showChangeBioModal, setShowChangeBioModal] = useState(false)
 
   const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContextWrapper;
@@ -19,7 +20,7 @@ function Profile() {
   let token: any;
   
   const [loading, setLoading] = useState(true)
-  const [wikis, setWikis] = useState([]);
+  const [wikis, setWikis] = useState<WikisResponse | null>(null);
 
   if (currentUser) {
     token = currentUser.accessToken;
@@ -80,7 +81,7 @@ function Profile() {
 
 
 
-  if (loading){
+  if (loading || !user){
     return (
       <h1>Loading...</h1>
     )
@@ -153,7 +154,7 @@ function Profile() {
       <h3><FaUnlock />{" "}Public Wikis</h3>
 
       { 
-      wikis.OWNER?.filter(wiki => wiki.access !== "private").length !== 0
+      wikis && wikis.OWNER?.filter(wiki => wiki.access !== "private").length !== 0
       && (
         <>
           <ul>
@@ -169,7 +170,7 @@ function Profile() {
       }
 
       { 
-      wikis.OWNER?.filter(wiki => wiki.access !== "private").length === 0
+      wikis && wikis.OWNER?.filter(wiki => wiki.access !== "private").length === 0
       && (
         <>
           <p> You have no public wikis! <Link to="/create"> Make one </Link> </p>
@@ -179,7 +180,7 @@ function Profile() {
 
 
       { isUserProfile &&
-      wikis.OWNER?.filter(wiki => wiki.access === "private").length !== 0
+      wikis && wikis.OWNER?.filter(wiki => wiki.access === "private").length !== 0
       && (
         <>
         <h3><FaLock />{" "}Private Wikis</h3>
@@ -196,7 +197,7 @@ function Profile() {
       }
 
     { isUserProfile &&
-      wikis.OWNER?.filter(wiki => wiki.access === "private").length === 0
+      wikis && wikis.OWNER?.filter(wiki => wiki.access === "private").length === 0
       && (
         <>
         <h3><FaLock />{" "}Private Wikis</h3>
