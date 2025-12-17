@@ -157,7 +157,7 @@ const Article: React.FC<ArticleProps> = ({
 
 	if (fetchFromUrl && loading) return <p>Loading...</p>;
 	if (fetchFromUrl && error) return <p>Error: {error}</p>;
-
+	else {
 	const ownerOrCollaborator =
 		currentUser &&
 		wiki &&
@@ -166,7 +166,8 @@ const Article: React.FC<ArticleProps> = ({
 			wiki.collaborators?.includes(currentUser.uid)
 		);
 
-
+	console.log("WIKI ACCESS: " + wiki.access)
+	console.log("owner/collab " + ownerOrCollaborator)
 	const displayMarkdown = fetchFromUrl
 		? fetchedPage?.content || []
 		: markdown || [];
@@ -184,16 +185,16 @@ const Article: React.FC<ArticleProps> = ({
 				</p>
 
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
-
-				{ ownerOrCollaborator && (
+				
+				{ ownerOrCollaborator || wiki.access.trim().toLowerCase() === "public-edit" && (
 				<div>
 					{editButton}
 					<br/>
-					<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} aria-label="Delete this article">
+					<p className="btn btn-danger" onClick={() => setShowDeletePageModal(true)} >
 						Delete
 					</p>
 					<br/>
-					<p className="btn btn-dark" onClick={() => setShowChangeCategoryModal(true)} aria-label="Change this article's category">
+					<p className="btn btn-dark" onClick={() => setShowChangeCategoryModal(true)} >
 						Change Category
 					</p>
 				</div>
@@ -232,7 +233,6 @@ const Article: React.FC<ArticleProps> = ({
 
 			{showChangeCategoryModal && (
 				<>
-				<p> Test </p>
 				<ChangeCategoryModal
   					isOpen={showChangeCategoryModal} 
 					handleClose={handleCloseModals}
@@ -244,6 +244,7 @@ const Article: React.FC<ArticleProps> = ({
 			)}
 		</article>
 	);
+	}
 };
 
 export default Article;
