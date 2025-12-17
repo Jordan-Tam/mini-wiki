@@ -5,7 +5,7 @@ Repository for our Stevens CS-554 (Web Dev 2) final project
 ## Prerequisites
 
 - Docker and Docker Compose installed on your system
-- Port 5173 (frontend), 3000 (backend), 27017 (MongoDB), 9200 (Elasticsearch), and 6379 (Redis) available
+- Port 5173 (frontend), 3000 (backend), 27017/27018 (MongoDB), 9200 (Elasticsearch), and 6379 (Redis) available
 
 ## Quick Start
 
@@ -28,6 +28,15 @@ docker compose up --build
    - Automatically seed the database with initial data
 
 4. Once all services are running, access the application: http://localhost:5173
+
+### Seeded users
+
+With the seeded users (user1 through user10, in general user{i}), their usernames and passwords follow a pattern as follows:
+
+Email: user{i}@gmail.com
+Password: Password!{i}
+
+Do not attempt to delete these users, as we kept them as permanent users for seeding between the Firebase database and MongoDB. This is because the seed file will be messed up going forward. If you want to test deleting users, please do so with accounts that you have created.
 
 ### Viewing Only Specific Service Logs
 
