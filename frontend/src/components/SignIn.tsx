@@ -9,7 +9,7 @@ import {
 } from "../firebase/FirebaseFunctions";
 
 function SignIn() {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
   const handleLogin = async (event) => {
     event.preventDefault();
     let { email, password } = event.target.elements;

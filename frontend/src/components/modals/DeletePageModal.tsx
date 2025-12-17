@@ -21,7 +21,7 @@ const customStyles = {
 function DeletePageModal(props) {
   const [showDeletePageModal, setShowDeletePageModal] = useState(props.isOpen);
   const [error, setError] = useState("");
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   let navigate = useNavigate();
 

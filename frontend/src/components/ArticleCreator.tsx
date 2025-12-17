@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.jsx";
 import TextEditor from "./editors/TextEditor.tsx";
 import TableEditor from "./editors/TableEditor";
 import ImageEditor from "./editors/ImageEditor";
@@ -15,7 +15,7 @@ interface EditorItem {
 
 function ArticleCreator() {
 	const { wikiUrlName, pageId } = useParams();
-	const { currentUser } = useContext(AuthContext);
+	const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [editors, setEditors] = useState<EditorItem[]>([]);

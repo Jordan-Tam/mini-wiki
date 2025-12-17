@@ -15,7 +15,7 @@ const FORBIDDEN_WIKI_URL_NAMES = [
 const FORBIDDEN_PAGE_URL_NAMES = ["category", "chat", "search"];
 
 function TakenCheck(props) {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   useEffect(() => {
     async function taken(variable) {

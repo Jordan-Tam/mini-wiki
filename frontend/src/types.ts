@@ -62,3 +62,23 @@ export interface UserContext {
     "apiKey": string,
     "appName": string
 }
+
+export interface WikiModalParams {
+    isOpen: boolean;
+    handleClose: () => any;
+    setWiki: React.Dispatch<React.SetStateAction<Wiki | null>>,
+    wikiId: string;
+}
+
+export interface UserModalParams {
+  isOpen: boolean;
+  handleClose: () => any;
+  setWiki: React.Dispatch<React.SetStateAction<Wiki | null>>,
+  wikiId: string;
+}
+
+export interface WikisResponse {
+  OWNER: Array<Wiki>;
+  COLLABORATOR: Array<Wiki>;
+  PRIVATE_VIEWER: Array<Wiki>;
+}

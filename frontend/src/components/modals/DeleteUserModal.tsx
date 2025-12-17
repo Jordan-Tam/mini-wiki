@@ -23,7 +23,7 @@ const customStyles = {
 
 function DeleteUserModal(props) {
   const [showDeleteModal, setShowDeleteModal] = useState(props.isOpen);
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false);

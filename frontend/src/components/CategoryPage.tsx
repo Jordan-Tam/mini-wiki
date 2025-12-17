@@ -1,10 +1,10 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.jsx";
 
 function CategoryPage() {
 
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     const {wikiUrlName, categoryUrlName} = useParams();
 

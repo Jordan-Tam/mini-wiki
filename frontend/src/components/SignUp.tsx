@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 function SignUp() {
 
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   // Stateful form
   const [email, setEmail] = useState("");

@@ -21,7 +21,7 @@ const customStyles = {
 function DeletePrivateViewerModal(props) {
 
     
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     const [username, setUsername] = useState(props.username);
     const [error, setError] = useState("");

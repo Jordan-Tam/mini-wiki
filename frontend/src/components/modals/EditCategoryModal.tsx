@@ -21,7 +21,7 @@ const customStyles = {
 function EditCategoryModal(props) {
 
     // Auth
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
     // Form stuff
     const [categoryName, setCategoryName] = useState(props.oldCategoryName);

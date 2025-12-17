@@ -1,16 +1,32 @@
-import { useState, useEffect, createContext } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import React, { useState, useEffect, createContext } from "react";
+import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext<FbUserContextWrapper | null>(null);
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+interface FbUser extends User {
+  accessToken?: string;
+  username?: string;
+}
+
+export interface FbUserContextWrapper {
+  currentUser: FbUser;
+  setCurrentUser: React.Dispatch<React.SetStateAction<FbUser | null>>; 
+}
+
+interface AuthProviderProps {
+  children: React.ReactNode
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [currentUser, setCurrentUser] = useState<FbUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
   const auth = getAuth();
 
   useEffect(() => {
-    let myListener = onAuthStateChanged(auth, async (user) => {
+    let myListener = onAuthStateChanged(auth, async (_user) => {
+      let user = _user as FbUser;
+
       if (auth && user) {
         const token = user.accessToken;
         const response = await fetch(
@@ -36,7 +52,6 @@ export const AuthProvider = ({ children }) => {
           user.username = user.uid;
         }
       }
-
       setCurrentUser(user);
       //console.log("onAuthStateChanged", user);
       setLoadingUser(false);
@@ -46,17 +61,17 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  if (loadingUser) {
+  if (currentUser === null) {
     return (
       <div className="container-fluid">
         <h1>Loading...</h1>
       </div>
     );
+  } else {
+    return (
+      <AuthContext.Provider value={{ currentUser, setCurrentUser }}>
+        {children}
+      </AuthContext.Provider>
+    );
   }
-
-  return (
-    <AuthContext.Provider value={{ currentUser, setCurrentUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
 };
