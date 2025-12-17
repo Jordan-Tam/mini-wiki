@@ -236,7 +236,7 @@ const wikis_to_seed: any = [
 		description: "Welcome to the Stevens Institute of Technology online encyclopedia!",
 		urlName: "stevens",
 		owner: FIREBASE_UIDS[1],
-		access: "public-view",
+		access: "public-edit",
 		categories: ["Characters", "Locations", "Events", "Organizations"],
 		collaborators: [FIREBASE_UIDS[0]],
 		private_viewers: [], // None because this is public-view
