@@ -6,6 +6,7 @@ import rehypeSanitize from "rehype-sanitize";
 import { useLocation, useParams, Link } from "react-router-dom";
 import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
 import DeletePageModal from "./modals/DeletePageModal.jsx";
+import type { Wiki, WikiPage } from "../types.js";
 
 
 type ArticleProps = {
@@ -54,11 +55,15 @@ const Article: React.FC<ArticleProps> = ({
 	const { wikiUrlName, pageUrlName } = useParams();
 	const { currentUser } = useContext(AuthContext) as FbUserContext;
 
-	const [wiki, setWiki] = useState(null);
+	const [wiki, setWiki] = useState<Wiki | null>(null);
 	const [showDeletePageModal, setShowDeletePageModal] = useState(false);
-	const [fetchedPage, setFetchedPage] = useState(null);
+	const [fetchedPage, setFetchedPage] = useState<WikiPage | null>(null);
 	const [loading, setLoading] = useState(fetchFromUrl);
-	const [error, setError] = useState(null);
+	const [error, setError] = useState<string | null>(null);
+
+	if(typeof wikiUrlName !== "string" || typeof pageUrlName !== "string") {
+		return <p>Invalid page parameters! Missing wiki url or page url</p>
+	}
 
 	useEffect(() => {
 		if (!fetchFromUrl) return;
@@ -136,13 +141,15 @@ const Article: React.FC<ArticleProps> = ({
 	return (
 		<article className={`${className} container-fluid`}>
 			<div>
-				<p>
-					<span style={{fontWeight: "bold"}}>Wiki: </span>
-					<Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
-					<span> / </span>				
-					<span style={{fontWeight: "bold"}}>Category: </span>
-					<Link to={`/${wikiUrlName}/category/${fetchedPage.category}`}>{fetchedPage.category}</Link>
-				</p>
+				{(wiki && fetchedPage) && (
+					<p>
+						<span style={{fontWeight: "bold"}}>Wiki: </span>
+						<Link to={`/${wikiUrlName}`}>{wiki.name}</Link>
+						<span> / </span>				
+						<span style={{fontWeight: "bold"}}>Category: </span>
+						<Link to={`/${wikiUrlName}/category/${fetchedPage.category}`}>{fetchedPage.category}</Link>
+					</p>
+				)}
 				<h1 className="mb-3" style={{fontWeight: "bold"}}>{displayTitle ?? "Article"}</h1>
 				{editButton}
 				<br/>
