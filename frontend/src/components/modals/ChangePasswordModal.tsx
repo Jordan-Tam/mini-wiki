@@ -2,6 +2,13 @@ import { useContext, useState } from "react";
 import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext";
 import { doChangePassword } from "../../firebase/FirebaseFunctions";
 import ReactModal from "react-modal";
+import type { BasicModalParams } from "../../types";
+
+type FuckassDefinition1 = {
+  currentPassword: HTMLInputElement;
+  newPasswordOne: HTMLInputElement;
+  newPasswordTwo: HTMLInputElement;
+}
 
 ReactModal.setAppElement("#root");
 const customStyles = {
@@ -18,7 +25,7 @@ const customStyles = {
   },
 };
 
-function ChangePasswordModal(props) {
+function ChangePasswordModal(props: BasicModalParams) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(
     props.isOpen
   );
@@ -31,10 +38,10 @@ function ChangePasswordModal(props) {
     props.handleClose();
   };
 
-  const submitForm = async (event) => {
+  const submitForm: React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
     const { currentPassword, newPasswordOne, newPasswordTwo } =
-      event.target.elements;
+      event.target.elements as FuckassDefinition1;
     if (newPasswordOne.value !== newPasswordTwo.value) {
       setPwMatch("New passwords do not match!");
       return false;

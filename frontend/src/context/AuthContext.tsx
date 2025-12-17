@@ -9,7 +9,7 @@ interface FbUser extends User {
 }
 
 export interface FbUserContextWrapper {
-  currentUser: FbUser;
+  currentUser: FbUser | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<FbUser | null>>; 
 }
 
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, []);
 
-  if (currentUser === null) {
+  if (loadingUser) {
     return (
       <div className="container-fluid">
         <h1>Loading...</h1>

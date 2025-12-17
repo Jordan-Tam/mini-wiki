@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
+import type { UserModalParams } from "../../types.js";
 
 Modal.setAppElement("#root");
 
@@ -18,7 +19,7 @@ const customStyles = {
   },
 };
 
-function ChangeBioModal({ isOpen, handleClose, user, setUser }) {
+function ChangeBioModal({ isOpen, handleClose, user, setUser }: UserModalParams) {
   const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
 
   const [bio, setBio] = useState("");
@@ -31,7 +32,7 @@ function ChangeBioModal({ isOpen, handleClose, user, setUser }) {
     }
   }, [user, isOpen]);
 
-  const submitForm = async (e) => {
+  const submitForm = async (e:any) => {
     e.preventDefault();
   
     try {
