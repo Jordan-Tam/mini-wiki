@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import SocialSignIn from "./SocialSignIn";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext, type FbUserContextMaybe } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import {
   doSignInWithEmailAndPassword,
@@ -9,7 +9,7 @@ import {
 } from "../firebase/FirebaseFunctions";
 
 function SignIn() {
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext && useContext(AuthContext) as FbUserContextMaybe;
   const handleLogin = async (event) => {
     event.preventDefault();
     let { email, password } = event.target.elements;

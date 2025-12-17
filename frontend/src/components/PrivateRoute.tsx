@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext";
+import { AuthContext, type FbUserContextMaybe } from "../context/AuthContext";
 
 const PrivateRoute = () => {
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContextMaybe;
   return (
     currentUser
     ?

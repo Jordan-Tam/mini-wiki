@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import "bootstrap/js/src/collapse.js";
-import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext";
+import { AuthContext, type FbUserContextMaybe } from "../context/AuthContext";
 import { useContext } from "react";
 
 function Header() {
-	const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+	const ctx = useContext && useContext(AuthContext) as FbUserContextMaybe | null;
+	let currentUser = ctx && ctx.currentUser;
 	//console.log(currentUser);
 
 	return (

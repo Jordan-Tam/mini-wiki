@@ -4,7 +4,7 @@ import {
   doDeleteUserSocial,
 } from "../../firebase/FirebaseFunctions";
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext";
 
 ReactModal.setAppElement("#root");
 const customStyles = {
@@ -23,7 +23,7 @@ const customStyles = {
 
 function DeleteUserModal(props) {
   const [showDeleteModal, setShowDeleteModal] = useState(props.isOpen);
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContext;
 
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false);

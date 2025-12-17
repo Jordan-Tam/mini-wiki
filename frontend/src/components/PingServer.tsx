@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
-import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext";
 
 function PingServer() {
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContext;
   let token;
   if (currentUser) {
     token = currentUser.accessToken;

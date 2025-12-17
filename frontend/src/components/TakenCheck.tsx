@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext } from "../context/AuthContext.jsx";
 import { checkUrlName, checkUsername } from "../../helpers.ts";
 
 const FORBIDDEN_WIKI_URL_NAMES = [
@@ -15,7 +15,7 @@ const FORBIDDEN_WIKI_URL_NAMES = [
 const FORBIDDEN_PAGE_URL_NAMES = ["category", "chat", "search"];
 
 function TakenCheck(props) {
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContext;
 
   useEffect(() => {
     async function taken(variable) {
