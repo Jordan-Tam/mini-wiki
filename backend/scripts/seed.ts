@@ -89,8 +89,8 @@ const wikis_to_seed: any = [
 				category: "UNCATEGORIZED",
 				content: [
 					{
-						editorType: "",
-						contentString: ""
+						editorType: "text",
+						contentString: "**React** is a frontend JavaScript library developed Meta"
 					}
 				]
 			},
