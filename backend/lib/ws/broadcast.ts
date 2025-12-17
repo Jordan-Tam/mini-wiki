@@ -28,7 +28,7 @@ export class Broadcaster {
     public broadcast = async(message:any): Promise<void> => {
         for(const k of Object.keys(this.sockets)) {
             let s = this.sockets[k];
-            if(s.OPEN) {
+            if(s.readyState === s.OPEN) {
                 s.send(message);
             }
         }
