@@ -1,8 +1,13 @@
 import { useContext, useState } from "react";
 import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
+import type { BasicModalParams, Wiki, WikiSetterBaseParams } from "../../types.js";
 
 Modal.setAppElement("#root");
+
+interface DeleteCategoryModalProps extends WikiSetterBaseParams {
+    categoryName: string;
+}
 
 const customStyles = {
     content: {
@@ -18,7 +23,7 @@ const customStyles = {
     }
 };
 
-function DeleteCategoryModal(props) {
+function DeleteCategoryModal(props: DeleteCategoryModalProps) {
 
     // Auth
     const { currentUser } = useContext(AuthContext) as FbUserContext;
@@ -29,7 +34,7 @@ function DeleteCategoryModal(props) {
     const [disableSubmit, setDisableSubmit] = useState(false);
 
     // Submit form function
-    const submitForm = async (e) => {
+    const submitForm = async (e:any) => {
 
         e.preventDefault();
 

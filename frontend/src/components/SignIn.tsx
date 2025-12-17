@@ -8,11 +8,16 @@ import {
   doPasswordReset,
 } from "../firebase/FirebaseFunctions";
 
+type FuckassDefinition2 = {
+  email: HTMLInputElement;
+  password: HTMLInputElement;
+}
+
 function SignIn() {
   const { currentUser } = useContext && useContext(AuthContext) as FbUserContextMaybe;
-  const handleLogin = async (event) => {
+  const handleLogin:React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
-    let { email, password } = event.target.elements;
+    let { email, password } = (event.target as any).elements as FuckassDefinition2;
 
     try {
       await doSignInWithEmailAndPassword(email.value, password.value);

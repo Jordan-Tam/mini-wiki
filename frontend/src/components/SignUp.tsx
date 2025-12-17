@@ -15,7 +15,7 @@ function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSignUp = async (e) => {
+  const handleSignUp:React.FormEventHandler<HTMLFormElement> = async (e) => {
 
     e.preventDefault();
     
@@ -32,7 +32,7 @@ function SignUp() {
         password,
       );
     
-    } catch (e) {
+    } catch (e:any) {
       switch (e.code) {
         case "auth/invalid-email":
           setError("Invalid email.");

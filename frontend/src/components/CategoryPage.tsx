@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
+import type { Wiki, WikiPage } from "../types.js";
 
 function CategoryPage() {
 
@@ -8,19 +9,19 @@ function CategoryPage() {
 
     const {wikiUrlName, categoryUrlName} = useParams();
 
-    const [wiki, setWiki] = useState(undefined);
-    const [categoryName, setCategoryName] = useState(undefined);
-    const [filteredPages, setFilteredPages] = useState(undefined);
+    const [wiki, setWiki] = useState<Wiki | undefined>(undefined);
+    const [categoryName, setCategoryName] = useState<string | undefined>(undefined);
+    const [filteredPages, setFilteredPages] = useState<Array<WikiPage> | undefined>(undefined);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(undefined);
+    const [error, setError] = useState<string | undefined>(undefined);
 
     // Sorting
-    const [sortByName, setSortByName] = useState(undefined);
-    const [sortByLastEdited, setSortByLastEdited] = useState(undefined);
-    const [sortByLastEditedBy, setSortByLastEditedBy] = useState(undefined);
-    const [sortByFirstCreated, setSortByFirstCreated] = useState(undefined);
-    const [sortByFirstCreatedBy, setSortByFirstCreatedBy] = useState(undefined);
-    const [displayedList, setDisplayedList] = useState(undefined);
+    const [sortByName, setSortByName] = useState<Array<WikiPage>>([]);
+    const [sortByLastEdited, setSortByLastEdited] = useState<Array<WikiPage>>([]);
+    const [sortByLastEditedBy, setSortByLastEditedBy] = useState<Array<WikiPage>>([]);
+    const [sortByFirstCreated, setSortByFirstCreated] = useState<Array<WikiPage>>([]);
+    const [sortByFirstCreatedBy, setSortByFirstCreatedBy] = useState<Array<WikiPage>>([]);
+    const [displayedList, setDisplayedList] = useState<Array<WikiPage>>([]);
     const [sort, setSort] = useState("name");
     const [reverse, setReverse] = useState(false);
 
@@ -49,7 +50,7 @@ function CategoryPage() {
                 }
 
                 // Retrieve the returned wiki.
-                const result = await (response.json());
+                const result = await (response.json()) as Wiki;
                 
                 // Set wiki to be the wiki object.
                 setWiki(result);
@@ -166,7 +167,7 @@ function CategoryPage() {
 
     }, [filteredPages]);
 
-    const switchSort = (s) => {
+    const switchSort = (s:string) => {
         if (s === "name") {
             if (sort === "name") {
                 setDisplayedList(!reverse ? sortByName.toReversed() : sortByName);

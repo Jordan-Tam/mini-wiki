@@ -9,7 +9,7 @@ function Settings() {
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [username, setUsername] = useState("");
-  const [changeUsernameOK, setChangeUsernameOK] = useState(null);
+  const [changeUsernameOK, setChangeUsernameOK] = useState<boolean | null>(null);
   const [error, setError] = useState("");
 
   const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContext;

@@ -3,14 +3,14 @@ import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../con
 
 function PingServer() {
   const { currentUser } = useContext(AuthContext) as FbUserContext;
-  let token;
+  let token:string;
   if (currentUser) {
     token = currentUser.accessToken;
   }
 
-  const [res, setRes] = useState("No click");
+  const [res, setRes] = useState<string | null>("No click");
 
-  const submit = async (event) => {
+  const submit = async () => {
     setRes(null);
     try {
       const response = await fetch("/api/api/ping", {
@@ -26,7 +26,7 @@ function PingServer() {
       const result = await response.json();
       console.log(result);
       setRes(result.message);
-    } catch (e) {
+    } catch (e: any) {
       setRes(e.message);
       console.log(e);
     }

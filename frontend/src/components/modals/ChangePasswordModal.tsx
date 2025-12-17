@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext";
 import { doChangePassword } from "../../firebase/FirebaseFunctions";
 import ReactModal from "react-modal";
 import type { BasicModalParams } from "../../types";
@@ -41,7 +41,7 @@ function ChangePasswordModal(props: BasicModalParams) {
   const submitForm: React.FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
     const { currentPassword, newPasswordOne, newPasswordTwo } =
-      event.target.elements as FuckassDefinition1;
+      ((event.target as any).elements as FuckassDefinition1);
     if (newPasswordOne.value !== newPasswordTwo.value) {
       setPwMatch("New passwords do not match!");
       return false;
@@ -60,7 +60,6 @@ function ChangePasswordModal(props: BasicModalParams) {
   return (
     <div>
       <ReactModal
-        name="changePasswordModal"
         isOpen={showChangePasswordModal}
         contentLabel="Change Password User"
         style={customStyles}

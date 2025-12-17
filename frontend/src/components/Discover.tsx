@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar, FaRegStar } from "react-icons/fa";
+import type { Wiki } from "../types";
 
 
 function Discover(){
@@ -12,14 +13,14 @@ function Discover(){
 		currentUser ? currentUser.accessToken : ""
 	);
 
-	const [wikis, setWikis] = useState(null);
+	const [wikis, setWikis] = useState<Array<Wiki>>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-    const [favorites, setFavorites] = useState([]);
+    const [favorites, setFavorites] = useState<Array<Wiki>>([]);
     const [searchTerm, setSearchTerm] = useState(""); 
     const [favoritesOnly, setFavoritesOnly] = useState(false)
 
-    const favorite_or_unfavorite = async (wikiId) => {
+    const favorite_or_unfavorite = async (wikiId:string) => {
 
         const isFavorite = favorites.some(fav => fav._id === wikiId);
     
@@ -43,8 +44,11 @@ function Discover(){
                 throw new Error("Failed to update favorite");
             }
             
-            setFavorites((prev) => isFavorite ? prev.filter((fav) => fav._id !== wikiId) 
-            : [...prev, wikis.find((w) => w._id === wikiId)]);
+            setFavorites(((prev) => 
+                isFavorite 
+                ? prev.filter((fav) => fav._id.toString() !== wikiId) 
+                : [...prev, wikis.find((w) => w._id === wikiId)].filter((i) => typeof i !== "undefined")
+            ));
             
             
             setWikis(prev =>
@@ -106,7 +110,7 @@ function Discover(){
 				
                 setFavorites(favoriteResult);
 
-			} catch (e) {
+			} catch (e:any) {
 				
                 setError(e.message);
 			

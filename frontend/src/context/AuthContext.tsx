@@ -4,8 +4,9 @@ import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 export const AuthContext = createContext<FbUserContextMaybe | null>(null);
 
 interface FbUser extends User {
-  accessToken?: string;
-  username?: string;
+  accessToken: string;
+  username: string;
+  email: string;
 }
 
 export interface FbUserContextMaybe {
