@@ -30,7 +30,8 @@ function CreateWiki() {
       "signin",
       "signup",
       "testing",
-      "settings"
+      "settings",
+	  "chat"
     ];
 
     // Submit form function

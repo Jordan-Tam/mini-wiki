@@ -73,14 +73,17 @@ export const EditWikiModal:React.FC<EditWikiModalParams> = ({
         >
             <h2>Edit Wiki</h2>
             <form onSubmit={_handle_submit}>
-                <label>Wiki Name</label>
-                <input type="text" ref={wikiNameRef} defaultValue={wiki.name}></input>
-                <br/>
-                <label>Wiki Description</label>
-                <input type="text" ref={wikiDescriptionRef} defaultValue={wiki.description}></input>
+                <div className="form-floating mb-3">
+                    <input className="form-control" placeholder="name" type="text" ref={wikiNameRef} id="name" name="name" defaultValue={wiki.name}/>
+                    <label htmlFor="name">Wiki Name</label>
+                </div>
+                <div className="form-floating mb-3">
+                    <input className="form-control" placeholder="description" type="text" ref={wikiDescriptionRef} id="description" name="description" defaultValue={wiki.description}/>
+                    <label htmlFor="name">Wiki Description</label>
+                </div>
             </form>
 
-            <button className="btn btn-primary" onClick={_handle_submit}>Update</button>
+            <button className="btn btn-primary me-2" onClick={_handle_submit}>Update</button>
             <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
         </Modal>
     );

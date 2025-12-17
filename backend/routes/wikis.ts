@@ -134,6 +134,7 @@ router
           "signin",
           "signup",
           "testing",
+		  "chat"
         ];
 
 		let { name, urlName, description, access } = req.body;
