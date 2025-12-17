@@ -63,6 +63,11 @@ export interface UserContext {
     "appName": string
 }
 
+export interface BasicModalParams {
+  isOpen: boolean;
+  handleClose: () => any;
+}
+
 export interface WikiModalParams {
     isOpen: boolean;
     handleClose: () => any;
