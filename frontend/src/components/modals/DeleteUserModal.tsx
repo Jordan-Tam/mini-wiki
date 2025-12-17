@@ -5,6 +5,7 @@ import {
 } from "../../firebase/FirebaseFunctions";
 import { useContext, useState } from "react";
 import { AuthContext, type FbUserContext } from "../../context/AuthContext";
+import type { BasicModalParams } from "../../types";
 
 ReactModal.setAppElement("#root");
 const customStyles = {
@@ -21,7 +22,7 @@ const customStyles = {
   },
 };
 
-function DeleteUserModal(props) {
+function DeleteUserModal(props:BasicModalParams) {
   const [showDeleteModal, setShowDeleteModal] = useState(props.isOpen);
   const { currentUser } = useContext(AuthContext) as FbUserContext;
 
@@ -30,12 +31,11 @@ function DeleteUserModal(props) {
     props.handleClose();
   };
 
-  let password;
+  let password: HTMLInputElement | null = null;
 
   return (
     <div>
       <ReactModal
-        name="deleteModal"
         isOpen={showDeleteModal}
         contentLabel="Delete User"
         style={customStyles}
@@ -47,7 +47,7 @@ function DeleteUserModal(props) {
           onSubmit={async (e) => {
             e.preventDefault();
             try {
-              if (currentUser.providerData[0].providerId === "password") {
+              if (currentUser.providerData[0].providerId === "password" && password) {
                 // do firebase delete
                 await doDeleteUserEmailAndPassword(
                   currentUser.email,

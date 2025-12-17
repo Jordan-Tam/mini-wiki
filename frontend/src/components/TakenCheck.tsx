@@ -14,12 +14,19 @@ const FORBIDDEN_WIKI_URL_NAMES = [
 ];
 const FORBIDDEN_PAGE_URL_NAMES = ["category", "chat", "search"];
 
-function TakenCheck(props) {
+interface p {
+  variable: string;
+  varName: string;
+  setOK: React.Dispatch<React.SetStateAction<boolean | null>>;
+  serverURL: string;
+}
+
+function TakenCheck(props: p) {
   const { currentUser } = useContext(AuthContext) as FbUserContext;
 
   useEffect(() => {
-    async function taken(variable) {
-      const status = document.getElementById("status");
+    async function taken(variable: string) {
+      const status = document.getElementById("status") as any;
       if (!variable || !variable.trim()) {
         status.hidden = true;
         props.setOK(false);

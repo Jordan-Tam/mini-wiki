@@ -5,6 +5,14 @@ import Modal from "react-modal";
 
 Modal.setAppElement("#root");
 
+interface CreatePageModalParams {
+	isOpen: boolean;
+	wikiId: string;
+	wikiUrlName: string;
+	categories: Array<string>;
+	handleClose: () => any;
+}
+
 const customStyles = {
 	content: {
 		top: "50%",
@@ -19,7 +27,7 @@ const customStyles = {
 	}
 };
 
-function CreatePageModal(props) {
+function CreatePageModal(props: CreatePageModalParams) {
 	// Auth
 	const { currentUser } = useContext(AuthContext) as FbUserContext;
 	const navigate = useNavigate();
@@ -35,7 +43,7 @@ function CreatePageModal(props) {
 	const [disableSubmit, setDisableSubmit] = useState(false);
 
 	// Submit form function
-	const submitForm = async (e) => {
+	const submitForm = async (e:any) => {
 		e.preventDefault();
 
 		// Basic validation
