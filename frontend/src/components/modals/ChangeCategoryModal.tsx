@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext";
 import ReactModal from "react-modal";
+import type { BasicModalParams, Wiki } from "../../types";
 
 ReactModal.setAppElement("#root");
 
@@ -18,10 +19,16 @@ const customStyles = {
   },
 };
 
-function ChangeCategoryModal(props) {
+interface p extends BasicModalParams {
+    wikiUrlName: string;
+    pageUrlName: string;
+    wiki: Wiki;
+}
+
+function ChangeCategoryModal(props: p) {
     //console.log("ENTER MODAL")
     const { isOpen, handleClose, wikiUrlName, pageUrlName, wiki } = props;
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext) as FbUserContext;
     const [selectedCategory, setSelectedCategory] = useState("");
 
     
@@ -29,7 +36,7 @@ function ChangeCategoryModal(props) {
         if (isOpen) setSelectedCategory("");
     }, [isOpen]);
 
-    const submitForm = async (event) => {
+    const submitForm:React.FormEventHandler<HTMLFormElement> = async (event) => {
         event.preventDefault();
         if (!selectedCategory) return;
 
@@ -60,7 +67,6 @@ function ChangeCategoryModal(props) {
 
     return (
         <ReactModal
-            name="changeCategoryModal"
             isOpen={isOpen}
             onRequestClose={handleClose}
             contentLabel="Change Category"
