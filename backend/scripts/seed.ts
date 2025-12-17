@@ -24,12 +24,14 @@ const users_to_seed: any = [
 	{
 		firebaseUID: FIREBASE_UIDS[0],
 		email: "user1@gmail.com",
-		username: "John_Doe"
+		username: "John_Doe",
+		bio: "I am a placeholder name."
 	},
 	{
 		firebaseUID: FIREBASE_UIDS[1],
 		email: "user2@gmail.com",
-		username: "Jane_Smith"
+		username: "Jane_Smith",
+		bio: "I am also a placeholder name."
 	},
 	{
 		firebaseUID: FIREBASE_UIDS[2],
@@ -591,6 +593,13 @@ async function seed() {
 			);
 		} catch (e) {
 			console.log(`Username of ${user.email} could not be updated: ${e}`);
+		}
+
+		// Change bio.
+		try {
+			await userDataFunctions.changeBio(user.firebaseUID, user.bio);
+		} catch (e) {
+			console.log("Bio could not be updated.");
 		}
 	}
 
