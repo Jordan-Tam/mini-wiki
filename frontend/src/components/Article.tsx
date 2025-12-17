@@ -141,11 +141,11 @@ const Article: React.FC<ArticleProps> = ({
 			: undefined;
 
 		return fullEditUrl ? (
-			<Link className="mb-3 me-3" to={fullEditUrl} aria-label="Edit this article">
+			<Link className="mb-3 me-3" to={fullEditUrl} >
 				<p className="btn btn-warning">Edit</p>
 			</Link>
 		) : (
-			<button type="button" onClick={onEdit} aria-label="Edit this article">
+			<button type="button" onClick={onEdit} >
 				Edit
 			</button>
 		);
