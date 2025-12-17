@@ -472,7 +472,7 @@ function WikiHome() {
 					</>
 				)}
 
-{!showPVs && (
+						{!showPVs && (wiki.access === "private") && (
 							<>
 							<button
 								className="btn btn-primary me-3"
@@ -485,7 +485,7 @@ function WikiHome() {
 							</>
 						)}
 
-						{showPVs && (
+						{showPVs && (wiki.access === "private") && (
 							<>
 								<button
 									className="btn btn-danger me-3"
