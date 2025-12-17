@@ -11,7 +11,7 @@ Repository for our Stevens CS-554 (Web Dev 2) final project
 
 ### First Time Setup
 
-**NOTE**: On Windows, make sure you have docker set to use WSL2 as the engine (see Docket Desktop's general settings) and that you run all the docker commands in a WSL Terminal!
+**NOTE**: On Windows, make sure you have docker set to use WSL2 as the engine (see Docker Desktop's general settings) and that you run all the docker commands in a WSL Terminal!
 
 1. Clone the repository and navigate to the project directory
 2. Run all services with Docker Compose:
@@ -112,13 +112,9 @@ To find your WSL2 IP address on Windows, run in PowerShell:
 wsl hostname -I
 ```
 
-### Elasticsearch
-
-Access Elasticsearch at: `http://localhost:9200`
-
 ### Redis
 
-Redis is available at: `localhost:6379`
+You can access the redis cache by executing `docker exec -it miniwiki-redis redis-cli`
 
 ## Reseeding the Database
 
