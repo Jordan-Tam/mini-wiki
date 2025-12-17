@@ -96,11 +96,7 @@ function Header() {
 									</li>
 								</>
 							)}
-							<li className="nav-item px-2">
-								<Link className="nav-link" to="/testing">
-									Testing
-								</Link>
-							</li>
+							
 						</ul>
 					</div>
 				</div>
