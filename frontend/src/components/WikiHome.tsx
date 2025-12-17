@@ -429,7 +429,7 @@ function WikiHome() {
 						</button>
 					</>
 				)}
-				{!showCollaborators && (
+				{!showCollaborators && (wiki.access !== "public-edit" && wiki.access !== "public-view") && (
 							<button
 								className="btn btn-primary me-3"
 								onClick={() => setShowCollaborators(true)}
@@ -437,7 +437,7 @@ function WikiHome() {
 								View Collaborators
 							</button>
 						)}
-						{showCollaborators && (
+						{showCollaborators && (wiki.access !== "public-edit" && wiki.access !== "public-view") && (
 							<>
 								<button
 									className="btn btn-danger me-3"
@@ -582,7 +582,7 @@ function WikiHome() {
 								<span style={{ fontWeight: "bold" }}>Number of Pages:</span>{" "}
 								{wiki.pages.filter((p) => p.category === category).length}
 							</p>
-							{category !== "UNCATEGORIZED" && (
+							{(category !== "UNCATEGORIZED" && (wiki.owner === currentUser.uid || wiki.collaborators.includes(currentUser.uid) )) && (
 								<>
 									<button
 										className="btn btn-warning me-3"
