@@ -904,6 +904,9 @@ router
 		try {
 
 			const retVal = await pageDataFunctions.changePageCategory(wiki._id, page._id, newCategory);
+
+			// REDIS
+			await redisFunctions.del_json(`${wikiUrlName}`);
 			
 			return res.json({retVal});
 
