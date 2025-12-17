@@ -90,18 +90,31 @@ export const ChatSocket:SocketRouter = async(socket, req, params): Promise<void>
                 return socket.close(1008);
             }
             
-            let user = await user_data_functions.getUserByFirebaseUID(decoded.uid);
-            if(!user) {
-                console.log(`disconnect:: user not found`);
-                socket.send(`User not found.`);
-                return socket.close(1008);
+            let user;
+            try {
+                user = await user_data_functions.getUserByFirebaseUID(decoded.uid);
+                if(!user) {
+                    console.log(`disconnect:: user not found`);
+                    socket.send(`User not found.`);
+                    return socket.close(1008);
+                }
+            } catch (e) {
+                socket.send(JSON.stringify({error: `User not found.`}));
+                socket.close(1008);
+                return;
             }
 
             user_id = user._id as string;
             username = user.username as string;
 
             // add user to broadcaster
-            await chats[id].add(user_id, socket, true);
+            try {
+                await chats[id].add(user_id, socket, true);
+            } catch (e) {
+                socket.send(JSON.stringify({error: `Failed to join chatroom: ${e}`}));
+                socket.close(1008);
+                return;
+            }
                 
             // send user join
             await chats[id].broadcast(JSON.stringify({user: "[SERVER]", message: `${username} has joined the chat!`}));
