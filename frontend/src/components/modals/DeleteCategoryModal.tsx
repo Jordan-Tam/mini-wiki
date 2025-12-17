@@ -75,7 +75,7 @@ function DeleteCategoryModal(props) {
                 contentLabel="Delete Category Modal"
             >
                 <div>
-                    <p>Are you sure you want to delete <span style={{fontWeight: "bold"}}>{props.categoryName}</span></p>
+                    <p>Are you sure you want to delete <span style={{fontWeight: "bold"}}>{props.categoryName}?</span></p>
                     <form
                         className="form"
                         id="delete-category"

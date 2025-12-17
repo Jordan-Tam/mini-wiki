@@ -73,7 +73,7 @@ function DeleteCollaboratorModal(props) {
                 contentLabel="Delete Collaborator Modal"
             >
                 <div>
-                    <p>Are you sure you want to remove <span style={{fontWeight: "bold"}}>{props.username}</span></p>
+                    <p>Are you sure you want to remove <span style={{fontWeight: "bold"}}>{props.username}?</span></p>
                     <form
                         className="form"
                         id="delete-collaborator"
