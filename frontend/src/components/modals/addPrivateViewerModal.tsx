@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 import type { WikiModalParams } from "../../types.js";
 
