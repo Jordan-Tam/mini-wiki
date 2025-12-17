@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.tsx";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.tsx";
 import { FaPlus } from 'react-icons/fa';
 import ChangeBioModal from "./modals/ChangeBioModal.tsx"
 import WikiCard from "./cards/WikiCard.tsx";
@@ -15,7 +15,7 @@ function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [showChangeBioModal, setShowChangeBioModal] = useState(false)
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContext;
 
   let token: any;
   

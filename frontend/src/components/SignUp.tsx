@@ -1,13 +1,13 @@
 import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { doCreateUserWithEmailAndPassword } from "../firebase/FirebaseFunctions";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext, type FbUserContextMaybe } from "../context/AuthContext";
 import SocialSignIn from "./SocialSignIn";
 import { Link } from "react-router-dom";
 
 function SignUp() {
 
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContextMaybe;
 
   // Stateful form
   const [email, setEmail] = useState("");

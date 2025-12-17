@@ -1,7 +1,7 @@
 import SignOutButton from "./SignOut";
 import ChangePasswordModal from "./modals/ChangePasswordModal";
 import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../context/AuthContext";
 import DeleteUserModal from "./modals/DeleteUserModal";
 import TakenCheck from "./TakenCheck";
 
@@ -12,7 +12,7 @@ function Settings() {
   const [changeUsernameOK, setChangeUsernameOK] = useState(null);
   const [error, setError] = useState("");
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser, setCurrentUser } = useContext(AuthContext) as FbUserContext;
 
   let token: any;
 

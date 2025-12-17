@@ -1,13 +1,13 @@
 import { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
 import WikiCard from "./cards/WikiCard.tsx";
 import CreateWikiModal from "./modals/CreateWikiModal.tsx";
 
 function Home() {
 
 	// Auth
-	const {currentUser} = useContext(AuthContext) as FbUserContextWrapper;
+	const {currentUser} = useContext(AuthContext) as FbUserContext;
 
 	const [token, setToken] = useState(
 		currentUser ? currentUser.accessToken : ""

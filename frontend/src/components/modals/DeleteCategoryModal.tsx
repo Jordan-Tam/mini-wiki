@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 
 Modal.setAppElement("#root");
@@ -21,7 +21,7 @@ const customStyles = {
 function DeleteCategoryModal(props) {
 
     // Auth
-    const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+    const { currentUser } = useContext(AuthContext) as FbUserContext;
 
     // Form stuff
     const [categoryName, setCategoryName] = useState(props.categoryName);

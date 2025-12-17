@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { AuthContext, type FbUserContextWrapper } from "../../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../../context/AuthContext.jsx";
 import Modal from "react-modal";
 import type { UserModalParams } from "../../types.js";
 
@@ -20,7 +20,7 @@ const customStyles = {
 };
 
 function ChangeBioModal({ isOpen, handleClose, user, setUser }: UserModalParams) {
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContext;
 
   const [bio, setBio] = useState("");
   const [error, setError] = useState("");

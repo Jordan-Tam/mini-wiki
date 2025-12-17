@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import { useLocation, useParams, Link } from "react-router-dom";
-import { AuthContext, type FbUserContextWrapper } from "../context/AuthContext.jsx";
+import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../context/AuthContext.jsx";
 import DeletePageModal from "./modals/DeletePageModal.jsx";
 
 
@@ -52,7 +52,7 @@ const Article: React.FC<ArticleProps> = ({
 
 	const location = useLocation();
 	const { wikiUrlName, pageUrlName } = useParams();
-	const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+	const { currentUser } = useContext(AuthContext) as FbUserContext;
 
 	const [wiki, setWiki] = useState(null);
 	const [showDeletePageModal, setShowDeletePageModal] = useState(false);

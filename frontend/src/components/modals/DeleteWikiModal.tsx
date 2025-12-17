@@ -1,6 +1,6 @@
 import ReactModal from "react-modal";
 import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 ReactModal.setAppElement("#root");
@@ -21,7 +21,7 @@ const customStyles = {
 function DeleteWikiModal(props) {
   const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(props.isOpen);
   const [error, setError] = useState("");
-  const { currentUser } = useContext(AuthContext) as FbUserContextWrapper;
+  const { currentUser } = useContext(AuthContext) as FbUserContext;
 
   let navigate = useNavigate();
 

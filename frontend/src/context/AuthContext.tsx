@@ -1,16 +1,20 @@
 import React, { useState, useEffect, createContext } from "react";
 import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 
-export const AuthContext = createContext<FbUserContextWrapper | null>(null);
+export const AuthContext = createContext<FbUserContextMaybe | null>(null);
 
 interface FbUser extends User {
   accessToken?: string;
   username?: string;
 }
 
-export interface FbUserContextWrapper {
+export interface FbUserContextMaybe {
   currentUser: FbUser | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<FbUser | null>>; 
+}
+export interface FbUserContext {
+  currentUser: FbUser;
+  setCurrentUser: React.Dispatch<React.SetStateAction<FbUser>>; 
 }
 
 interface AuthProviderProps {
