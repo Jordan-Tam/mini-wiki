@@ -91,6 +91,7 @@ const Article: React.FC<ArticleProps> = ({
 				setLoading(false);
 				
 			} catch (e: any) {
+				setLoading(false);
 				setError(`${e}`);
 			} 
 		};
