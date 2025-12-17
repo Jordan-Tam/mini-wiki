@@ -522,21 +522,25 @@ function WikiHome() {
 
 					</>
 				)}
-				<button className="btn btn-warning me-3"
-					onClick={() => {setShowEditWikiModal(true)}}
-				>Edit Wiki</button>
-				<button
-					className="btn btn-secondary me-3"
-					onClick={() => setShowNewCategoryModal(true)}
-				>
-					+ New Category
-				</button>
-				<button
-					className="btn btn-secondary me-3"
-					onClick={() => setShowNewPageModal(true)}
-				>
-					+ New Page
-				</button>
+				{ (wiki?.owner === currentUser.uid || wiki?.collaborators.includes(currentUser.uid)) &&
+				<>
+					<button className="btn btn-warning me-3"
+						onClick={() => {setShowEditWikiModal(true)}}
+					>Edit Wiki</button>
+					<button
+						className="btn btn-secondary me-3"
+						onClick={() => setShowNewCategoryModal(true)}
+					>
+						+ New Category
+					</button>
+					<button
+						className="btn btn-secondary me-3"
+						onClick={() => setShowNewPageModal(true)}
+					>
+						+ New Page
+					</button>
+				</>
+				}
 				<button
 					className="btn btn-secondary me-3"
 					onClick={() => {window.location.href += "/chat"}}
