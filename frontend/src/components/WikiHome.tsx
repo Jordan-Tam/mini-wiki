@@ -10,7 +10,7 @@ import DeleteCollaboratorModal from "./modals/DeleteCollaboratorModal.tsx";
 import DeletePrivateViewerModal from "./modals/DeletePrivateViewerModal.tsx";
 import DeleteWikiModal from "./modals/DeleteWikiModal.tsx";
 import { default as AddPrivateViewerModal } from "./modals/addPrivateViewerModal.tsx"
-import type { User, UserContext, Wiki } from "../types.tsx";
+import type { SearchResultComposite, User, UserContext, Wiki } from "../types.tsx";
 import { TransferOwnershipModal } from "./modals/TransferOwnershipModal.tsx";
 import { EditWikiModal } from "./modals/EditWikiModal.tsx";
 
@@ -61,7 +61,7 @@ function WikiHome() {
 	};
 
 	// Helper function to parse HTML highlights and return React elements
-	const parseHighlight = (htmlString) => {
+	const parseHighlight = (htmlString?:string) => {
 		if (!htmlString) return null;
 
 		// Strip markdown first
@@ -97,10 +97,10 @@ function WikiHome() {
 	// API call
 	const [wiki, setWiki] = useState<Wiki | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
+	const [error, setError] = useState<string | null>(null);
 
 	// Modal
-	const [category, setCategory] = useState(undefined);
+	const [category, setCategory] = useState<string | undefined>(undefined);
 	const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
 	const [showNewPageModal, setShowNewPageModal] = useState(false);
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
@@ -109,7 +109,7 @@ function WikiHome() {
 	const [showEditWikiModal, setShowEditWikiModal] = useState<boolean>(false);
 	const [collaborators, setCollaborators] = useState<Array<User> | null>(null);
 	const [showCollaborators, setShowCollaborators] = useState(false);
-	const [deleteCollaborator, setDeleteCollaborator] = useState(undefined);
+	const [deleteCollaborator, setDeleteCollaborator] = useState<string | undefined>(undefined);
 	const [showDeleteCollaboratorModal, setShowDeleteCollaboratorModal] =
 		useState(false);
 	const [showAddPrivateViewerModal, setShowAddPrivateViewerModal] =
@@ -117,16 +117,16 @@ function WikiHome() {
 	const [showDeletePrivateViewerModal, setShowDeletePrivateViewerModal] =
 		useState(false);
 	const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
-	const [deletePrivateViewer, setDeletePrivateViewer] = useState(false);
-	const [private_viewers, setPrivateViewers] = useState(undefined);
+	const [deletePrivateViewer, setDeletePrivateViewer] = useState<string | null>(null);
+	const [private_viewers, setPrivateViewers] = useState<Array<User> | undefined>(undefined);
 	const [showPVs, setShowPVs] = useState(false);
 	const [showDeleteWikiModal, setShowDeleteWikiModal] = useState(false);
-	const [owner, setOwner] = useState(undefined);
+	const [owner, setOwner] = useState<User|undefined>(undefined);
 	// Search
 	const [searchTerm, setSearchTerm] = useState("");
-	const [searchResults, setSearchResults] = useState(null);
+	const [searchResults, setSearchResults] = useState<SearchResultComposite | null>(null);
 	const [searching, setSearching] = useState(false);
-	const [searchError, setSearchError] = useState(null);
+	const [searchError, setSearchError] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchWiki = async () => {
@@ -143,8 +143,8 @@ function WikiHome() {
 				}
 				const data = await response.json();
 				setWiki(data);
-			} catch (e) {
-				setError(`${e}`);
+			} catch (e:any) {
+				setError(String(e));
 				setLoading(false);
 			}
 		};
@@ -172,7 +172,7 @@ function WikiHome() {
 				console.log(`collaborators:`,data)
 				setCollaborators(data);
 			} catch (e) {
-				setError(e);
+				setError(String(e));
 			}
 		};
 
@@ -198,7 +198,7 @@ function WikiHome() {
 				}
 
 				setPrivateViewers(data);
-			} catch (e) {
+			} catch (e:any) {
 				setError(e);
 			} 
 		};
@@ -211,6 +211,10 @@ function WikiHome() {
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
+				if(!wiki) {
+					return;
+				}
+
 				const response = await fetch(`/api/users/${wiki.owner}/profile`, {
 					method: "GET",
 					headers: {
@@ -225,7 +229,7 @@ function WikiHome() {
 				}
 
 				setOwner(data.user);
-			} catch (e) {
+			} catch (e:any) {
 				setError(e);
 			} finally {
 				setLoading(false);
@@ -251,7 +255,7 @@ function WikiHome() {
 		setShowTransferModal(false);
 	};
 
-	const handleSearch = async (e) => {
+	const handleSearch = async (e:any) => {
 		e.preventDefault();
 		if (!searchTerm.trim()) {
 			setSearchError("Please enter a search term");
@@ -278,7 +282,7 @@ function WikiHome() {
 
 			const data = await response.json();
 			setSearchResults(data);
-		} catch (e) {
+		} catch (e:any) {
 			setSearchError(e.message);
 			setSearchResults(null);
 		} finally {
@@ -298,15 +302,17 @@ function WikiHome() {
 	return (
 		<div className="container-fluid">
 			<h1>{wiki?.name}</h1>
-			<p className="text-muted">
-			Created by{" "}
-			<Link
-				to={`/profile/${owner.firebaseUID}`}
-				style={{ textDecoration: "none" }}
-			>
-				{owner.username}
-			</Link>
-			</p>
+			{owner && (
+				<p className="text-muted">
+				Created by{" "}
+				<Link
+					to={`/profile/${owner.firebaseUID}`}
+					style={{ textDecoration: "none" }}
+				>
+					{owner.username}
+				</Link>
+				</p>
+			)}
 
 			<hr/>
 			<p>{wiki?.description}</p>
@@ -385,13 +391,21 @@ function WikiHome() {
 											{result.highlights?.content && (
 												<small className="text-muted">
 													<div>
-														{result.highlights.content.map((snippet, idx) => (
-															<span key={idx}>
-																{parseHighlight(snippet)}
-																{idx < result.highlights.content.length - 1 &&
-																	" ... "}
-															</span>
-														))}
+														{result.highlights.content.map((snippet, idx) => {
+															let content = result.highlights?.content;
+
+															if(!content) {
+																return;
+															}
+
+															return (
+																<span key={idx}>
+																	{parseHighlight(snippet)}
+																	{idx < content.length - 1 &&
+																		" ... "}
+																</span>
+															);
+														})}
 													</div>
 												</small>
 											)}
@@ -460,7 +474,7 @@ function WikiHome() {
 								</ul>
 							</>
 						)}
-				{((wiki.access === "private") && (wiki?.owner === currentUser.uid || wiki?.collaborators.includes(currentUser.uid))) && (
+				{wiki && ((wiki.access === "private") && (wiki?.owner === currentUser.uid || wiki?.collaborators.includes(currentUser.uid))) && (
 					<>
 						<button
 							className="btn btn-success me-3"
@@ -524,7 +538,7 @@ function WikiHome() {
 							</>
 						)}
 
-				{ (wiki.owner.toString() === currentUser.uid.toString() 
+				{wiki &&  (wiki.owner.toString() === currentUser.uid.toString() 
 				|| wiki.collaborators.includes(currentUser.uid) 
 				|| wiki.access === "public-edit" ) && (
 					<>
@@ -595,7 +609,7 @@ function WikiHome() {
 				))}
 			</div>
 
-			{wiki.owner === currentUser.uid && (
+			{wiki && wiki.owner === currentUser.uid && (
 					<button
 						className="btn btn-danger me-3"
 						onClick={() => setShowTransferModal(true)}
@@ -604,7 +618,7 @@ function WikiHome() {
 					</button>
 				)}
 
-				{wiki.owner === currentUser.uid &&
+				{wiki && wiki.owner === currentUser.uid &&
 				<button 
 				className="btn btn-danger me-3"
 				onClick={() => setShowDeleteWikiModal(true)}
@@ -612,7 +626,7 @@ function WikiHome() {
 					Delete Wiki
 				</button>}
 
-			{showNewCategoryModal && (
+			{wiki && showNewCategoryModal && (
 				<CreateCategoryModal
 					isOpen={showNewCategoryModal}
 					wikiId={wiki._id}
@@ -621,7 +635,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showNewPageModal && (
+			{wiki && showNewPageModal && (
 				<CreatePageModal
 					isOpen={showNewPageModal}
 					wikiId={wiki._id}
@@ -631,7 +645,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showEditCategoryModal && (
+			{wiki && category && showEditCategoryModal && (
 				<EditCategoryModal
 					isOpen={showEditCategoryModal}
 					wikiId={wiki._id}
@@ -641,7 +655,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showDeleteCategoryModal && (
+			{wiki && category && showDeleteCategoryModal && (
 				<DeleteCategoryModal
 					isOpen={showDeleteCategoryModal}
 					wikiId={wiki._id}
@@ -651,7 +665,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showAddCollabModal && (
+			{wiki && showAddCollabModal && (
 				<AddCollaboratorModal
 					isOpen={showAddCollabModal}
 					wikiId={wiki._id}
@@ -660,7 +674,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showDeleteCollaboratorModal && (
+			{wiki && deleteCollaborator && showDeleteCollaboratorModal && (
 				<DeleteCollaboratorModal
 					isOpen={showDeleteCollaboratorModal}
 					handleClose={handleCloseModals}
@@ -670,7 +684,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showAddPrivateViewerModal && (
+			{wiki && showAddPrivateViewerModal && (
 				<AddPrivateViewerModal
 					isOpen={showAddPrivateViewerModal}
 					wikiId={wiki._id}
@@ -679,7 +693,7 @@ function WikiHome() {
 				/>
 			)}
 
-			{showDeletePrivateViewerModal && (
+			{wiki && deletePrivateViewer && showDeletePrivateViewerModal && (
 				<DeletePrivateViewerModal
 					isOpen={showDeletePrivateViewerModal}
 					handleClose={handleCloseModals}
@@ -688,7 +702,7 @@ function WikiHome() {
 					wikiId={wiki._id}
 				/>
 			)}
-			{showDeleteWikiModal && (
+			{wiki && showDeleteWikiModal && (
 				<DeleteWikiModal
 					isOpen={showDeleteWikiModal}
 					handleClose={handleCloseModals}

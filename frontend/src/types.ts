@@ -71,6 +71,31 @@ export interface UserContext {
     "appName": string
 }
 
+export interface SearchResultComposite {
+  "results": [
+    {
+      "wikiId": string,
+      "pageId": string,
+      "pageUrlName": string,
+      "pageTitle": string,
+      "category": string,
+      "score": number,
+      "highlights"?: {
+        "pageTitle": [
+          string
+        ],
+        "content"?: [
+          string
+        ]
+      }
+    }
+  ],
+  "totalResults": number,
+  "searchTerm": string,
+  "wikiName": string,
+  "wikiUrlName": string
+}
+
 export interface BasicModalParams {
   isOpen: boolean;
   handleClose: () => any;
