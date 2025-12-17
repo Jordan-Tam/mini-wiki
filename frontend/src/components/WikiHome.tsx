@@ -413,7 +413,9 @@ function WikiHome() {
 						>
 							Add a collaborator
 						</button>
-						{!showCollaborators && (
+					</>
+				)}
+				{!showCollaborators && (
 							<button
 								className="btn btn-primary me-3"
 								onClick={() => setShowCollaborators(true)}
@@ -458,8 +460,6 @@ function WikiHome() {
 								</ul>
 							</>
 						)}
-					</>
-				)}
 				{((wiki.access === "private") && (wiki?.owner === currentUser.uid || wiki?.collaborators.includes(currentUser.uid))) && (
 					<>
 						<button
@@ -468,7 +468,11 @@ function WikiHome() {
 						>
 							Add Private Viewer
 						</button>
-						{!showPVs && (
+
+					</>
+				)}
+
+{!showPVs && (
 							<>
 							<button
 								className="btn btn-primary me-3"
@@ -519,24 +523,27 @@ function WikiHome() {
 								</ul>
 							</>
 						)}
-
+						
+				{ wiki.owner === currentUser.uid || wiki.collaborators.includes(currentUser.uid) || wiki.access === "public-edit" && (
+					<>
+						<button className="btn btn-warning me-3"
+							onClick={() => {setShowEditWikiModal(true)}}
+						>Edit Wiki</button>
+						<button
+							className="btn btn-secondary me-3"
+							onClick={() => setShowNewCategoryModal(true)}
+						>
+							+ New Category
+						</button>
+						<button
+							className="btn btn-secondary me-3"
+							onClick={() => setShowNewPageModal(true)}
+						>
+							+ New Page
+						</button>
 					</>
 				)}
-				<button className="btn btn-warning me-3"
-					onClick={() => {setShowEditWikiModal(true)}}
-				>Edit Wiki</button>
-				<button
-					className="btn btn-secondary me-3"
-					onClick={() => setShowNewCategoryModal(true)}
-				>
-					+ New Category
-				</button>
-				<button
-					className="btn btn-secondary me-3"
-					onClick={() => setShowNewPageModal(true)}
-				>
-					+ New Page
-				</button>
+				
 				<button
 					className="btn btn-secondary me-3"
 					onClick={() => {window.location.href += "/chat"}}
