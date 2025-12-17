@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AuthContext, type FbUserContext, type FbUserContextMaybe } from "../../context/AuthContext";
+import { AuthContext, type FbUserContext } from "../../context/AuthContext";
 import { doChangePassword } from "../../firebase/FirebaseFunctions";
 import ReactModal from "react-modal";
 import type { BasicModalParams } from "../../types";
